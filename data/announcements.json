@@ -1,0 +1,18 @@
+{
+  "announcements": [
+    {
+      "date": "Club News",
+      "title": "Welcome to the new home of Knight Warriors Club",
+      "body": "Our official website is live — committee, members, events, rules and membership info, all in one place. Explore the sections and get to know your club.",
+      "link": "about",
+      "linkText": "About the club"
+    },
+    {
+      "date": "Recruitment",
+      "title": "Recruitment open — join the ranks",
+      "body": "Knight Warriors Club is recruiting new members across eFootball, PUBG, Clash of Clans and Call of Duty. Pick your tier, fill in the application and become a Warrior.",
+      "link": "join",
+      "linkText": "Apply to join"
+    }
+  ]
+}

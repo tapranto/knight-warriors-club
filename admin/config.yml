@@ -1,0 +1,135 @@
+# Decap CMS configuration — Knight Warriors Club
+#
+# BEFORE GOING LIVE: replace tapranto below with the real GitHub
+# username that owns the "knight-warriors-club" repository.
+# (With the git-gateway backend, Netlify also infers the repo from the site's
+# linked repository; the explicit repo line keeps this file self-documenting.)
+#
+# On Netlify you must enable: Identity (Site settings → Identity) and
+# Git Gateway (Identity → Services → Git Gateway) for logins here to work.
+
+backend:
+  name: git-gateway
+  repo: tapranto/knight-warriors-club
+  branch: main
+
+# Where uploaded images are stored in the repo / served from.
+media_folder: "assets/uploads"
+public_folder: "/assets/uploads"
+
+collections:
+  # ------------------------------------------------------------------
+  - name: announcements
+    label: "Announcements"
+    files:
+      - name: announcements
+        label: "Announcements (Events page)"
+        file: "data/announcements.json"
+        fields:
+          - label: "Announcements"
+            name: announcements
+            widget: list
+            summary: "{{fields.title}}"
+            fields:
+              - label: "Date / label shown on the card"
+                name: date
+                widget: string
+                required: false
+                hint: "e.g. Club News, Recruitment, or a date like 21 Oct 2026"
+              - label: "Title"
+                name: title
+                widget: string
+              - label: "Body"
+                name: body
+                widget: text
+              - label: "Link view (optional)"
+                name: link
+                widget: string
+                required: false
+                hint: "Section to link to, e.g. about, community, join — leave empty for no link"
+              - label: "Link text (optional)"
+                name: linkText
+                widget: string
+                required: false
+
+  # ------------------------------------------------------------------
+  - name: tournament
+    label: "Running Tournament"
+    files:
+      - name: tournament
+        label: "Running Tournament (Home page)"
+        file: "data/tournament.json"
+        fields:
+          - label: "Status"
+            name: status
+            widget: select
+            options:
+              - { label: "Coming Soon", value: "coming-soon" }
+              - { label: "Live", value: "live" }
+            default: "coming-soon"
+          - label: "Tournament name"
+            name: name
+            widget: string
+            required: false
+            hint: "Leave empty to show the plain “Tournament: Coming Soon” text"
+          - label: "Latest results"
+            name: latestResults
+            widget: list
+            required: false
+            field: { label: "Result", name: result, widget: string }
+            hint: "One result per line, e.g. “Warriors A 2–1 Warriors B (PUBG)”"
+          - label: "Next match"
+            name: nextMatch
+            widget: string
+            required: false
+            hint: "e.g. “Friday 8 PM — Team Alpha vs Team Bravo (PUBG)”"
+
+  # ------------------------------------------------------------------
+  - name: leaderboard
+    label: "Leaderboard"
+    files:
+      - name: leaderboard
+        label: "Leaderboard (per game)"
+        file: "data/leaderboard.json"
+        fields:
+          - label: "PUBG"
+            name: "PUBG"
+            widget: list
+            required: false
+            summary: "{{fields.rank}}. {{fields.player}} — {{fields.points}} pts"
+            fields: &lb_fields
+              - { label: "Rank", name: rank, widget: number, value_type: int, min: 1 }
+              - { label: "Player", name: player, widget: string }
+              - { label: "Points", name: points, widget: number, value_type: int, min: 0 }
+          - label: "eFootball"
+            name: "eFootball"
+            widget: list
+            required: false
+            summary: "{{fields.rank}}. {{fields.player}} — {{fields.points}} pts"
+            fields: *lb_fields
+          - label: "Clash of Clans"
+            name: "Clash of Clans"
+            widget: list
+            required: false
+            summary: "{{fields.rank}}. {{fields.player}} — {{fields.points}} pts"
+            fields: *lb_fields
+          - label: "Call of Duty"
+            name: "Call of Duty"
+            widget: list
+            required: false
+            summary: "{{fields.rank}}. {{fields.player}} — {{fields.points}} pts"
+            fields: *lb_fields
+
+  # ------------------------------------------------------------------
+  - name: members
+    label: "Members"
+    files:
+      - name: members
+        label: "General Members"
+        file: "data/members.json"
+        fields:
+          - label: "Member names"
+            name: members
+            widget: list
+            field: { label: "Name", name: name, widget: string }
+            hint: "One general member per entry — committee members are managed in the page itself, not here"
