@@ -119,6 +119,11 @@ collections:
                 widget: image
                 required: false
                 hint: "Shown as the backdrop of the finished tournament's Overview"
+              - label: "Champion cut-out (transparent PNG)"
+                name: championCutout
+                widget: image
+                required: false
+                hint: "Transparent-background cut-out of the champion (e.g. holding a trophy) — stands at the bottom-right of the finished tournament's page header"
 
   # ------------------------------------------------------------------
   - name: matches

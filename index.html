@@ -674,6 +674,13 @@
       .lb-t-name::after { content: " \2192"; color: #ff97a1; }
       .lb-t-row.clickable:hover .lb-t-name { color: #ff97a1; }
       .lb-t-status { font-family: var(--font-display); font-size: 11.5px; letter-spacing: 0.18em; text-transform: uppercase; color: #ff97a1; white-space: nowrap; }
+      /* Champion cut-out: stands at the bottom-right of a finished tournament's header band,
+         directly over the page background — no frame, no box, no background of its own. */
+      .t-headwrap { position: relative; display: flow-root; }
+      .champ-cutout { position: absolute; right: 0; bottom: 0; height: 100%; width: auto; max-width: 34%; object-fit: contain; object-position: bottom right; pointer-events: none; }
+      @media (max-width: 900px) {
+        .champ-cutout { height: 78%; }
+      }
       @media (max-width: 900px) {
         .ev-banners { grid-template-columns: 1fr; }
         .records-grid { grid-template-columns: 1fr 1fr; }
@@ -684,6 +691,41 @@
         .records-grid { grid-template-columns: 1fr; }
         .news-panel { padding: 28px 22px; }
         .match-row { flex-direction: column; gap: 2px; }
+      }
+      /* ---------- Mobile type scale-down (owner: phone fonts too big) ----------
+         Font sizes only (plus standings-table padding). Colours and layout are
+         untouched, and nothing here applies above 640px — desktop is unchanged. */
+      @media (max-width: 640px) {
+        body { font-size: 0.94rem; }
+        .wordmark { font-size: 1.3rem; }
+        .head-nav a { font-size: 0.85rem; padding: 7px 11px; }
+        .hero h1 { font-size: 2rem; }
+        .tagline { font-size: 1rem; }
+        .hero-sub { font-size: 0.95rem; }
+        .sec-head h2, .teaser h2, .tourney-panel h2, .join-panel h2, .news-head h2 { font-size: 1.45rem; }
+        .sec-head p, .teaser p, .tourney-panel > p, .join-panel p, .lb-panel p, .about-text p, .sponsor-box p { font-size: 0.94rem; }
+        .tourney-panel .tourney-status { font-size: 1.55rem; }
+        .stat b { font-size: 1.5rem; }
+        .practice-card .freq { font-size: 1.35rem; }
+        .about-text .welcome { font-size: 1.15rem; }
+        .game-card h3, .tier h3, .lb-panel h3, .ann-card h3, .news-item h3, .ev-banner h3, .t-sec-title, .sponsor-box h3, .join-info h3, .join-form h3, .provide-card h3, .event-card h3, .record-card b { font-size: 1.05rem; }
+        .rule h3 { font-size: 1rem; }
+        .champ-in h3 { font-size: 1.5rem; }
+        .champ-in .champ-crown { font-size: 30px; }
+        .news-item p, .ev-banner p, .game-card p, .provide-card p, .event-card p, .record-card .rec-value, .ev-hist-champ, .ev-empty { font-size: 0.9rem; }
+        .ev-hist-name, .lb-t-name { font-size: 1rem; }
+        .match-row .m-players { font-size: 0.95rem; }
+        .match-row .m-date { font-size: 0.8rem; }
+        .member-name { font-size: 0.95rem; }
+        .lb-table th, .lb-table td { font-size: 0.8rem; padding: 6px 7px; }
+        .lb-table th { font-size: 0.72rem; }
+        .btn { font-size: 0.8rem; padding: 12px 22px; }
+        .tab { font-size: 0.78rem; padding: 10px 16px; }
+        .t-jump a { font-size: 0.75rem; }
+        .lb-back, .tourney-cta { font-size: 0.78rem; }
+        .search-box input { font-size: 1rem; }
+        .field input, .field select, .field textarea { font-size: 1rem; }
+        .champ-cutout { height: 115px; }
       }
     </style>
   </head>
@@ -1741,7 +1783,7 @@
     <script>
       /* ---------- Live data v2: news, tournaments, matches, members, leaderboard ----------
          Everything below is computed in the browser from data/*.json:
-           data/tournaments.json — { tournaments: [ {id, name, game, status, startDate, endDate, intro, participants[], champion, championPhoto} ] }
+           data/tournaments.json — { tournaments: [ {id, name, game, status, startDate, endDate, intro, participants[], champion, championPhoto, championCutout} ] }
            data/matches.json     — { matches: [ {tournamentId, date, player1, player2, goals1, goals2, played} ] }
            data/announcements.json — manual news cards (root { announcements: [...] })
            data/members.json     — member names
@@ -2132,6 +2174,10 @@
               '<p class="kicker">Champion</p><h3>' + esc(t.champion) + '</h3>' +
               '<p>Winner — ' + esc(t.name) + '</p></div></div>';
           }
+          var cutout = '';
+          if (t.status === 'finished' && t.champion && t.championCutout) {
+            cutout = '<img class="champ-cutout" src="' + esc(t.championCutout) + '" alt="" aria-hidden="true">';
+          }
           var parts = (t.participants && t.participants.length)
             ? '<div class="part-grid">' + t.participants.map(function (p) {
                 return '<div class="member-name">' + esc(p) + '</div>';
@@ -2144,9 +2190,9 @@
               }).join('') + '</div>'
             : '<p class="t-empty">Records will appear once matches are played.</p>';
           box.innerHTML =
-            '<div class="sec-head"><p class="kicker">Tournament' + (t.game ? ' — ' + esc(t.game) : '') + '</p>' +
+            '<div class="t-headwrap"><div class="sec-head"><p class="kicker">Tournament' + (t.game ? ' — ' + esc(t.game) : '') + '</p>' +
             '<h2>' + esc(t.name) + ' ' + badge + '</h2>' +
-            (dates ? '<p>' + esc(dates) + '</p>' : '') + '</div>' +
+            (dates ? '<p>' + esc(dates) + '</p>' : '') + '</div>' + cutout + '</div>' +
             '<nav class="t-jump" aria-label="Tournament sections">' +
             '<a href="#tsec-overview" data-jump="tsec-overview">Overview</a>' +
             '<a href="#tsec-fixture" data-jump="tsec-fixture">Fixture</a>' +
