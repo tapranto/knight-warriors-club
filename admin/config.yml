@@ -1,12 +1,14 @@
-# Decap CMS configuration — Knight Warriors Club
+# Decap CMS configuration — Knight Warriors Club (v2)
 #
-# BEFORE GOING LIVE: replace tapranto below with the real GitHub
-# username that owns the "knight-warriors-club" repository.
-# (With the git-gateway backend, Netlify also infers the repo from the site's
-# linked repository; the explicit repo line keeps this file self-documenting.)
-#
+# Backend is Netlify Git Gateway against the site repo (branch main).
 # On Netlify you must enable: Identity (Site settings → Identity) and
 # Git Gateway (Identity → Services → Git Gateway) for logins here to work.
+#
+# v2 data model — the site computes everything else itself in the browser:
+#   data/announcements.json  manual news cards (News section + Home banner)
+#   data/tournaments.json    tournaments (status drives Home / Events / History)
+#   data/matches.json        fixtures & results (drive tables, records, news)
+#   data/members.json        general member names
 
 backend:
   name: git-gateway
@@ -20,13 +22,13 @@ public_folder: "/assets/uploads"
 collections:
   # ------------------------------------------------------------------
   - name: announcements
-    label: "Announcements"
+    label: "News"
     files:
       - name: announcements
-        label: "Announcements (Events page)"
+        label: "News (News page + Home banner)"
         file: "data/announcements.json"
         fields:
-          - label: "Announcements"
+          - label: "News"
             name: announcements
             widget: list
             summary: "{{fields.title}}"
@@ -35,7 +37,7 @@ collections:
                 name: date
                 widget: string
                 required: false
-                hint: "e.g. Club News, Recruitment, or a date like 21 Oct 2026"
+                hint: "e.g. Club News, Recruitment, or a date like 2026-10-21 (real dates sort the feed newest-first)"
               - label: "Title"
                 name: title
                 widget: string
@@ -53,72 +55,118 @@ collections:
                 required: false
 
   # ------------------------------------------------------------------
-  - name: tournament
-    label: "Running Tournament"
+  - name: tournaments
+    label: "Tournaments"
     files:
-      - name: tournament
-        label: "Running Tournament (Home page)"
-        file: "data/tournament.json"
+      - name: tournaments
+        label: "Tournaments"
+        file: "data/tournaments.json"
         fields:
-          - label: "Status"
-            name: status
-            widget: select
-            options:
-              - { label: "Coming Soon", value: "coming-soon" }
-              - { label: "Live", value: "live" }
-            default: "coming-soon"
-          - label: "Tournament name"
-            name: name
-            widget: string
-            required: false
-            hint: "Leave empty to show the plain “Tournament: Coming Soon” text"
-          - label: "Latest results"
-            name: latestResults
+          - label: "Tournaments"
+            name: tournaments
             widget: list
-            required: false
-            field: { label: "Result", name: result, widget: string }
-            hint: "One result per line, e.g. “Warriors A 2–1 Warriors B (PUBG)”"
-          - label: "Next match"
-            name: nextMatch
-            widget: string
-            required: false
-            hint: "e.g. “Friday 8 PM — Team Alpha vs Team Bravo (PUBG)”"
+            summary: "{{fields.name}} ({{fields.status}})"
+            fields:
+              - label: "ID"
+                name: id
+                widget: string
+                hint: "Unique, lowercase-with-dashes, e.g. efootball-tournament-legacy — matches in the Matches collection point at this ID"
+              - label: "Name"
+                name: name
+                widget: string
+              - label: "Game"
+                name: game
+                widget: select
+                options: ["eFootball", "PUBG", "Clash of Clans", "Call of Duty"]
+                default: "eFootball"
+              - label: "Status"
+                name: status
+                widget: select
+                options:
+                  - { label: "Upcoming", value: "upcoming" }
+                  - { label: "Running", value: "running" }
+                  - { label: "Finished", value: "finished" }
+                default: "upcoming"
+                hint: "Running → shown on Home + Events. Upcoming → Events banner. Finished → Tournament History (+ champion news)"
+              - label: "Start date"
+                name: startDate
+                widget: string
+                required: false
+                hint: "e.g. 2026-11-01"
+              - label: "End date"
+                name: endDate
+                widget: string
+                required: false
+                hint: "e.g. 2026-11-20"
+              - label: "Intro"
+                name: intro
+                widget: text
+                required: false
+                hint: "Format, prizes, notes — shown on the tournament's Overview"
+              - label: "Participants"
+                name: participants
+                widget: list
+                required: false
+                field: { label: "Player full name", name: name, widget: string }
+                hint: "Full names, matching the members list"
+              - label: "Champion"
+                name: champion
+                widget: string
+                required: false
+                hint: "Full name of the winner — set when the tournament is finished"
+              - label: "Champion photo"
+                name: championPhoto
+                widget: image
+                required: false
+                hint: "Shown as the backdrop of the finished tournament's Overview"
 
   # ------------------------------------------------------------------
-  - name: leaderboard
-    label: "Leaderboard"
+  - name: matches
+    label: "Matches"
     files:
-      - name: leaderboard
-        label: "Leaderboard (per game)"
-        file: "data/leaderboard.json"
+      - name: matches
+        label: "Matches (fixtures & results)"
+        file: "data/matches.json"
         fields:
-          - label: "PUBG"
-            name: "PUBG"
+          - label: "Matches"
+            name: matches
             widget: list
-            required: false
-            summary: "{{fields.rank}}. {{fields.player}} — {{fields.points}} pts"
-            fields: &lb_fields
-              - { label: "Rank", name: rank, widget: number, value_type: int, min: 1 }
-              - { label: "Player", name: player, widget: string }
-              - { label: "Points", name: points, widget: number, value_type: int, min: 0 }
-          - label: "eFootball"
-            name: "eFootball"
-            widget: list
-            required: false
-            summary: "{{fields.rank}}. {{fields.player}} — {{fields.points}} pts"
-            fields: *lb_fields
-          - label: "Clash of Clans"
-            name: "Clash of Clans"
-            widget: list
-            required: false
-            summary: "{{fields.rank}}. {{fields.player}} — {{fields.points}} pts"
-            fields: *lb_fields
-          - label: "Call of Duty"
-            name: "Call of Duty"
-            widget: list
-            required: false
-            summary: "{{fields.rank}}. {{fields.player}} — {{fields.points}} pts"
-            fields: *lb_fields
+            summary: "{{fields.player1}} vs {{fields.player2}}"
+            fields:
+              - label: "Tournament ID"
+                name: tournamentId
+                widget: string
+                hint: "The ID of the tournament this match belongs to, e.g. efootball-tournament-legacy"
+              - label: "Date"
+                name: date
+                widget: string
+                required: false
+                hint: "e.g. 2026-11-03 (real dates sort the news feed newest-first)"
+              - label: "Player 1 (full name)"
+                name: player1
+                widget: string
+              - label: "Player 2 (full name)"
+                name: player2
+                widget: string
+              - label: "Goals — Player 1"
+                name: goals1
+                widget: number
+                value_type: int
+                min: 0
+                required: false
+                hint: "Leave empty until the match is played"
+              - label: "Goals — Player 2"
+                name: goals2
+                widget: number
+                value_type: int
+                min: 0
+                required: false
+                hint: "Leave empty until the match is played"
+              - label: "Played?"
+                name: played
+                widget: boolean
+                default: false
+                hint: "Off = fixture (upcoming). On = result — the score then counts in the table, records and news"
 
   # ------------------------------------------------------------------
   - name: members
