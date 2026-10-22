@@ -64,6 +64,7 @@
       body[data-view="sponsors"] .bg-layer { background-image: url("assets/sections/section-sponsors-arena.webp"); }
       body[data-view="join"] .bg-layer { background-image: url("assets/sections/section-join-oath.webp"); }
       body[data-view="news"] .bg-layer { background-image: url("assets/banner-winged-knight.jpg"); }
+      body[data-view="article"] .bg-layer { background-image: url("assets/banner-winged-knight.jpg"); }
       body[data-view="tournament"] .bg-layer { background-image: url("assets/background-tournament-arena.webp"); }
 
       /* Free-standing headings sit directly on the picture: a soft shadow keeps
@@ -566,26 +567,91 @@
       .home-news-row {
         display: flex; gap: 14px; align-items: center; padding: 14px 18px; border-radius: 12px;
         background: rgba(0,0,0,0.34); border: 1px solid var(--glass-border);
+        text-decoration: none; cursor: pointer; transition: border-color .2s, background .2s;
       }
+      .home-news-row:hover { border-color: var(--glass-border-red); background: rgba(225,29,46,0.08); }
+      .home-news-row:focus-visible { outline: 2px solid var(--red-bright); outline-offset: 3px; }
+      .home-news-row:hover p { text-decoration: underline; text-decoration-color: rgba(225,29,46,0.7); text-underline-offset: 4px; }
       .home-news-row p { font-size: 18px; font-weight: 600; color: #f0f0f5; }
       .see-more { display: inline-flex; align-items: center; gap: 8px; margin-top: 24px; font-weight: 700; text-decoration: none; color: #fff; }
       .see-more:hover { color: var(--red-bright); }
       .see-more svg { width: 17px; height: 17px; stroke: currentColor; }
-      .news-feed { display: grid; gap: 18px; max-width: 880px; }
-      .news-card { padding: 30px 32px; position: relative; overflow: hidden; }
-      .news-card::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: linear-gradient(180deg, var(--red-bright), var(--red-deep)); }
-      .news-card .n-tag { margin-bottom: 12px; }
-      .news-card h3 { font-size: 21px; margin-bottom: 8px; }
-      .news-card p { color: var(--muted); }
-      .news-card a { color: #fff; font-weight: 700; text-decoration: none; display: inline-flex; gap: 8px; align-items: center; margin-top: 14px; }
-      .news-card a:hover { color: var(--red-bright); }
-      .news-card a svg { width: 17px; height: 17px; stroke: currentColor; }
-      .news-card.auto { padding: 24px 32px; }
-      .news-card.auto h3 { font-family: var(--font-body); font-weight: 700; font-size: 20.5px; margin: 0; }
-      .news-card.champ { text-align: center; padding: 40px 32px; }
-      .news-card.champ::before { left: 0; right: 0; top: 0; bottom: auto; width: auto; height: 4px; background: linear-gradient(90deg, var(--red-deep), var(--red-bright), var(--red-deep)); }
-      .news-card.champ h3 { font-size: clamp(22px, 3.6vw, 30px); text-transform: uppercase; letter-spacing: 0.02em; margin: 0; }
-      .news-card.champ p { margin-top: 8px; }
+      /* ---------- News portal: ticker, featured story, story grid ---------- */
+      .s-tag {
+        display: inline-block; font-family: var(--font-display); font-size: 10.5px; font-weight: 700; letter-spacing: 0.16em;
+        text-transform: uppercase; color: #fff; background: var(--red); padding: 5px 11px; border-radius: 6px;
+        white-space: nowrap; box-shadow: 0 6px 16px rgba(225,29,46,0.4); flex-shrink: 0;
+      }
+      .story-date { font-family: var(--font-display); font-size: 11.5px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: #ffb3ba; }
+      .ticker {
+        display: flex; align-items: stretch; text-decoration: none; border-radius: 12px; overflow: hidden;
+        margin-bottom: 22px; background: rgba(8,8,13,0.78); border: 1px solid var(--glass-border);
+        backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); box-shadow: var(--shadow);
+      }
+      .ticker-label {
+        display: flex; align-items: center; background: var(--red); color: #fff; padding: 11px 16px;
+        font-family: var(--font-display); font-size: 12px; font-weight: 800; letter-spacing: 0.18em; text-transform: uppercase; white-space: nowrap;
+      }
+      .ticker-text {
+        display: flex; align-items: center; min-width: 0; padding: 11px 16px;
+        font-weight: 600; font-size: 17.5px; color: #f0f0f5; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      }
+      .ticker:hover .ticker-text, .ticker:focus-visible .ticker-text { color: #fff; text-decoration: underline; text-underline-offset: 4px; }
+      .ticker:focus-visible { outline: 2px solid var(--red-bright); outline-offset: 3px; }
+      .story-feature {
+        position: relative; display: block; border-radius: var(--radius); overflow: hidden; text-decoration: none;
+        aspect-ratio: 16 / 7; border: 1px solid var(--glass-border); box-shadow: var(--shadow); transition: border-color .2s;
+      }
+      .story-feature img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center 30%; }
+      .story-feature::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(5,5,9,0) 32%, rgba(5,5,9,0.9)); }
+      .story-feature-body { position: absolute; left: 0; right: 0; bottom: 0; z-index: 1; padding: 26px 30px; display: grid; gap: 10px; justify-items: start; }
+      .story-feature-title { font-family: var(--font-display); font-size: clamp(22px, 3.6vw, 34px); font-weight: 800; text-transform: uppercase; line-height: 1.2; color: #fff; text-shadow: 0 2px 14px rgba(0,0,0,0.6); }
+      .story-feature:hover { border-color: var(--glass-border-red); }
+      .story-feature:hover .story-feature-title { text-decoration: underline; text-decoration-color: rgba(255,46,66,0.9); text-underline-offset: 6px; }
+      .story-feature:focus-visible, .story-card:focus-visible { outline: 2px solid var(--red-bright); outline-offset: 3px; }
+      .news-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 22px; }
+      .story-card { display: block; text-decoration: none; overflow: hidden; padding: 0; transition: transform .2s, border-color .2s; }
+      .story-card:hover { transform: translateY(-4px); border-color: var(--glass-border-red); }
+      .story-media { position: relative; display: block; aspect-ratio: 16 / 9; overflow: hidden; }
+      .story-media img { width: 100%; height: 100%; object-fit: cover; }
+      .story-media .s-tag { position: absolute; top: 12px; left: 12px; }
+      .story-card-body { display: grid; gap: 9px; padding: 18px 20px 20px; justify-items: start; }
+      .story-card-title { font-weight: 700; font-size: 20px; line-height: 1.3; color: #fff; }
+      .story-card:hover .story-card-title { text-decoration: underline; text-decoration-color: rgba(225,29,46,0.7); text-underline-offset: 4px; }
+
+      /* ---------- News article page ---------- */
+      .article-back {
+        display: inline-flex; align-items: center; gap: 8px; font-weight: 700; text-decoration: none; color: #fff;
+        margin-bottom: 20px; padding: 10px 18px; border-radius: 999px;
+        background: var(--glass); border: 1px solid var(--glass-border);
+        backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); transition: color .2s, border-color .2s;
+      }
+      .article-back:hover { color: var(--red-bright); border-color: var(--glass-border-red); }
+      .article-back:focus-visible { outline: 2px solid var(--red-bright); outline-offset: 3px; }
+      .article { padding: 42px 46px; max-width: 880px; }
+      .article-meta { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-bottom: 16px; }
+      .article h2 { font-size: clamp(26px, 4.2vw, 38px); font-weight: 800; text-transform: uppercase; line-height: 1.2; }
+      .article-hero { width: 100%; aspect-ratio: 16 / 8; object-fit: cover; object-position: center 30%; border-radius: 12px; margin: 24px 0 6px; border: 1px solid var(--glass-border); }
+      .article-body p { color: #e2e2ea; font-size: 20px; }
+      .article-body p + p { margin-top: 14px; }
+      .article-body b { color: #fff; }
+      .article-body h4 { font-family: var(--font-display); font-size: 15px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: #ff97a1; margin: 28px 0 12px; }
+      .match-card {
+        display: flex; align-items: center; gap: 16px; padding: 18px 22px; border-radius: 12px; margin: 18px 0;
+        background: rgba(0,0,0,0.34); border: 1px solid var(--glass-border);
+      }
+      .match-card .mc-name { flex: 1; min-width: 0; font-weight: 700; font-size: 20px; }
+      .match-card .mc-name.r { text-align: right; }
+      .match-card .mc-score { font-family: var(--font-display); font-weight: 800; font-size: 24px; color: #fff; white-space: nowrap; }
+      .match-card .mc-score em { font-style: normal; color: var(--red-bright); margin: 0 5px; }
+      .top3 { display: grid; gap: 10px; }
+      .top3-row { display: flex; align-items: center; gap: 14px; padding: 13px 18px; border-radius: 12px; background: rgba(0,0,0,0.34); border: 1px solid var(--glass-border); }
+      .top3-name { flex: 1; font-weight: 700; font-size: 19px; }
+      .top3-pts { font-family: var(--font-display); font-weight: 800; color: #fff; white-space: nowrap; }
+      .article-foot { border-top: 1px solid var(--glass-border); margin-top: 30px; padding-top: 20px; }
+      .article-tourney-link { display: inline-flex; gap: 8px; align-items: center; font-weight: 700; color: #fff; text-decoration: none; }
+      .article-tourney-link:hover { color: var(--red-bright); }
+      .article-tourney-link svg { width: 17px; height: 17px; stroke: currentColor; }
 
       /* ---------- Tournament band (home) ---------- */
       .tourney-panel.clickable { cursor: pointer; transition: border-color .2s, transform .2s; }
@@ -608,6 +674,18 @@
       .ev-banner.clickable:hover { transform: translateY(-3px); border-color: rgba(225,29,46,0.5); }
       .ev-banner .ev-entry.clickable:hover h3 { color: #b30f1e; }
       .ev-banner .ev-entry + .ev-entry { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--glass-border); }
+
+      /* Tournament History: finished tournaments listed one by one in small
+         type (name at body size, not the display font), each row the link. */
+      .ev-hist-list { display: grid; }
+      .ev-hist { display: flex; align-items: baseline; gap: 10px; padding: 10px 4px; text-decoration: none; border-top: 1px solid var(--glass-border); }
+      .ev-hist:first-child { border-top: none; padding-top: 4px; }
+      .ev-hist-name { font-weight: 700; font-size: 17px; color: var(--text); }
+      .ev-hist-champ { color: var(--muted); font-size: 15.5px; white-space: nowrap; }
+      .ev-hist-arrow { margin-left: auto; color: var(--red); font-weight: 700; transition: transform .18s; }
+      .ev-hist:hover .ev-hist-name { color: #b30f1e; text-decoration: underline; text-underline-offset: 4px; }
+      .ev-hist:hover .ev-hist-arrow { transform: translateX(3px); }
+      .ev-hist:focus-visible { outline: 2px solid var(--red); outline-offset: 2px; border-radius: 4px; }
 
       /* ---------- Tournament name links ----------
          Every tournament is presented by its name, and the name itself is
@@ -711,7 +789,8 @@
         .ev-banners { grid-template-columns: 1fr; }
         .records-grid { grid-template-columns: 1fr 1fr; }
         .news-panel { padding: 32px 24px; }
-        .news-card, .news-card.auto { padding: 24px 22px; }
+        .article { padding: 30px 24px; }
+        .story-feature { aspect-ratio: 16 / 9; }
         .t-head { padding: 26px 22px; }
         .t-champ-cutout { height: 116px; right: 14px; }
         .t-head.has-cutout .t-head-main { padding-right: 88px; }
@@ -742,6 +821,7 @@
         .genre-list { grid-template-columns: repeat(2, 1fr); }
         .members-grid { grid-template-columns: repeat(3, 1fr); }
         .gallery-grid { grid-template-columns: repeat(3, 1fr); }
+        .news-grid { grid-template-columns: repeat(2, 1fr); }
         .corner-knight.left { height: 150px; }
         .corner-knight.right { height: 104px; }
         .head-nav { justify-content: flex-start; }
@@ -866,10 +946,24 @@
         footer h4 { font-size: 12.5px; }
         .foot-bottom { font-size: 13.5px; }
 
-        /* News */
-        .news-card h3 { font-size: 17.5px; }
-        .news-card.auto h3 { font-size: 16.5px; }
-        .news-card.champ h3 { font-size: 19px; }
+        /* News portal + articles */
+        .ticker-label { font-size: 10.5px; padding: 10px 12px; }
+        .ticker-text { font-size: 14.5px; padding: 10px 12px; }
+        .story-feature { aspect-ratio: 4 / 3; }
+        .story-feature-body { padding: 18px; gap: 8px; }
+        .story-feature-title { font-size: 20px; }
+        .news-grid { grid-template-columns: 1fr; }
+        .story-card-title { font-size: 17px; }
+        .article { padding: 26px 20px; }
+        .article h2 { font-size: 21px; }
+        .article-body p { font-size: 15.5px; }
+        .article-hero { margin: 18px 0 4px; }
+        .match-card { padding: 14px 16px; gap: 10px; }
+        .match-card .mc-name { font-size: 15.5px; }
+        .match-card .mc-score { font-size: 18px; }
+        .top3-name { font-size: 15.5px; }
+        .ev-hist-name { font-size: 15px; }
+        .ev-hist-champ { font-size: 13.5px; }
 
         /* Tournament pages */
         .t-head h2 { font-size: 22px; }
@@ -1360,7 +1454,16 @@
               <h2>News From the Arena</h2>
               <p>Results, champions and club announcements — the latest from Knight Warriors, newest first.</p>
             </div>
-            <div class="news-feed" id="newsFeed"></div>
+            <div id="newsPortal"></div>
+          </div>
+        </section>
+      </div>
+
+      <!-- ==================== VIEW: NEWS ARTICLE ==================== -->
+      <div class="view" id="view-article">
+        <section>
+          <div class="wrap">
+            <div id="articleBody"></div>
           </div>
         </section>
       </div>
@@ -1721,7 +1824,7 @@
 
     <script>
       /* ---------- View router ---------- */
-      var VIEWS = ['home', 'about', 'community', 'games', 'news', 'events', 'tournament', 'leaderboard', 'rules', 'gallery', 'sponsors', 'join'];
+      var VIEWS = ['home', 'about', 'community', 'games', 'news', 'article', 'events', 'tournament', 'leaderboard', 'rules', 'gallery', 'sponsors', 'join'];
       var HASH_ALIAS = {
         top: 'home', committee: 'community', members: 'community',
         provide: 'about', membership: 'about', practice: 'about',
@@ -1733,8 +1836,10 @@
         if (HASH_ALIAS[name]) return HASH_ALIAS[name];
         return VIEWS.indexOf(name) !== -1 ? name : 'home';
       }
-      function showView(name, pushHash) {
+      function showView(name, pushHash, hashName) {
         var view = resolveView(name);
+        /* An article page only exists once a story has been opened. */
+        if (view === 'article' && !document.getElementById('articleBody').innerHTML) view = 'news';
         document.body.setAttribute('data-view', view);
         document.querySelectorAll('.view').forEach(function (v) {
           v.classList.toggle('active', v.id === 'view-' + view);
@@ -1750,17 +1855,19 @@
             img.removeAttribute('data-src');
           });
         }
-        var navView = view === 'tournament' ? 'events' : view;
+        var navView = view === 'tournament' ? 'events' : view === 'article' ? 'news' : view;
         document.querySelectorAll('#headNav a').forEach(function (a) {
           a.classList.toggle('active', a.getAttribute('data-nav') === navView);
         });
         if (pushHash) {
-          try { history.replaceState(null, '', '#' + view); } catch (e) { /* sandboxed iframe */ }
+          try { history.replaceState(null, '', '#' + (hashName || view)); } catch (e) { /* sandboxed iframe */ }
         }
         window.scrollTo(0, 0);
         refreshReveals();
       }
       document.addEventListener('click', function (e) {
+        var sEl = e.target.closest ? e.target.closest('[data-story]') : null;
+        if (sEl) { e.preventDefault(); openArticle(sEl.getAttribute('data-story')); return; }
         var tEl = e.target.closest ? e.target.closest('[data-tourney]') : null;
         if (tEl) { e.preventDefault(); openTournament(tEl.getAttribute('data-tourney')); return; }
         var el = e.target.closest ? e.target.closest('[data-nav]') : null;
@@ -2136,48 +2243,124 @@
         return recs;
       }
 
-      /* ---------- News feed: written posts + automatic headlines ---------- */
+      /* ---------- News portal: written posts + automatic headlines ----------
+         Every story carries a stable id, a tag chip (Club News / Result /
+         Champion), a date and a photo, and opens as its own article page
+         inside News at #news/<story-id>. Feed order is unchanged: champion
+         headlines first, then match results (newest first), then the
+         written club posts. Card photos use data-src, so they download
+         only when the News view is opened; article heroes are written into
+         the article when it opens, so they load only then too. */
+      var ARENA_ART = 'assets/background-tournament-arena.webp';
+      var CLUB_ART = 'assets/moon-swords.webp';
       function buildNewsItems() {
         var items = [];
         TOURNAMENTS.forEach(function (t) {
           if (t.status === 'finished' && t.champion) {
-            items.push({ type: 'champ', tag: t.name, tourneyId: t.id, title: 'CHAMPION — ' + t.champion + ' wins ' + t.name, body: t.champion + ' takes the ' + t.name + ' title for Knight Warriors Club.' });
+            var res = t.results || [];
+            items.push({
+              id: 'champ-' + t.id, type: 'champ', chip: 'Champion', tourneyId: t.id, tourney: t,
+              title: 'CHAMPION — ' + t.champion + ' wins ' + t.name,
+              body: t.champion + ' takes the ' + t.name + ' title for Knight Warriors Club.',
+              date: res.length ? (res[res.length - 1].when || '') : '',
+              photo: championPhotoFor(t) || ARENA_ART,
+              photoAlt: 'Champion ' + t.champion
+            });
           }
         });
         TOURNAMENTS.forEach(function (t) {
-          (t.results || []).slice().reverse().forEach(function (m) {
+          var res = t.results || [];
+          res.slice().reverse().forEach(function (m, ri) {
+            var idx = res.length - 1 - ri;
             var title;
             if (m.homeGoals === m.awayGoals) title = m.home + ' and ' + m.away + ' drew ' + m.homeGoals + '–' + m.awayGoals;
             else if (m.homeGoals > m.awayGoals) title = m.home + ' beat ' + m.away + ' ' + m.homeGoals + '–' + m.awayGoals;
             else title = m.away + ' beat ' + m.home + ' ' + m.awayGoals + '–' + m.homeGoals;
-            items.push({ type: 'match', tag: t.name, tourneyId: t.id, title: title });
+            items.push({
+              id: 'result-' + t.id + '-' + idx, type: 'match', chip: 'Result', tourneyId: t.id, tourney: t, match: m,
+              title: title, date: m.when || '', photo: ARENA_ART, photoAlt: 'The Knight Warriors tournament arena'
+            });
           });
         });
-        NEWS_POSTS.forEach(function (p) {
-          items.push({ type: 'post', tag: p.tag, tourneyId: p.tourneyId || null, title: p.title, body: p.body, linkView: p.linkView, linkLabel: p.linkLabel });
+        NEWS_POSTS.forEach(function (p, i) {
+          items.push({
+            id: 'post-' + i, type: 'post', chip: 'Club News', tag: p.tag, tourneyId: p.tourneyId || null,
+            title: p.title, body: p.body, linkView: p.linkView, linkLabel: p.linkLabel,
+            date: '', photo: CLUB_ART, photoAlt: 'Knight Warriors Club — the bloody moon emblem'
+          });
         });
         return items;
       }
       var ARROW_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
-      /* When a news item references a tournament, the tournament's name is
-         the link: tapping it opens that tournament's own page. */
-      function tourneyTag(it) {
-        if (it.tourneyId) {
-          return '<a class="n-tag t-name-link" href="#tournament" data-tourney="' + esc(it.tourneyId) + '" aria-label="Open the ' + esc(it.tag) + ' tournament page">' + esc(it.tag) + '<span class="t-arrow" aria-hidden="true">→</span></a>';
-        }
-        return '<span class="n-tag">' + esc(it.tag) + '</span>';
+      function storyCardHTML(it) {
+        return '<a class="story-card glass" href="#news/' + esc(it.id) + '" data-story="' + esc(it.id) + '" aria-label="Read the full story: ' + esc(it.title) + '">' +
+          '<span class="story-media"><img data-src="' + esc(it.photo) + '" alt="' + esc(it.photoAlt) + '" loading="lazy" /><span class="s-tag">' + esc(it.chip) + '</span></span>' +
+          '<span class="story-card-body"><span class="story-card-title">' + esc(it.title) + '</span>' +
+          (it.date ? '<span class="story-date">' + esc(it.date) + '</span>' : '') + '</span></a>';
       }
       function renderNews() {
         var items = buildNewsItems();
-        document.getElementById('newsFeed').innerHTML = items.map(function (it) {
-          if (it.type === 'champ') return '<article class="news-card champ glass">' + tourneyTag(it) + '<h3>' + esc(it.title) + '</h3>' + (it.body ? '<p>' + esc(it.body) + '</p>' : '') + '</article>';
-          if (it.type === 'match') return '<article class="news-card auto glass">' + tourneyTag(it) + '<h3>' + esc(it.title) + '</h3></article>';
-          return '<article class="news-card glass">' + tourneyTag(it) + '<h3>' + esc(it.title) + '</h3><p>' + esc(it.body) + '</p>' +
-            (it.linkView ? '<a href="#' + it.linkView + '" data-nav="' + it.linkView + '">' + esc(it.linkLabel) + ' ' + ARROW_SVG + '</a>' : '') + '</article>';
-        }).join('');
+        var portal = '';
+        if (items.length) {
+          var f = items[0];
+          portal += '<a class="ticker" href="#news/' + esc(f.id) + '" data-story="' + esc(f.id) + '" aria-label="Latest story: ' + esc(f.title) + '">' +
+            '<span class="ticker-label">Breaking</span><span class="ticker-text">' + esc(f.title) + '</span></a>';
+          portal += '<a class="story-feature" href="#news/' + esc(f.id) + '" data-story="' + esc(f.id) + '" aria-label="Read the full story: ' + esc(f.title) + '">' +
+            '<img data-src="' + esc(f.photo) + '" alt="' + esc(f.photoAlt) + '" />' +
+            '<span class="story-feature-body"><span class="s-tag">' + esc(f.chip) + '</span>' +
+            '<span class="story-feature-title">' + esc(f.title) + '</span>' +
+            (f.date ? '<span class="story-date">' + esc(f.date) + '</span>' : '') + '</span></a>';
+          if (items.length > 1) portal += '<div class="news-grid">' + items.slice(1).map(storyCardHTML).join('') + '</div>';
+        } else {
+          portal = '<div class="t-note glass">No stories yet — results, champions and club announcements will appear here.</div>';
+        }
+        document.getElementById('newsPortal').innerHTML = portal;
         document.getElementById('homeNews').innerHTML = items.slice(0, 3).map(function (it) {
-          return '<div class="home-news-row">' + tourneyTag(it) + '<p>' + esc(it.title) + '</p></div>';
+          return '<a class="home-news-row" href="#news/' + esc(it.id) + '" data-story="' + esc(it.id) + '" aria-label="Read the full story: ' + esc(it.title) + '"><span class="s-tag">' + esc(it.chip) + '</span><p>' + esc(it.title) + '</p></a>';
         }).join('');
+      }
+
+      /* ---------- News articles: one page per story, inside News ---------- */
+      function articleHTML(it) {
+        var h = '<a class="article-back" href="#news" data-nav="news">← All news</a>';
+        h += '<article class="article glass">';
+        h += '<div class="article-meta"><span class="s-tag">' + esc(it.chip) + '</span>' +
+          (it.date ? '<span class="story-date">' + esc(it.date) + '</span>' : '') + '</div>';
+        h += '<h2>' + esc(it.title) + '</h2>';
+        if (it.photo) h += '<img class="article-hero" src="' + esc(it.photo) + '" alt="' + esc(it.photoAlt) + '" />';
+        h += '<div class="article-body">';
+        if (it.type === 'post') {
+          h += '<p>' + esc(it.body) + '</p>';
+          if (it.linkView) h += '<p><a class="article-tourney-link" href="#' + it.linkView + '" data-nav="' + it.linkView + '">' + esc(it.linkLabel) + ' ' + ARROW_SVG + '</a></p>';
+        } else if (it.type === 'match') {
+          var m = it.match, t = it.tourney;
+          h += '<p><b>' + esc(t.name) + '</b>' + (t.game ? ' · ' + esc(t.game) : '') + (m.when ? ' · ' + esc(m.when) : '') + '</p>';
+          h += '<div class="match-card"><span class="mc-name">' + esc(m.home) + '</span><span class="mc-score">' + m.homeGoals + '<em>–</em>' + m.awayGoals + '</span><span class="mc-name r">' + esc(m.away) + '</span></div>';
+          var table = computeTable(t.results || []);
+          if (table.length) h += '<p>' + esc(table[0].name) + ' leads the ' + esc(t.name) + ' table on ' + table[0].pts + ' points.</p>';
+        } else if (it.type === 'champ') {
+          var tc = it.tourney;
+          h += '<p><b>' + esc(tc.champion) + '</b> takes the <b>' + esc(tc.name) + '</b> title for Knight Warriors Club.</p>';
+          var top3 = computeTable(tc.results || []).slice(0, 3);
+          if (top3.length) {
+            h += '<h4>Final top three</h4><div class="top3">' + top3.map(function (r, i) {
+              return '<div class="top3-row"><span class="rank-badge rank-' + (i + 1) + '">' + (i + 1) + '</span><span class="top3-name">' + esc(r.name) + '</span><span class="top3-pts">' + r.pts + ' pts</span></div>';
+            }).join('') + '</div>';
+          }
+        }
+        h += '</div>';
+        if (it.type !== 'post') {
+          h += '<div class="article-foot"><a class="article-tourney-link" href="#tournament" data-tourney="' + esc(it.tourneyId) + '">View the full tournament ' + ARROW_SVG + '</a></div>';
+        }
+        h += '</article>';
+        return h;
+      }
+      function openArticle(id) {
+        var it = null;
+        buildNewsItems().forEach(function (x) { if (x.id === id) it = x; });
+        if (!it) { showView('news', true); return; }
+        document.getElementById('articleBody').innerHTML = articleHTML(it);
+        showView('article', true, 'news/' + it.id);
       }
 
       /* ---------- Home tournament band ---------- */
@@ -2233,10 +2416,12 @@
             : '<h3>To Be Announced</h3><p>The next tournament will be announced here once it is set.</p>') + '</div>';
         h += '<div class="ev-banner glass"><span class="ev-label">Tournament History</span>' +
           (finished.length
-            ? finished.map(function (t) {
-                return '<div class="ev-entry clickable" data-tourney="' + esc(t.id) + '"><h3>' + tourneyNameLink(t) + '</h3>' +
-                  (t.champion ? '<p class="ev-champ">Champion: ' + esc(t.champion) + '</p>' : '') + '</div>';
-              }).join('')
+            ? '<div class="ev-hist-list">' + finished.map(function (t) {
+                return '<a class="ev-hist" href="#tournament" data-tourney="' + esc(t.id) + '" aria-label="Open the ' + esc(t.name) + ' tournament page">' +
+                  '<span class="ev-hist-name">' + esc(t.name) + '</span>' +
+                  (t.champion ? '<span class="ev-hist-champ">Champion: ' + esc(t.champion) + '</span>' : '') +
+                  '<span class="ev-hist-arrow" aria-hidden="true">→</span></a>';
+              }).join('') + '</div>'
             : '<h3>No Champions Yet</h3><p>Finished tournaments and their champions will be recorded here.</p>') + '</div>';
         document.getElementById('evBanners').innerHTML = h;
       }
@@ -2338,6 +2523,10 @@
       renderHomeTourney();
       renderEventBanners();
       renderTournament();
+
+      /* Deep link: #news/<story-id> opens that story's article directly. */
+      var bootHash = String(window.location.hash || '').replace(/^#/, '');
+      if (bootHash.indexOf('news/') === 0) openArticle(bootHash.slice(5));
 
       /* ---------- Reveal on scroll ---------- */
       var revealIO = null;

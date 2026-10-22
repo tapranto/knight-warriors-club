@@ -37,16 +37,35 @@ site derives the rest in the browser:
   Best Goal Difference, Most Matches Played, Biggest Win, Most Draws,
   Most Goals in One Match, Best Points-Per-Match, Most Losses,
   Highest-Scoring Match. Records appear once a match produces a holder.
-- **News** — every played match becomes a headline
-  ("A beat B 3–1", or "A and B drew 2–2") tagged with its tournament, and
+- **News (a separated portal inside the News section)** — every played
+  match becomes a headline ("A beat B 3–1", or "A and B drew 2–2"), and
   every finished tournament with a champion becomes a
   "CHAMPION — &lt;name&gt; wins &lt;tournament&gt;" headline, shown first.
-  Both merge with the manual News cards into one feed (News section;
-  latest 3 on Home).
+  Both merge with the manual News cards into one feed, presented as a
+  news portal in the site's dark red/black branding: a **Breaking**
+  ticker strip carrying the latest headline, the newest story as a
+  **full-width featured highlight** (no sidebar), then a grid of large
+  story cards — each with a photo (the champion's photo for champion
+  stories, the arena picture for results, club art for announcements), a
+  red tag chip (Champion / Result / Club News), the headline and the
+  date. Every card — featured, grid, ticker and the latest-3 rows on
+  Home — is a **whole-box link**: clicking anywhere on it opens that
+  story's own **article page inside News** (`#news/<story-id>`), never
+  the tournament page. Articles carry a "← All news" back link, the tag
+  and date, a large headline and a hero photo; manual announcements
+  show their full text, result articles show the tournament, a match
+  card (Player1 G–G Player2), the date and which player currently
+  leads that tournament's table, and champion articles show the
+  champion, the tournament and the final top three. Only result and
+  champion articles end with a small "View the full tournament →"
+  footer link.
 - **Placement by status** — `running` → Home tournament band (name + next
   fixture) and the Events **Running** banner; `upcoming` → Events
-  **Upcoming** banner; `finished` → Events **Tournament History** banner
-  (name + champion). Everywhere a tournament appears, its **name** is the
+  **Upcoming** banner; `finished` → Events **Tournament History**
+  banner, which lists the finished tournaments **one by one in small,
+  body-sized lines** (name — at about the size of the "Champion: …"
+  text, not the big display heading — with the champion noted), so a
+  long history stacks cleanly. Everywhere a tournament appears, its **name** is the
   click target (underlined, with an arrow) and opens the tournament's own
   page: Overview · Fixture · Results · Table · Records · Participants.
   Every tournament page uses the gladiator-arena picture
@@ -64,6 +83,7 @@ site derives the rest in the browser:
   soon" state (currently PUBG, Clash of Clans and Call of Duty).
 
 Tournament pages are linkable: `https://<your-site>/#tournament/<id>`.
+News articles are too: `https://<your-site>/#news/<story-id>`.
 
 ## Netlify site settings
 
@@ -115,8 +135,8 @@ panel only show when the site is served over HTTP, as it is on Netlify.)
 ## Loading & performance
 
 The page loads **per view**: the initial download is just `index.html`
-(≈ 162 KB) plus the shell art, the Home background and the small
-`data/*.json` files (≈ 600 KB total).
+(≈ 175 KB) plus the shell art, the Home background and the small
+`data/*.json` files (≈ 615 KB total).
 Each other view's images are fetched the first time that view is opened
 and stay cached afterwards (Community ≈ 955 KB, Gallery ≈ 898 KB, a
 tournament page ≈ 834 KB, the rest less). All imagery is right-sized to
