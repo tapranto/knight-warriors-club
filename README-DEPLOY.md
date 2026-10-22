@@ -12,12 +12,13 @@ them from the repo if they are still there.
 | Path | What it is |
 |---|---|
 | `index.html` | The whole website (single page). Design images are **external files** under `assets/` (nothing heavy is inlined), and each view loads only its own images: the first load fetches just the page, the shared shell art (logo, corner knights) and the Home background; Community and Gallery photos sit in `data-src` and are only requested when that view is first opened; tournament pages pull the arena + champion assets only when a tournament page opens (then they stay cached). Everything tournament-related is computed in the visitor's browser — there is no build step and no server. Over HTTP the content is driven by `data/*.json` (see below); the same demo data is also baked into the page as a fallback. |
-| `data/tournaments.json` | `{ "tournaments": [ {id, name, game, status, startDate, endDate, intro, participants[], champion, championPhoto, championCutout} ] }`. `status` is `upcoming` \| `running` \| `finished`. Ships with the finished **eFootball Demo Cup (DEMO)** included — the owner chose to keep the demo, so the site launches with a complete worked example. Delete that entry (and its matches) if it should ever go. |
+| `data/tournaments.json` | `{ "tournaments": [ {id, name, game, status, startDate, endDate, intro, participants[], champion, championPhoto, championCutout, championCutoutAnim} ] }`. `status` is `upcoming` \| `running` \| `finished`. Ships with the finished **eFootball Demo Cup (DEMO)** included — the owner chose to keep the demo, so the site launches with a complete worked example. Delete that entry (and its matches) if it should ever go. |
 | `data/matches.json` | `{ "matches": [ {tournamentId, date, player1, player2, goals1, goals2, played} ] }`. `played: false` = fixture, `played: true` = result. Goals may be `null` until played. Ships with the demo cup's six played matches. |
 | `assets/background-tournament-arena.webp` | The owner's gladiator-arena picture (1920 px wide, right-sized WebP) — the fixed background of every tournament page, referenced from `index.html` by relative path and loaded only when a tournament page opens. (Replaces the old `background-tournament-arena.gif` — delete that file from the repo.) |
 | `assets/` (everything else) | All design imagery as plain files, mirroring the site's own layout: per-view backgrounds (`background-*.jpg`), banners (`banner-*.jpg`), section art (`sections/`), committee photos (`committee/`, `styled/`), the shell art (`logo.jpg`, `knight-left.webp`, `knight-right.webp`, `moon-swords.webp`, `pattern.jpg`) and `intro-document.jpg`. All right-sized to how they are displayed — same pictures, much smaller files (total site imagery ≈ 5.3 MB, down from ≈ 19.4 MB). |
 | `assets/champion-demo-photo.webp` | The demo champion's photo (a generated illustration standing in for a real champion photo upload), referenced by the demo tournament's `championPhoto`. |
 | `assets/champion-demo-cutout.png` | The demo champion's transparent cut-out (champion holding a trophy overhead, ≈ 291 KB), referenced by the tournament's optional `championCutout` field — on a finished tournament's page it stands at the bottom-right of the header band, over the arena background (tournaments without the field keep a plain header). |
+| `assets/champion-demo-cutout-anim.webp` | The demo champion's **animated** cut-out (350×700 animated WebP, ≈ 302 KB): the champion starts with the trophy at his chest, lifts it overhead over 2 s, holds it there for 1.3 s, then lowers it — a 4.7 s loop. Referenced by the tournament's optional `championCutoutAnim` field; when set, it takes the header cut-out slot instead of `championCutout` (which remains the fallback), and it is also the figure shown in the champion celebration splash. Like the other tournament assets, it loads only when a tournament page opens. |
 | `data/announcements.json` | Manual news cards: `{ "announcements": [ {date, title, body, link, linkText} ] }` (`link`/`linkText` optional). |
 | `data/members.json` | The 68 general member names (JSON array of strings) for the Community page search/list. |
 | `admin/index.html` | Decap CMS loader page — served at `/admin`. |
@@ -67,11 +68,32 @@ site derives the rest in the browser:
   text, not the big display heading — with the champion noted), so a
   long history stacks cleanly. Everywhere a tournament appears, its **name** is the
   click target (underlined, with an arrow) and opens the tournament's own
-  page: Overview · Fixture · Results · Table · Records · Participants.
+  page. On that page, the six sections — Overview · Fixture · Results ·
+  Table · Records · Participants — are **tabs**, not one long scroll:
+  the pill bar switches sections, **Overview is selected automatically**
+  when the page opens, only the chosen section is shown, the active pill
+  is solid red, and the tournament header (name, status, champion
+  cut-out) stays visible above the tabs.
   Every tournament page uses the gladiator-arena picture
   (`assets/background-tournament-arena.webp`) as its fixed background.
   A finished tournament's Overview layers the champion's photo **above
   that arena background**, with a CHAMPION name panel in front.
+- **Champion celebration splash** — opening a **finished** tournament's
+  page first shows a full-screen celebration: canvas **fireworks**
+  (radial, trailing sparks in red, gold, green, pink and white) over a
+  dark arena backdrop, with the champion's animated lifting cut-out in
+  the centre under a gold **🏆 CHAMPION** label, the champion's name and
+  the tournament name. It dismisses itself after ≈ 3.2 s — or at once on
+  a tap/click, the **Skip ✕** button, or Esc — and re-fires on every
+  fresh entry to the page. A short **celebration sound** (a synthesised
+  WebAudio fanfare plus soft pops synced to the firework bursts — there
+  is no audio file) is started from the same tap/click that opened the
+  page, since browsers only allow sound after a user gesture; if the
+  browser still holds it back (e.g. the page was reached by a typed link
+  or a refresh), a **🔊 Play sound** button appears on the splash
+  instead. A mute toggle sits in the splash's top-left corner, and
+  visitors with `prefers-reduced-motion` get a still burst of sparks
+  instead of the animated fireworks.
 - **Leaderboard (tournament-first)** — picking a game tab lists **that
   game's tournaments by name** (tappable rows showing each tournament's
   status); picking a tournament then shows **that tournament's standings
@@ -135,10 +157,11 @@ panel only show when the site is served over HTTP, as it is on Netlify.)
 ## Loading & performance
 
 The page loads **per view**: the initial download is just `index.html`
-(≈ 175 KB) plus the shell art, the Home background and the small
-`data/*.json` files (≈ 615 KB total).
+(≈ 193 KB) plus the shell art, the Home background and the small
+`data/*.json` files (≈ 635 KB total).
 Each other view's images are fetched the first time that view is opened
 and stay cached afterwards (Community ≈ 955 KB, Gallery ≈ 898 KB, a
-tournament page ≈ 834 KB, the rest less). All imagery is right-sized to
-its display size, so the whole package is ≈ 5.6 MB — it was ≈ 24 MB when
+tournament page ≈ 845 KB, the rest less). All imagery is right-sized to
+its display size, so the whole package is ≈ 5.9 MB (the animated champion
+WebP added ≈ 302 KB) — it was ≈ 24 MB when
 every image was inlined into the HTML.

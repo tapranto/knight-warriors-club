@@ -490,6 +490,54 @@
         background: var(--glass-strong); border: 1px solid var(--glass-border); color: #fff; font-size: 22px; line-height: 1;
       }
 
+      /* ---------- Champion celebration splash (finished tournaments) ---------- */
+      .champ-splash {
+        position: fixed; inset: 0; z-index: 300; display: flex; align-items: center; justify-content: center;
+        background:
+          radial-gradient(ellipse 90% 55% at 50% 108%, rgba(225,29,46,0.34), transparent 62%),
+          radial-gradient(ellipse 70% 45% at 50% -8%, rgba(255,201,60,0.13), transparent 60%),
+          linear-gradient(180deg, rgba(16,3,6,0.94), rgba(5,3,5,0.96));
+        opacity: 0; visibility: hidden; pointer-events: none;
+        transition: opacity 0.45s ease, visibility 0s linear 0.45s;
+      }
+      .champ-splash.open { opacity: 1; visibility: visible; pointer-events: auto; transition: opacity 0.25s ease; }
+      .champ-splash.gone { opacity: 0; }
+      .champ-splash-canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+      .champ-splash-centre { position: relative; z-index: 1; text-align: center; padding: 20px; pointer-events: none; }
+      .champ-splash-img { height: min(44vh, 400px); width: auto; margin: 0 auto; filter: drop-shadow(0 14px 34px rgba(0,0,0,0.65)); }
+      .champ-splash-label {
+        margin-top: 14px; font-family: var(--font-display); font-weight: 800; font-size: clamp(14px, 2.4vw, 19px);
+        letter-spacing: 0.34em; text-transform: uppercase; color: #ffc93c; text-shadow: 0 2px 14px rgba(0,0,0,0.7);
+      }
+      .champ-splash-name {
+        margin-top: 6px; font-family: var(--font-tag); font-size: clamp(36px, 7.5vw, 66px); line-height: 1.05; color: #fff;
+        text-shadow: 0 2px 0 var(--red-deep), 0 8px 26px rgba(0,0,0,0.75);
+      }
+      .champ-splash-tourney { margin-top: 8px; font-size: clamp(16px, 2.6vw, 21px); font-weight: 600; color: #e8d9d9; letter-spacing: 0.04em; }
+      .champ-splash-skip {
+        position: absolute; top: calc(16px + env(safe-area-inset-top)); right: 18px; z-index: 2; cursor: pointer;
+        font-family: var(--font-display); font-size: 12px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase;
+        color: #fff; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.28); border-radius: 999px; padding: 10px 16px;
+      }
+      .champ-splash-mute {
+        position: absolute; top: calc(16px + env(safe-area-inset-top)); left: 18px; z-index: 2; cursor: pointer;
+        width: 42px; height: 42px; border-radius: 50%; font-size: 18px; line-height: 1;
+        background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.28);
+      }
+      .champ-splash-sound {
+        position: absolute; left: 50%; transform: translateX(-50%); bottom: calc(26px + env(safe-area-inset-bottom)); z-index: 2; cursor: pointer;
+        font-family: var(--font-display); font-size: 13px; font-weight: 700; letter-spacing: 0.1em;
+        color: #1a0d02; background: #ffc93c; border: none; border-radius: 999px; padding: 12px 22px;
+        box-shadow: 0 10px 26px rgba(255,201,60,0.35);
+      }
+      .champ-splash-sound[hidden] { display: none; }
+      @media (max-width: 640px) {
+        .champ-splash-img { height: min(38vh, 320px); }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .champ-splash, .champ-splash.open { transition: none; }
+      }
+
       /* ---------- Sponsors ---------- */
       .sponsor-box { padding: 44px; display: grid; grid-template-columns: 1.25fr 1fr; gap: 40px; position: relative; overflow: hidden; }
       .sponsor-box::before {
@@ -741,6 +789,10 @@
         background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); transition: all .2s;
       }
       .jump-bar button:hover { color: #fff; border-color: var(--glass-border-red); }
+      .jump-bar button.active { background: var(--red); border-color: var(--red); color: #fff; box-shadow: 0 8px 22px rgba(225,29,46,0.42); }
+      /* Tournament sections are tabs: only the selected section is shown. */
+      #view-tournament .t-sub { display: none; }
+      #view-tournament .t-sub.active { display: block; }
       .t-sub { padding: 34px 0 6px; scroll-margin-top: 196px; }
       .t-sub > h3 { font-size: 20px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 18px; display: flex; align-items: center; gap: 12px; }
       .t-sub > h3::after { content: ""; flex: 1; height: 1px; background: var(--glass-border); }
@@ -1481,15 +1533,15 @@
               <span class="status-badge soon" id="tBadge">Coming Soon</span>
               <img class="t-champ-cutout" id="tChampCutout" alt="" hidden />
             </div>
-            <nav class="jump-bar glass" aria-label="Tournament sections">
-              <button type="button" data-jump="tOverview">Overview</button>
-              <button type="button" data-jump="tFixture">Fixture</button>
-              <button type="button" data-jump="tResults">Results</button>
-              <button type="button" data-jump="tTable">Table</button>
-              <button type="button" data-jump="tRecords">Records</button>
-              <button type="button" data-jump="tParticipants">Participants</button>
+            <nav class="jump-bar glass" role="tablist" aria-label="Tournament sections">
+              <button type="button" role="tab" aria-selected="true" class="active" data-jump="tOverview">Overview</button>
+              <button type="button" role="tab" aria-selected="false" data-jump="tFixture">Fixture</button>
+              <button type="button" role="tab" aria-selected="false" data-jump="tResults">Results</button>
+              <button type="button" role="tab" aria-selected="false" data-jump="tTable">Table</button>
+              <button type="button" role="tab" aria-selected="false" data-jump="tRecords">Records</button>
+              <button type="button" role="tab" aria-selected="false" data-jump="tParticipants">Participants</button>
             </nav>
-            <section class="t-sub" id="tOverview">
+            <section class="t-sub active" id="tOverview">
               <h3>Overview</h3>
               <div id="tOverviewBody"></div>
             </section>
@@ -1822,6 +1874,20 @@
       </figure>
     </div>
 
+    <!-- Champion celebration splash: shown once when a finished tournament page opens -->
+    <div class="champ-splash" id="champSplash" role="dialog" aria-modal="true" aria-label="Champion celebration" aria-hidden="true">
+      <canvas class="champ-splash-canvas" id="champSplashCanvas" aria-hidden="true"></canvas>
+      <div class="champ-splash-centre">
+        <img class="champ-splash-img" id="champSplashImg" alt="" />
+        <p class="champ-splash-label">🏆 Champion</p>
+        <p class="champ-splash-name" id="champSplashName"></p>
+        <p class="champ-splash-tourney" id="champSplashTourney"></p>
+      </div>
+      <button class="champ-splash-mute" id="champSplashMute" type="button" aria-label="Mute celebration sound">🔊</button>
+      <button class="champ-splash-skip" id="champSplashSkip" type="button">Skip ✕</button>
+      <button class="champ-splash-sound" id="champSplashSound" type="button" hidden>🔊 Play sound</button>
+    </div>
+
     <script>
       /* ---------- View router ---------- */
       var VIEWS = ['home', 'about', 'community', 'games', 'news', 'article', 'events', 'tournament', 'leaderboard', 'rules', 'gallery', 'sponsors', 'join'];
@@ -2100,6 +2166,7 @@
          { id, name, game, status: 'running' | 'upcoming' | 'finished',
            champion: 'Full Name', championPhoto: 'assets/…',
            championCutout: 'assets/… (transparent-background PNG shown in the page header)',
+           championCutoutAnim: 'assets/… (optional animated image; when set it takes the header slot instead of championCutout)',
            intro: 'Optional short note shown in the Overview',
            participants: ['Full Name', …],
            fixtures: [{ home, away, when }],
@@ -2113,6 +2180,7 @@
           champion: 'Bijoy Rahman',
           championPhoto: 'assets/champion-demo-photo.webp',
           championCutout: 'assets/champion-demo-cutout.png',
+          championCutoutAnim: 'assets/champion-demo-cutout-anim.webp',
           intro: 'This is a demo tournament, added so you can see exactly how a finished Knight Warriors tournament looks — its fixture list, results, final table and records are all worked out automatically from the matches below, played across September 2026.',
           participants: ['Abdullah Al Mahmud', 'Ahmed Mizan', 'Bijoy Rahman', 'Farhan Mahee'],
           fixtures: [
@@ -2426,6 +2494,338 @@
         document.getElementById('evBanners').innerHTML = h;
       }
 
+      /* ---------- Champion celebration splash ----------
+         Shown once each time a FINISHED tournament page is entered:
+         canvas fireworks over a dark arena backdrop, the champion's
+         lifting cut-out in the centre, and a short WebAudio celebration
+         cue (brass-like fanfare + crowd swell + a soft pop synced to
+         every burst). No audio files — everything is synthesised, and
+         every audio call is wrapped so sound can never break the page. */
+      var splashEl = document.getElementById('champSplash');
+      var splashCanvas = document.getElementById('champSplashCanvas');
+      var splashImg = document.getElementById('champSplashImg');
+      var splashOpen = false;
+      var splashToken = 0;
+      var splashTimers = [];
+      var splashRaf = 0;
+      var splashPrevOverflow = '';
+      var splashAudioCtx = null;
+      var splashMuted = false;
+      var splashCuePlayed = false;
+      var splashLastPop = 0;
+      var splashReducedMotion = false;
+      try { splashReducedMotion = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) { splashReducedMotion = false; }
+      var FW_COLORS = ['#ff2e42', '#e11d2e', '#ffc93c', '#ffd76a', '#3ddc68', '#ff5fd2', '#b26bff', '#ffffff'];
+      var fwParts = [];
+      var fwRockets = [];
+      var fwW = 0, fwH = 0;
+
+      function splashLater(fn, ms) { var id = window.setTimeout(fn, ms); splashTimers.push(id); return id; }
+
+      /* ----- Fireworks ----- */
+      function fwResize() {
+        var dpr = Math.min(window.devicePixelRatio || 1, 2);
+        fwW = window.innerWidth; fwH = window.innerHeight;
+        splashCanvas.width = Math.round(fwW * dpr);
+        splashCanvas.height = Math.round(fwH * dpr);
+        var ctx = splashCanvas.getContext('2d');
+        if (ctx) ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      }
+      function fwExplode(x, y, big) {
+        var color = FW_COLORS[Math.floor(Math.random() * FW_COLORS.length)];
+        var n = big ? 130 : 85;
+        for (var i = 0; i < n; i++) {
+          var ang = Math.random() * Math.PI * 2;
+          var sp = (0.25 + Math.pow(Math.random(), 0.55) * 0.75) * (big ? 7.4 : 6.0);
+          fwParts.push({
+            x: x, y: y, px: x, py: y,
+            vx: Math.cos(ang) * sp, vy: Math.sin(ang) * sp,
+            life: 1, decay: 0.008 + Math.random() * 0.012,
+            color: Math.random() < 0.22 ? '#ffffff' : color,
+            size: Math.random() < 0.12 ? 3.4 : 1.9,
+            star: Math.random() < 0.10
+          });
+        }
+        splashPop();
+      }
+      function fwLaunch() {
+        if (!splashOpen) return;
+        fwRockets.push({
+          x: fwW * (0.12 + Math.random() * 0.76), y: fwH + 6,
+          vx: (Math.random() - 0.5) * 0.7, vy: -(11.5 + Math.random() * 3.5),
+          ty: fwH * (0.14 + Math.random() * 0.34), big: Math.random() < 0.35
+        });
+      }
+      function fwFrame() {
+        if (!splashOpen) return;
+        var ctx = splashCanvas.getContext('2d');
+        if (!ctx) return;
+        /* Fade the previous frame towards transparent: leaves spark trails. */
+        ctx.globalCompositeOperation = 'destination-out';
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.16)';
+        ctx.fillRect(0, 0, fwW, fwH);
+        ctx.globalCompositeOperation = 'lighter';
+        ctx.lineCap = 'round';
+        for (var i = fwRockets.length - 1; i >= 0; i--) {
+          var r = fwRockets[i];
+          r.x += r.vx; r.y += r.vy; r.vy += 0.06;
+          ctx.beginPath(); ctx.arc(r.x, r.y, 2.1, 0, 6.2832);
+          ctx.fillStyle = 'rgba(255, 214, 120, 0.95)'; ctx.fill();
+          ctx.beginPath(); ctx.moveTo(r.x, r.y + 10); ctx.lineTo(r.x, r.y);
+          ctx.strokeStyle = 'rgba(255, 160, 60, 0.45)'; ctx.lineWidth = 2; ctx.stroke();
+          if (r.y <= r.ty || r.vy > -1.6) { fwRockets.splice(i, 1); fwExplode(r.x, r.y, r.big); }
+        }
+        for (var j = fwParts.length - 1; j >= 0; j--) {
+          var p = fwParts[j];
+          p.px = p.x; p.py = p.y;
+          p.x += p.vx; p.y += p.vy;
+          p.vx *= 0.985; p.vy = p.vy * 0.985 + 0.045;
+          p.life -= p.decay;
+          if (p.life <= 0) { fwParts.splice(j, 1); continue; }
+          var a = Math.max(p.life, 0);
+          ctx.globalAlpha = a;
+          if (p.star) {
+            var s = p.size * (0.7 + a * 0.6);
+            ctx.beginPath();
+            ctx.moveTo(p.x - s * 1.7, p.y); ctx.lineTo(p.x + s * 1.7, p.y);
+            ctx.moveTo(p.x, p.y - s * 1.7); ctx.lineTo(p.x, p.y + s * 1.7);
+            ctx.strokeStyle = p.color; ctx.lineWidth = 1.6; ctx.stroke();
+          } else {
+            ctx.beginPath(); ctx.moveTo(p.px, p.py); ctx.lineTo(p.x, p.y);
+            ctx.strokeStyle = p.color; ctx.lineWidth = p.size; ctx.stroke();
+          }
+          ctx.globalAlpha = 1;
+        }
+        splashRaf = window.requestAnimationFrame(fwFrame);
+      }
+      /* Reduced motion: one still burst of dots, no animation loop. */
+      function fwStatic() {
+        var ctx = splashCanvas.getContext('2d');
+        if (!ctx) return;
+        ctx.clearRect(0, 0, fwW, fwH);
+        for (var b = 0; b < 4; b++) {
+          var cx = fwW * (0.2 + Math.random() * 0.6), cy = fwH * (0.15 + Math.random() * 0.3);
+          var color = FW_COLORS[b % FW_COLORS.length];
+          for (var i = 0; i < 46; i++) {
+            var ang = Math.random() * Math.PI * 2, rad = 24 + Math.random() * Math.min(fwW, fwH) * 0.16;
+            ctx.beginPath(); ctx.arc(cx + Math.cos(ang) * rad, cy + Math.sin(ang) * rad, 1.8, 0, 6.2832);
+            ctx.fillStyle = color; ctx.globalAlpha = 0.85; ctx.fill();
+          }
+        }
+        ctx.globalAlpha = 1;
+      }
+
+      /* ----- Celebration sound (WebAudio, all guarded) ----- */
+      function splashAudio() {
+        try {
+          if (!splashAudioCtx) {
+            var AC = window.AudioContext || window.webkitAudioContext;
+            if (!AC) return null;
+            splashAudioCtx = new AC();
+          }
+          if (splashAudioCtx.state === 'suspended') {
+            var pr = splashAudioCtx.resume();
+            if (pr && pr.catch) pr.catch(function () {});
+          }
+          return splashAudioCtx;
+        } catch (e) { return null; }
+      }
+      function splashNoiseBuffer(ctx, seconds) {
+        var len = Math.max(1, Math.floor(ctx.sampleRate * seconds));
+        var buf = ctx.createBuffer(1, len, ctx.sampleRate);
+        var data = buf.getChannelData(0);
+        for (var i = 0; i < len; i++) data[i] = Math.random() * 2 - 1;
+        return buf;
+      }
+      function splashFanfare(ctx) {
+        try {
+          var t0 = ctx.currentTime + 0.02;
+          var master = ctx.createGain(); master.gain.value = 0.5; master.connect(ctx.destination);
+          /* Soft crowd / noise swell underneath */
+          var swell = ctx.createBufferSource(); swell.buffer = splashNoiseBuffer(ctx, 2.0); swell.loop = true;
+          var bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 750; bp.Q.value = 0.6;
+          var sg = ctx.createGain();
+          sg.gain.setValueAtTime(0.0001, t0);
+          sg.gain.exponentialRampToValueAtTime(0.055, t0 + 0.45);
+          sg.gain.setValueAtTime(0.055, t0 + 1.15);
+          sg.gain.exponentialRampToValueAtTime(0.0001, t0 + 1.95);
+          swell.connect(bp); bp.connect(sg); sg.connect(master);
+          swell.start(t0); swell.stop(t0 + 2.0);
+          /* Quick brass-like fanfare: bright saw stack + triangle sub */
+          var notes = [523.25, 659.25, 783.99, 1046.50];
+          notes.forEach(function (f, i) {
+            var start = t0 + i * 0.13;
+            var dur = i === notes.length - 1 ? 0.85 : 0.3;
+            [1, 0.5].forEach(function (mult, k) {
+              var osc = ctx.createOscillator(); osc.type = k === 0 ? 'sawtooth' : 'triangle'; osc.frequency.value = f * mult;
+              var lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 2600;
+              var g = ctx.createGain();
+              var peak = k === 0 ? 0.11 : 0.07;
+              g.gain.setValueAtTime(0.0001, start);
+              g.gain.exponentialRampToValueAtTime(peak, start + 0.035);
+              g.gain.setValueAtTime(peak, start + Math.max(dur - 0.12, 0.05));
+              g.gain.exponentialRampToValueAtTime(0.0001, start + dur);
+              osc.connect(lp); lp.connect(g); g.connect(master);
+              osc.start(start); osc.stop(start + dur + 0.05);
+            });
+          });
+        } catch (e) { /* sound must never break the page */ }
+      }
+      /* Soft pop/bang synced to each firework burst. */
+      function splashPop() {
+        if (!splashOpen || splashMuted) return;
+        var ctx = splashAudioCtx;
+        if (!ctx) return;
+        try {
+          if (ctx.state !== 'running') return;
+          var now = performance.now();
+          if (now - splashLastPop < 90) return;
+          splashLastPop = now;
+          var t0 = ctx.currentTime;
+          var src = ctx.createBufferSource(); src.buffer = splashNoiseBuffer(ctx, 0.3);
+          var lp = ctx.createBiquadFilter(); lp.type = 'lowpass';
+          lp.frequency.setValueAtTime(3200, t0);
+          lp.frequency.exponentialRampToValueAtTime(240, t0 + 0.22);
+          var g = ctx.createGain();
+          g.gain.setValueAtTime(0.16, t0);
+          g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.26);
+          src.connect(lp); lp.connect(g); g.connect(ctx.destination);
+          src.start(t0); src.stop(t0 + 0.3);
+          var osc = ctx.createOscillator(); osc.type = 'sine';
+          osc.frequency.setValueAtTime(150, t0);
+          osc.frequency.exponentialRampToValueAtTime(48, t0 + 0.2);
+          var og = ctx.createGain();
+          og.gain.setValueAtTime(0.12, t0);
+          og.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.22);
+          osc.connect(og); og.connect(ctx.destination);
+          osc.start(t0); osc.stop(t0 + 0.25);
+        } catch (e) { /* ignore */ }
+      }
+      function splashPlayCue() {
+        var ctx = splashAudio();
+        if (!ctx || splashMuted) return;
+        try {
+          if (ctx.state === 'running') {
+            if (!splashCuePlayed) { splashCuePlayed = true; splashFanfare(ctx); }
+            return;
+          }
+          var onState = function () {
+            try {
+              if (ctx.state === 'running') {
+                if (ctx.removeEventListener) ctx.removeEventListener('statechange', onState);
+                var b = document.getElementById('champSplashSound');
+                if (b) b.hidden = true;
+                if (splashOpen && !splashCuePlayed) { splashCuePlayed = true; splashFanfare(ctx); }
+              }
+            } catch (e) { /* ignore */ }
+          };
+          if (ctx.addEventListener) ctx.addEventListener('statechange', onState);
+        } catch (e) { /* ignore */ }
+      }
+
+      /* ----- Show / dismiss ----- */
+      function showChampionSplash(t) {
+        try {
+          if (splashOpen) dismissChampionSplash(true);
+          splashToken++;
+          var src = t.championCutoutAnim || t.championCutout || championPhotoFor(t);
+          if (src) {
+            splashImg.src = src;
+            splashImg.alt = 'Champion ' + t.champion + ' lifting the trophy';
+            splashImg.style.display = '';
+          } else {
+            splashImg.removeAttribute('src');
+            splashImg.style.display = 'none';
+          }
+          document.getElementById('champSplashName').textContent = t.champion;
+          document.getElementById('champSplashTourney').textContent = t.name;
+          var soundBtn = document.getElementById('champSplashSound');
+          soundBtn.hidden = true;
+          splashCuePlayed = false;
+          splashPrevOverflow = document.body.style.overflow;
+          document.body.style.overflow = 'hidden';
+          splashEl.classList.remove('gone');
+          splashEl.classList.add('open');
+          splashEl.setAttribute('aria-hidden', 'false');
+          splashOpen = true;
+          fwResize();
+          fwParts = []; fwRockets = [];
+          if (splashReducedMotion) {
+            fwStatic();
+          } else {
+            splashRaf = window.requestAnimationFrame(fwFrame);
+            fwLaunch(); fwLaunch();
+            splashLater(function () { if (splashOpen) fwExplode(fwW * 0.30, fwH * 0.30, true); }, 260);
+            splashLater(function () { if (splashOpen) fwExplode(fwW * 0.70, fwH * 0.24, true); }, 430);
+            splashLater(fwLaunch, 620);
+            splashLater(fwLaunch, 1080);
+            splashLater(fwLaunch, 1520);
+            splashLater(fwLaunch, 1980);
+            splashLater(fwLaunch, 2400);
+          }
+          /* Sound: creating/resuming the AudioContext here inherits the
+             click/tap gesture that opened the tournament page, so the cue
+             can play. On a direct load/refresh the browser keeps it
+             suspended — then the Play sound button is offered instead. */
+          splashAudio();
+          splashPlayCue();
+          splashLater(function () {
+            if (!splashOpen || splashCuePlayed) return;
+            if (!(splashAudioCtx && splashAudioCtx.state === 'running')) soundBtn.hidden = false;
+          }, 180);
+          splashLater(function () { dismissChampionSplash(false); }, 3200);
+        } catch (e) {
+          try { dismissChampionSplash(true); } catch (e2) { /* ignore */ }
+        }
+      }
+      function dismissChampionSplash(instant) {
+        if (!splashOpen && !splashEl.classList.contains('open')) return;
+        splashOpen = false;
+        splashToken++;
+        var token = splashToken;
+        splashTimers.forEach(function (id) { window.clearTimeout(id); });
+        splashTimers = [];
+        if (splashRaf) { window.cancelAnimationFrame(splashRaf); splashRaf = 0; }
+        fwParts = []; fwRockets = [];
+        document.body.style.overflow = splashPrevOverflow;
+        splashEl.setAttribute('aria-hidden', 'true');
+        if (instant) {
+          splashEl.classList.remove('open');
+          splashEl.classList.remove('gone');
+        } else {
+          splashEl.classList.add('gone');
+          window.setTimeout(function () {
+            if (splashToken === token) { splashEl.classList.remove('open'); splashEl.classList.remove('gone'); }
+          }, 480);
+        }
+      }
+      splashEl.addEventListener('click', function () { dismissChampionSplash(false); });
+      document.getElementById('champSplashSkip').addEventListener('click', function (e) {
+        e.stopPropagation();
+        dismissChampionSplash(false);
+      });
+      document.getElementById('champSplashMute').addEventListener('click', function (e) {
+        e.stopPropagation();
+        splashMuted = !splashMuted;
+        this.textContent = splashMuted ? '🔇' : '🔊';
+        this.setAttribute('aria-label', splashMuted ? 'Unmute celebration sound' : 'Mute celebration sound');
+        if (!splashMuted && splashOpen && !splashCuePlayed) splashPlayCue();
+      });
+      document.getElementById('champSplashSound').addEventListener('click', function (e) {
+        e.stopPropagation();
+        splashMuted = false;
+        document.getElementById('champSplashMute').textContent = '🔊';
+        splashPlayCue();
+        var btn = this;
+        window.setTimeout(function () {
+          if (splashAudioCtx && splashAudioCtx.state === 'running') btn.hidden = true;
+        }, 150);
+      });
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && splashOpen) dismissChampionSplash(false);
+      });
+      window.addEventListener('resize', function () { if (splashOpen) fwResize(); });
+
       /* ---------- Tournament detail view ---------- */
       var currentTournament = null;
       var STATUS_LABEL = { running: 'Running', upcoming: 'Upcoming', finished: 'Finished' };
@@ -2433,7 +2833,11 @@
         currentTournament = null;
         TOURNAMENTS.forEach(function (t) { if (t.id === id) currentTournament = t; });
         renderTournament();
-        showView('tournament', true);
+        selectTournamentTab('tOverview');
+        showView('tournament', true, currentTournament ? 'tournament/' + currentTournament.id : 'tournament');
+        if (currentTournament && currentTournament.status === 'finished' && currentTournament.champion) {
+          showChampionSplash(currentTournament);
+        }
       }
       function championPhotoFor(t) { return t.championPhoto || COMMITTEE_PHOTOS[t.champion] || null; }
       function overviewText(t, results, fixtures) {
@@ -2461,10 +2865,10 @@
           document.getElementById('tMeta').textContent = (t.game ? t.game + ' · ' : '') + participants.length + ' participants · ' + results.length + ' of ' + totalMatches + ' matches played';
         }
         var cutout = document.getElementById('tChampCutout');
-        var showCutout = !!(t && t.status === 'finished' && t.champion && t.championCutout);
+        var showCutout = !!(t && t.status === 'finished' && t.champion && (t.championCutoutAnim || t.championCutout));
         cutout.hidden = !showCutout;
         if (showCutout) {
-          cutout.src = t.championCutout;
+          cutout.src = t.championCutoutAnim || t.championCutout;
           cutout.alt = 'Champion ' + t.champion + ' holding the trophy';
         } else {
           cutout.removeAttribute('src');
@@ -2507,12 +2911,21 @@
           ? '<div class="participants-list">' + participants.map(function (n) { return '<span class="member-name">' + esc(n) + '</span>'; }).join('') + '</div>'
           : '<div class="t-note glass">Participants will be announced when the tournament opens.</div>';
       }
-      document.querySelectorAll('.jump-bar button').forEach(function (b) {
-        b.addEventListener('click', function () {
-          var el = document.getElementById(b.getAttribute('data-jump'));
-          if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      /* Tournament tab bar: a pill shows only its own section. */
+      function selectTournamentTab(id) {
+        document.querySelectorAll('#view-tournament .t-sub').forEach(function (s) {
+          s.classList.toggle('active', s.id === id);
         });
+        document.querySelectorAll('.jump-bar button').forEach(function (b) {
+          var on = b.getAttribute('data-jump') === id;
+          b.classList.toggle('active', on);
+          b.setAttribute('aria-selected', on ? 'true' : 'false');
+        });
+      }
+      document.querySelectorAll('.jump-bar button').forEach(function (b) {
+        b.addEventListener('click', function () { selectTournamentTab(b.getAttribute('data-jump')); });
       });
+      selectTournamentTab('tOverview');
       document.addEventListener('keydown', function (e) {
         if (e.key !== 'Enter' && e.key !== ' ') return;
         var el = e.target.closest ? e.target.closest('[data-tourney]') : null;
@@ -2557,7 +2970,7 @@
       /* ---------- Live data (hosting package) ----------
          Served over HTTP, this site is driven by data/*.json, edited via
          the Decap admin (/admin):
-           data/tournaments.json — { tournaments: [ {id, name, game, status, startDate, endDate, intro, participants[], champion, championPhoto, championCutout} ] }
+           data/tournaments.json — { tournaments: [ {id, name, game, status, startDate, endDate, intro, participants[], champion, championPhoto, championCutout, championCutoutAnim} ] }
            data/matches.json     — { matches: [ {tournamentId, date, player1, player2, goals1, goals2, played} ] }
            data/announcements.json — manual news cards (root { announcements: [...] })
            data/members.json     — member names (array of strings)
@@ -2598,7 +3011,7 @@
               id: t.id, name: t.name, game: t.game, status: t.status,
               startDate: t.startDate, endDate: t.endDate,
               intro: t.intro, participants: t.participants || [],
-              champion: t.champion, championPhoto: t.championPhoto, championCutout: t.championCutout,
+              champion: t.champion, championPhoto: t.championPhoto, championCutout: t.championCutout, championCutoutAnim: t.championCutoutAnim,
               fixtures: fixtures, results: results
             };
           });
@@ -2627,9 +3040,20 @@
             try { history.replaceState(null, '', '#tournament/' + id); } catch (e) { /* sandboxed iframe */ }
           }
         };
+        var hashOpenedId = null;
         function openFromHash() {
           var mm = String(window.location.hash || '').match(/^#tournament\/(.+)$/);
-          if (mm) { openTournament(decodeURIComponent(mm[1])); return true; }
+          if (mm) {
+            var id = decodeURIComponent(mm[1]);
+            /* Already showing this tournament (the boot open, then the data
+               fetch resolving): do not open it again — a second open would
+               restart the champion celebration splash. */
+            if (id === hashOpenedId && currentTournament && currentTournament.id === id &&
+                document.body.getAttribute('data-view') === 'tournament') return true;
+            hashOpenedId = id;
+            openTournament(id);
+            return true;
+          }
           return false;
         }
         window.addEventListener('hashchange', function () {
