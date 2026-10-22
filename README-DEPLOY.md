@@ -11,12 +11,13 @@ them from the repo if they are still there.
 
 | Path | What it is |
 |---|---|
-| `index.html` | The whole website (single page, design images inlined). Design, per-view backgrounds, committee, rules, gallery and the join form are unchanged from v1. Everything tournament-related is computed in the visitor's browser from `data/*.json` — there is no build step and no server. One exception: the tournament pages' arena background is an external file (see `assets/` below). |
+| `index.html` | The whole website (single page). Design images are **external files** under `assets/` (nothing heavy is inlined), and each view loads only its own images: the first load fetches just the page, the shared shell art (logo, corner knights) and the Home background; Community and Gallery photos sit in `data-src` and are only requested when that view is first opened; tournament pages pull the arena + champion assets only when a tournament page opens (then they stay cached). Everything tournament-related is computed in the visitor's browser — there is no build step and no server. Over HTTP the content is driven by `data/*.json` (see below); the same demo data is also baked into the page as a fallback. |
 | `data/tournaments.json` | `{ "tournaments": [ {id, name, game, status, startDate, endDate, intro, participants[], champion, championPhoto, championCutout} ] }`. `status` is `upcoming` \| `running` \| `finished`. Ships with the finished **eFootball Demo Cup (DEMO)** included — the owner chose to keep the demo, so the site launches with a complete worked example. Delete that entry (and its matches) if it should ever go. |
 | `data/matches.json` | `{ "matches": [ {tournamentId, date, player1, player2, goals1, goals2, played} ] }`. `played: false` = fixture, `played: true` = result. Goals may be `null` until played. Ships with the demo cup's six played matches. |
-| `assets/background-tournament-arena.gif` | The owner's gladiator-arena picture (1920×1080) — the fixed background of every tournament page, referenced from `index.html` by relative path (not inlined, to keep the HTML lean). |
+| `assets/background-tournament-arena.webp` | The owner's gladiator-arena picture (1920 px wide, right-sized WebP) — the fixed background of every tournament page, referenced from `index.html` by relative path and loaded only when a tournament page opens. (Replaces the old `background-tournament-arena.gif` — delete that file from the repo.) |
+| `assets/` (everything else) | All design imagery as plain files, mirroring the site's own layout: per-view backgrounds (`background-*.jpg`), banners (`banner-*.jpg`), section art (`sections/`), committee photos (`committee/`, `styled/`), the shell art (`logo.jpg`, `knight-left.webp`, `knight-right.webp`, `moon-swords.webp`, `pattern.jpg`) and `intro-document.jpg`. All right-sized to how they are displayed — same pictures, much smaller files (total site imagery ≈ 5.3 MB, down from ≈ 19.4 MB). |
 | `assets/champion-demo-photo.webp` | The demo champion's photo (a generated illustration standing in for a real champion photo upload), referenced by the demo tournament's `championPhoto`. |
-| `assets/champion-demo-cutout.png` | The demo champion's transparent cut-out (champion holding a trophy overhead), referenced by the tournament's optional `championCutout` field — on a finished tournament's page it stands at the bottom-right of the header band, over the arena background (tournaments without the field keep a plain header). |
+| `assets/champion-demo-cutout.png` | The demo champion's transparent cut-out (champion holding a trophy overhead, ≈ 291 KB), referenced by the tournament's optional `championCutout` field — on a finished tournament's page it stands at the bottom-right of the header band, over the arena background (tournaments without the field keep a plain header). |
 | `data/announcements.json` | Manual news cards: `{ "announcements": [ {date, title, body, link, linkText} ] }` (`link`/`linkText` optional). |
 | `data/members.json` | The 68 general member names (JSON array of strings) for the Community page search/list. |
 | `admin/index.html` | Decap CMS loader page — served at `/admin`. |
@@ -31,19 +32,17 @@ site derives the rest in the browser:
 
 - **Tournament table** — Played / W / D / L / GF / GA / GD / Points
   (win 3, draw 1, loss 0), sorted by Points → Goal Difference → Goals For.
-  Players level on all three share the position number; 🥇🥈🥉 mark 1st–3rd.
+  The top three rows carry the 1st–3rd rank badges.
 - **Records** — Top Scorer, Most Wins, Most Goals Against, Best Defence,
   Best Goal Difference, Most Matches Played, Biggest Win, Most Draws,
   Most Goals in One Match, Best Points-Per-Match, Most Losses,
-  Highest-Scoring Match. Records with no holder yet (e.g. no wins yet) are
-  hidden until a match produces one.
+  Highest-Scoring Match. Records appear once a match produces a holder.
 - **News** — every played match becomes a headline
-  ("A beat B 3–1", or "A drew 2–2 with B") tagged with its tournament, and
+  ("A beat B 3–1", or "A and B drew 2–2") tagged with its tournament, and
   every finished tournament with a champion becomes a
-  "🏆 CHAMPION — &lt;name&gt; wins &lt;tournament&gt;" headline. Both merge
-  with the manual News cards into one feed (News section; latest 3 on Home).
-  Use real dates (e.g. `2026-11-03`) on matches/tournaments/news so the
-  feed can sort newest-first; undated items sink to the bottom.
+  "CHAMPION — &lt;name&gt; wins &lt;tournament&gt;" headline, shown first.
+  Both merge with the manual News cards into one feed (News section;
+  latest 3 on Home).
 - **Placement by status** — `running` → Home tournament band (name + next
   fixture) and the Events **Running** banner; `upcoming` → Events
   **Upcoming** banner; `finished` → Events **Tournament History** banner
@@ -51,14 +50,14 @@ site derives the rest in the browser:
   click target (underlined, with an arrow) and opens the tournament's own
   page: Overview · Fixture · Results · Table · Records · Participants.
   Every tournament page uses the gladiator-arena picture
-  (`assets/background-tournament-arena.gif`) as its fixed background.
+  (`assets/background-tournament-arena.webp`) as its fixed background.
   A finished tournament's Overview layers the champion's photo **above
   that arena background**, with a CHAMPION name panel in front.
 - **Leaderboard (tournament-first)** — picking a game tab lists **that
   game's tournaments by name** (tappable rows showing each tournament's
   status); picking a tournament then shows **that tournament's standings
   table only** — computed from its own matches in `data/matches.json`,
-  with the same points/sorting/medals as the tournament page's Table,
+  with the same points and sorting as the tournament page's Table,
   the tournament name as the heading, and a "← All tournaments" button
   back to the list. There is **no merged or all-time table** anywhere.
   A game with no tournaments yet shows the "season rankings coming
@@ -107,7 +106,19 @@ python3 -m http.server 8000
 # open http://localhost:8000
 ```
 
-(Opening `index.html` as a file:// URL works for the static content, but
-the browser blocks the `data/*.json` fetches — the page then falls back to
-the baked-in copies: “Tournament: Coming Soon”, the two manual news cards,
-and the coming-soon leaderboard state.)
+(Opening `index.html` as a file:// URL also works: browsers block the
+`data/*.json` fetches there, so the page simply renders from the copies
+baked into `index.html` — the full site, including the demo tournament
+with its table, records and champion page. Edits made through the admin
+panel only show when the site is served over HTTP, as it is on Netlify.)
+
+## Loading & performance
+
+The page loads **per view**: the initial download is just `index.html`
+(≈ 162 KB) plus the shell art, the Home background and the small
+`data/*.json` files (≈ 600 KB total).
+Each other view's images are fetched the first time that view is opened
+and stay cached afterwards (Community ≈ 955 KB, Gallery ≈ 898 KB, a
+tournament page ≈ 834 KB, the rest less). All imagery is right-sized to
+its display size, so the whole package is ≈ 5.6 MB — it was ≈ 24 MB when
+every image was inlined into the HTML.
