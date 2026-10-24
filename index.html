@@ -66,6 +66,84 @@
       body[data-view="login"] .bg-layer { background-image: url("assets/login-background.webp"); }
       body[data-view="resetpassword"] .bg-layer { background-image: url("assets/login-background.webp"); }
       body[data-view="setpassword"] .bg-layer { background-image: url("assets/login-background.webp"); }
+      body[data-view="checkemail"] .bg-layer { background-image: linear-gradient(180deg, #6ec1f0 0%, #9fd8f8 52%, #d3f0fd 100%); background-color: #8fd0f5; }
+      body[data-view="checkemail"] .sec-head h2 { color: #10344e; text-shadow: none; }
+      body[data-view="checkemail"] .sec-head p { color: #33566e; text-shadow: none; }
+      body[data-view="checkemail"] .kicker { color: #b30f1e; }
+      /* Layer 3 */
+      .avatar-wrap { position: relative; display: inline-block; }
+      .pencil-btn { position: absolute; width: 34px; height: 34px; border-radius: 50%; border: 2px solid rgba(255,255,255,.85); background: #c8102e; color: #fff; display: none; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 14px rgba(0,0,0,.45); z-index: 3; }
+      .pencil-btn svg { width: 16px; height: 16px; stroke: #fff; }
+      .pencil-btn:hover { background: #e01636; }
+      body.own-profile .pencil-btn { display: flex; }
+      .avatar-pencil { right: 2px; bottom: 6px; }
+      .cover-pencil { right: 14px; bottom: 14px; }
+      .profile-cover { position: relative; }
+      .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+      @media (max-width: 700px) { .about-grid { grid-template-columns: 1fr; } }
+      .about-card { background: rgba(255,255,255,.045); border: 1px solid rgba(255,255,255,.08); border-radius: 14px; padding: 14px 16px; }
+      .about-card h4 { margin: 0 0 10px; font-size: 13px; letter-spacing: .12em; text-transform: uppercase; color: #ffb3ba; }
+      .about-bio { margin: 0; line-height: 1.55; }
+      .friend-chip { display: inline-flex; align-items: center; gap: 7px; margin: 0 8px 8px 0; padding: 4px 10px 4px 4px; border-radius: 999px; background: rgba(255,255,255,.06); color: #fff; text-decoration: none; font-size: 13.5px; }
+      .friend-chip:hover { background: rgba(255,255,255,.12); }
+      .trophy-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+      @media (max-width: 700px) { .trophy-grid { grid-template-columns: 1fr; } }
+      .trophy-box { display: flex; gap: 14px; background: rgba(255,255,255,.045); border: 1px solid rgba(255,255,255,.09); border-radius: 16px; padding: 14px; align-items: stretch; }
+      .trophy-box.champ { border-color: rgba(255,193,7,.55); background: linear-gradient(135deg, rgba(255,193,7,.14), rgba(255,255,255,.04)); }
+      .tb-visual { flex: 0 0 108px; min-height: 108px; border-radius: 12px; background: rgba(0,0,0,.35); display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; text-align: center; }
+      .tb-visual img { width: 100%; height: 100%; object-fit: cover; }
+      .tb-pos { font-size: 34px; font-weight: 800; color: #ffd34d; line-height: 1; padding: 8px 4px 2px; }
+      .tb-champ { font-size: 11px; font-weight: 800; letter-spacing: .14em; color: #ffd34d; padding-bottom: 8px; }
+      .tb-body { flex: 1; min-width: 0; }
+      .tb-body h4 { margin: 2px 0 6px; font-size: 17px; }
+      .tb-body p { margin: 0 0 4px; color: var(--muted, #b9b9c7); font-size: 14px; }
+      .tb-more { display: inline-block; margin-top: 6px; font-weight: 700; color: #ff5b6a; text-decoration: none; }
+      .tb-more:hover { text-decoration: underline; }
+      .yt-wrap { position: relative; padding-top: 56.25%; border-radius: 14px; overflow: hidden; margin: 14px 0; background: #000; }
+      .yt-wrap iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+      .s-video { position: absolute; right: 10px; bottom: 10px; background: rgba(0,0,0,.75); color: #fff; font-size: 12px; font-weight: 700; padding: 4px 9px; border-radius: 999px; }
+      .s-video.inline { position: static; display: inline-block; margin-left: 8px; }
+      .member-link { color: #fff; text-decoration: none; border-bottom: 1px dotted rgba(255,255,255,.4); }
+      .member-link:hover { color: #ffd34d; }
+      /* Inbox page */
+      .inbox-shell { display: grid; grid-template-columns: 308px 1fr; min-height: 540px; overflow: hidden; padding: 0; }
+      .inbox-list { border-right: 1px solid rgba(255,255,255,.09); overflow-y: auto; max-height: 640px; }
+      .ib-item { display: flex; gap: 11px; align-items: center; width: 100%; text-align: left; background: none; border: 0; border-bottom: 1px solid rgba(255,255,255,.06); padding: 13px 15px; cursor: pointer; color: #fff; }
+      .ib-item:hover { background: rgba(255,255,255,.05); }
+      .ib-item.active { background: rgba(200,16,46,.16); }
+      .ib-item .ib-main { flex: 1; min-width: 0; }
+      .ib-item .ib-name { display: block; font-weight: 700; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .ib-item .ib-sub { display: block; font-size: 12.5px; color: var(--muted, #b9b9c7); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .ib-unread { background: #c8102e; color: #fff; font-size: 11px; font-weight: 800; min-width: 20px; height: 20px; border-radius: 999px; display: inline-flex; align-items: center; justify-content: center; padding: 0 6px; }
+      .inbox-pane { display: flex; flex-direction: column; min-width: 0; }
+      .ib-pane-head { display: flex; align-items: center; gap: 10px; padding: 13px 16px; border-bottom: 1px solid rgba(255,255,255,.09); }
+      .ib-pane-head h3 { margin: 0; font-size: 17px; flex: 1; }
+      .ib-back { display: none; }
+      .ib-scroll { flex: 1; overflow-y: auto; max-height: 470px; padding: 16px; }
+      .ib-compose { display: flex; gap: 9px; padding: 12px 14px; border-top: 1px solid rgba(255,255,255,.09); }
+      .ib-compose input, .ib-compose textarea { flex: 1; }
+      .dm-row { display: flex; margin-bottom: 10px; }
+      .dm-row.mine { justify-content: flex-end; }
+      .dm-bubble { max-width: 78%; background: rgba(255,255,255,.08); border-radius: 14px; padding: 8px 12px; }
+      .dm-row.mine .dm-bubble { background: #c8102e; }
+      .dm-bubble p { margin: 0; line-height: 1.45; word-break: break-word; }
+      .dm-meta { font-size: 11px; opacity: .65; margin-top: 3px; }
+      .notif-row { display: flex; gap: 11px; padding: 11px 4px; border-bottom: 1px solid rgba(255,255,255,.06); align-items: flex-start; }
+      .notif-row.unread { background: rgba(200,16,46,.08); border-radius: 10px; padding-left: 10px; padding-right: 10px; }
+      @media (max-width: 760px) {
+        .inbox-shell { grid-template-columns: 1fr; }
+        .inbox-pane { display: none; }
+        .inbox-shell.open .inbox-list { display: none; }
+        .inbox-shell.open .inbox-pane { display: flex; }
+        .ib-back { display: inline-flex; }
+      }
+      /* Squad roster kebab */
+      .kebab-wrap { position: relative; margin-left: auto; }
+      .kebab-btn { background: rgba(255,255,255,.08); border: 0; color: #fff; width: 30px; height: 30px; border-radius: 8px; cursor: pointer; font-size: 17px; line-height: 1; }
+      .kebab-menu { position: absolute; right: 0; top: 36px; background: #1b1b26; border: 1px solid rgba(255,255,255,.14); border-radius: 10px; min-width: 168px; z-index: 30; box-shadow: 0 14px 34px rgba(0,0,0,.5); padding: 5px; }
+      .kebab-menu button { display: block; width: 100%; text-align: left; background: none; border: 0; color: #fff; padding: 8px 10px; border-radius: 7px; cursor: pointer; font-size: 14px; }
+      .kebab-menu button:hover { background: rgba(255,255,255,.09); }
+      .kebab-menu button.danger { color: #ff8089; }
       body[data-view="profile"] .bg-layer { background-image: url("assets/profile-background.webp"); }
       body[data-view="squad"] .bg-layer { background-image: url("assets/background-tournament-arena.webp"); }
       body[data-view="createsquad"] .bg-layer { background-image: url("assets/sections/section-games-arena.webp"); }
@@ -1351,14 +1429,13 @@
       </a>
       <nav class="head-nav" id="headNav" aria-label="Main navigation">
         <a href="#home" data-nav="home" class="active">Home</a>
-        <a href="#about" data-nav="about">About</a>
-        <a href="#community" data-nav="community">Community</a>
-        <a href="#games" data-nav="games">Games</a>
         <a href="#news" data-nav="news">News</a>
         <a href="#events" data-nav="events">Events</a>
         <a href="#leaderboard" data-nav="leaderboard">Leaderboard</a>
+        <a href="#community" data-nav="community">Community</a>
+        <a href="#games" data-nav="games">Games</a>
         <a href="#rules" data-nav="rules">Rules</a>
-        <a href="#gallery" data-nav="gallery">Gallery</a>
+        <a href="#about" data-nav="about">About</a>
         <a href="#sponsors" data-nav="sponsors">Sponsors</a>
         <a href="#login" data-nav="login" class="nav-auth">Log in</a>
         <a href="#register" data-nav="register" class="nav-join nav-auth">Register</a>
@@ -1372,9 +1449,9 @@
         </button>
         <div class="account-menu" id="accountMenu" hidden>
           <div class="am-head"><b id="amName">Bijoy Rahman</b><span id="amSub">Member · eFootball</span></div>
-          <a href="#profile" data-nav="profile" data-pftab="about">Profile</a>
+          <a href="#profile" data-nav="profile" data-pftab="trophy">Profile</a>
           <a href="#profile" data-nav="profile" data-pftab="settings">Settings</a>
-          <a href="#profile" data-nav="profile" data-pftab="inbox" id="inboxMenuLink">Inbox <span class="am-badge" id="inboxBadge2" hidden></span></a>
+          <a href="#inbox" data-nav="inbox" id="inboxMenuLink">Inbox <span class="am-badge" id="inboxBadge2" hidden></span></a>
           <a href="#console" data-nav="console" id="allMembersLink" hidden>All Members</a>
           <button class="am-item" type="button" id="logoutBtn">Log out</button>
         </div>
@@ -2077,7 +2154,7 @@
                   <div class="form-row">
                     <div class="field" data-field="phone">
                       <label for="rPhone">Phone / WhatsApp number *</label>
-                      <input id="rPhone" name="phone" type="tel" required placeholder="+880…" autocomplete="tel" />
+                      <input id="rPhone" name="phone" type="tel" required placeholder="01…" autocomplete="tel" />
                       <p class="err" role="alert">Please enter your phone / WhatsApp number.</p>
                     </div>
                     <div class="field" data-field="email">
@@ -2140,14 +2217,29 @@
                   <p>A welcome email is on its way to <b id="regSuccessEmail">your email address</b>.</p>
                   <a class="btn btn-red" href="#login" data-nav="login">Log In to Your Account</a>
                 </div>
-                <div class="reg-success" id="regCheckEmail" aria-live="polite" tabindex="-1">
-                  <div class="rs-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg></div>
-                  <h3>One More Step — Confirm Your Email</h3>
-                  <p>We have sent a confirmation email to <b id="regCheckEmailAddr">your email address</b>.</p>
-                  <p>Tap the link in that email, then log in — your member profile is created automatically at your first login.</p>
-                  <a class="btn btn-red" href="#login" data-nav="login">Go to Log In</a>
-                </div>
               </div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- ==================== VIEW: CHECK EMAIL ==================== -->
+      <div class="view" id="view-checkemail">
+        <section>
+          <div class="wrap">
+            <div class="sec-head center reveal">
+              <p class="kicker">Almost There</p>
+              <h2>Check Your Email</h2>
+              <p>One tap in your inbox finishes your account.</p>
+            </div>
+            <div class="auth-card glass reveal" style="text-align:center">
+              <div class="rs-icon" style="margin:0 auto 14px"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg></div>
+              <h3 style="margin-bottom:10px">A confirmation mail has been sent</h3>
+              <p class="auth-sub">We sent it to<br /><b id="checkEmailAddr" style="font-size:17px;color:#fff">your email address</b></p>
+              <p class="auth-sub">Open the mail and tap <b>&ldquo;Confirm email address&rdquo;</b> to complete your account. Then come back and log in &mdash; your member profile is created automatically at your first login.</p>
+              <a class="btn btn-red" href="#login" data-nav="login" style="width:100%;justify-content:center">Go to Log In</a>
+              <p class="auth-alt" style="margin-top:16px">Didn&rsquo;t get it? Check your spam folder, or <a href="#" id="resendBtn">resend the email</a></p>
+              <p class="form-ok" id="resendNote" aria-live="polite"></p>
             </div>
           </div>
         </section>
@@ -2262,13 +2354,13 @@
         <section>
           <div class="wrap">
             <div class="profile-card glass reveal">
-              <div class="profile-cover"><img id="profileCoverImg" src="assets/banner-red-charge.jpg" alt="Bijoy Rahman's cover photo — the Warriors charging into battle" /></div>
+              <div class="profile-cover"><img id="profileCoverImg" src="assets/banner-red-charge.jpg" alt="Bijoy Rahman's cover photo — the Warriors charging into battle" /><button type="button" class="pencil-btn cover-pencil" id="coverEditBtn" aria-label="Change your cover photo"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.8 2.8 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg></button></div>
               <div class="profile-main">
-                <img class="profile-avatar" id="profileAvatarImg" src="assets/champion-demo-photo.webp" alt="Bijoy Rahman — profile photo" />
+                <span class="avatar-wrap"><img class="profile-avatar" id="profileAvatarImg" src="assets/champion-demo-photo.webp" alt="Bijoy Rahman — profile photo" /><button type="button" class="pencil-btn avatar-pencil" id="avatarEditBtn" aria-label="Change your profile photo"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.8 2.8 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg></button></span>
                 <div class="profile-id">
                   <h2 id="profileName">Bijoy Rahman</h2>
-                  <p class="profile-handle" id="profileHandle">@bijoy.kw</p>
-                  <p class="profile-role" id="profileRole">Member · eFootball</p>
+                  <p class="profile-handle" id="profileHandle" style="display:none">@bijoy.kw</p>
+                  <p class="profile-role" id="profileRole" style="display:none">Member · eFootball</p>
                   <p class="profile-bio" id="profileBio">eFootball striker for the Warriors. Demo Cup champion — now chasing the next trophy.</p>
                   <p class="profile-since" id="profileSince">Member since January 2024</p>
                 </div>
@@ -2280,13 +2372,14 @@
               </div>
             </div>
 
+            <div id="profileActions" hidden style="margin-top:14px"></div>
+            <input type="file" id="avatarFile" accept="image/*" hidden />
+            <input type="file" id="coverFile" accept="image/*" hidden />
             <p class="pf-note" id="guestNote" hidden style="margin-top:16px"></p>
             <div class="pf-tabs" id="pfTabs" role="tablist">
-              <button type="button" class="pf-tab" data-pftab="about">About</button>
-              <button type="button" class="pf-tab" data-pftab="games">My Games</button>
               <button type="button" class="pf-tab" data-pftab="trophy">My Trophy</button>
+              <button type="button" class="pf-tab" data-pftab="about">About</button>
               <button type="button" class="pf-tab" data-pftab="squads">Squads</button>
-              <button type="button" class="pf-tab" data-pftab="inbox">Inbox <span class="am-badge" id="pfInboxBadge" hidden></span></button>
               <button type="button" class="pf-tab" data-pftab="settings">Settings</button>
             </div>
 
@@ -2302,8 +2395,75 @@
                 </div>
               </div>
 
+              <!-- Tournament Honours -->
+              <div class="pf-panel glass reveal" id="profileHonours">
+                <h3 class="pf-title">Tournament Honours</h3>
+                <p class="pf-sub">Your record in official club tournaments.</p>
+                <div id="honoursList"></div>
+                <p class="pf-note">Honours are added automatically from official tournament results — they can't be edited.</p>
+              </div>
+
+              <!-- Squads -->
+              <div class="pf-panel glass reveal" id="profileSquads">
+                <h3 class="pf-title">Squads</h3>
+                <p class="pf-sub">The squads you fight with. Tap a squad to open its page — its messages live in your Inbox.</p>
+                <div id="profileSquadsList"></div>
+                <a class="btn btn-red" href="#createsquad" data-nav="createsquad">+ Create Squad</a>
+                <p class="pf-note">Squad creation is switched on for your account by the President.</p>
+              </div>
+
+              <!-- Settings -->
+              <div class="pf-panel glass reveal wide" id="profileSettings">
+                <h3 class="pf-title">Settings</h3>
+                <p class="pf-sub">Your account details. Phone, email, date of birth and gender are only ever visible to the committee.</p>
+                <form id="settingsForm" novalidate>
+                  <div class="form-row">
+                    <div class="field"><label for="sName">Full name</label><input id="sName" type="text" value="Bijoy Rahman" autocomplete="name" /></div>
+                    <div class="field"><label for="sPhone">Phone / WhatsApp</label><input id="sPhone" type="tel" placeholder="01…" autocomplete="tel" /></div>
+                  </div>
+                  <div class="field">
+                    <label for="sUsername">Username <span style="color:var(--faint);font-weight:500">(optional — you choose it here, after joining)</span></label>
+                    <input id="sUsername" type="text" value="bijoy.kw" placeholder="e.g. bijoy.kw" autocomplete="username" />
+                    <p class="pf-note" style="margin-top:7px">Your personal profile link: knightwarriorsclub.com/#profile/username. It is not displayed on the profile itself.</p>
+                  </div>
+                  <div class="form-row">
+                    <div class="field"><label for="sFacebook">Facebook ID link</label><input id="sFacebook" type="url" value="https://www.facebook.com/bijoy.rahman" placeholder="https://www.facebook.com/your.profile" /></div>
+                    <div class="field"><label for="sDiscord">Discord ID</label><input id="sDiscord" type="text" value="bijoy.kw" placeholder="your Discord username" /></div>
+                  </div>
+                  <div class="form-row">
+                    <div class="field"><label for="sDob">Date of birth</label><input id="sDob" type="date" /></div>
+                    <div class="field"><label for="sGender">Gender</label>
+                      <select id="sGender">
+                        <option value="">Select gender…</option>
+                        <option selected>Male</option>
+                        <option>Female</option>
+                        <option>Other</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="field"><label for="sFavGame">Favourite game <span style="color:var(--faint);font-weight:500">(your own pick — shown in About → Player Info)</span></label>
+                    <select id="sFavGame"><option value="">Not picked yet</option><option>eFootball</option><option>PUBG</option><option>Clash of Clans</option><option>Call of Duty</option></select>
+                  </div>
+                  <div class="field"><label for="sBio">Bio</label><textarea id="sBio">eFootball striker for the Warriors. Demo Cup champion — now chasing the next trophy.</textarea></div>
+                  <fieldset class="field">
+                    <legend>Notifications</legend>
+                    <p class="pf-note" style="margin-bottom:10px">Get the President's broadcasts as a pop-up on this device — even when the site is closed. Your choice: allow it or not.</p>
+                    <button class="btn btn-glass btn-sm" type="button" id="pushBtn">Enable notifications on this device</button>
+                    <p class="pf-note" id="pushNote" style="margin-top:8px"></p>
+                  </fieldset>
+                  <fieldset class="field">
+                    <legend>Profile privacy</legend>
+                    <div class="privacy-opts">
+                      <label class="game-opt"><input type="radio" name="privacy" value="public" checked /><span>Public — everyone can see my profile</span></label>
+                      <label class="game-opt"><input type="radio" name="privacy" value="friends" /><span>Friends only — only my friends can see it</span></label>
+                    </div>
+                  </fieldset>
+                  <p class="form-err" id="settingsError" role="alert"></p>
+                  <button class="btn btn-red" type="submit">Save Settings</button>
+                  <p class="form-ok" id="settingsOk">Your settings have been saved.</p>
+                </form>
               <!-- My Games -->
-              <div class="pf-panel glass reveal" id="profileGames">
+              <div id="profileGames" style="margin-top:26px;border-top:1px solid rgba(255,255,255,.09);padding-top:20px">
                 <h3 class="pf-title">My Games</h3>
                 <p class="pf-sub">Your games and in-game IDs — keep them updated so captains can find you on match day.</p>
                 <div id="myGamesList">
@@ -2337,86 +2497,25 @@
                 <button class="btn btn-red" type="button" id="saveGamesBtn">Save Games</button>
                 <p class="form-ok" id="gamesOk">Your games have been saved.</p>
               </div>
-
-              <!-- Tournament Honours -->
-              <div class="pf-panel glass reveal" id="profileHonours">
-                <h3 class="pf-title">Tournament Honours</h3>
-                <p class="pf-sub">Your record in official club tournaments.</p>
-                <div id="honoursList"></div>
-                <p class="pf-note">Honours are added automatically from official tournament results — they can't be edited.</p>
               </div>
+            </div>
+          </div>
+        </section>
+      </div>
 
-              <!-- Squads -->
-              <div class="pf-panel glass reveal" id="profileSquads">
-                <h3 class="pf-title">Squads</h3>
-                <p class="pf-sub">The squads you fight with. Tap a squad to open its page and group chat.</p>
-                <div id="profileSquadsList"></div>
-                <a class="btn btn-red" href="#createsquad" data-nav="createsquad">+ Create Squad</a>
-                <p class="pf-note">Squad creation is switched on for your account by the President.</p>
-              </div>
-
-              <!-- Inbox: notifications, broadcasts, friend requests -->
-              <div class="pf-panel glass reveal" id="profileInbox">
-                <h3 class="pf-title">Inbox</h3>
-                <p class="pf-sub">Notifications, club broadcasts and friend requests — all in one place.</p>
-
-                <div id="inboxSetupNote" class="pf-note" hidden>Club messages are being switched on — the President is running the final setup step. Check back soon.</div>
-                <p class="inbox-group">Notifications</p>
-                <div id="inboxNotifs"><p class="pf-note">Loading…</p></div>
-                <p class="inbox-group">Club Broadcasts</p>
-                <div id="inboxBroadcasts"><p class="pf-note">Loading…</p></div>
-                <p class="inbox-group">Friend Requests</p>
-                <div id="inboxFriends"><p class="pf-note">No pending requests.</p></div>
-              </div>
-
-              <!-- Settings -->
-              <div class="pf-panel glass reveal wide" id="profileSettings">
-                <h3 class="pf-title">Settings</h3>
-                <p class="pf-sub">Your account details. Phone, email, date of birth and gender are only ever visible to the committee.</p>
-                <form id="settingsForm" novalidate>
-                  <div class="form-row">
-                    <div class="field"><label for="sName">Full name</label><input id="sName" type="text" value="Bijoy Rahman" autocomplete="name" /></div>
-                    <div class="field"><label for="sPhone">Phone / WhatsApp</label><input id="sPhone" type="tel" placeholder="+880…" autocomplete="tel" /></div>
-                  </div>
-                  <div class="field">
-                    <label for="sUsername">Username <span style="color:var(--faint);font-weight:500">(optional — you choose it here, after joining)</span></label>
-                    <input id="sUsername" type="text" value="bijoy.kw" placeholder="e.g. bijoy.kw" autocomplete="username" />
-                    <p class="pf-note" style="margin-top:7px">Shown on your profile as @username, under your name. Leave it empty and your profile shows just your name.</p>
-                  </div>
-                  <div class="form-row">
-                    <div class="field"><label for="sFacebook">Facebook ID link</label><input id="sFacebook" type="url" value="https://www.facebook.com/bijoy.rahman" placeholder="https://www.facebook.com/your.profile" /></div>
-                    <div class="field"><label for="sDiscord">Discord ID</label><input id="sDiscord" type="text" value="bijoy.kw" placeholder="your Discord username" /></div>
-                  </div>
-                  <div class="form-row">
-                    <div class="field"><label for="sDob">Date of birth</label><input id="sDob" type="date" /></div>
-                    <div class="field"><label for="sGender">Gender</label>
-                      <select id="sGender">
-                        <option value="">Select gender…</option>
-                        <option selected>Male</option>
-                        <option>Female</option>
-                        <option>Other</option>
-                      </select>
-                    </div>
-                  </div>
-                  <div class="field"><label for="sBio">Bio</label><textarea id="sBio">eFootball striker for the Warriors. Demo Cup champion — now chasing the next trophy.</textarea></div>
-                  <fieldset class="field">
-                    <legend>Notifications</legend>
-                    <p class="pf-note" style="margin-bottom:10px">Get the President's broadcasts as a pop-up on this device — even when the site is closed. Your choice: allow it or not.</p>
-                    <button class="btn btn-glass btn-sm" type="button" id="pushBtn">Enable notifications on this device</button>
-                    <p class="pf-note" id="pushNote" style="margin-top:8px"></p>
-                  </fieldset>
-                  <fieldset class="field">
-                    <legend>Profile privacy</legend>
-                    <div class="privacy-opts">
-                      <label class="game-opt"><input type="radio" name="privacy" value="public" checked /><span>Public — everyone can see my profile</span></label>
-                      <label class="game-opt"><input type="radio" name="privacy" value="friends" /><span>Friends only — only my friends can see it</span></label>
-                    </div>
-                  </fieldset>
-                  <p class="form-err" id="settingsError" role="alert"></p>
-                  <button class="btn btn-red" type="submit">Save Settings</button>
-                  <p class="form-ok" id="settingsOk">Your settings have been saved.</p>
-                </form>
-              </div>
+      <!-- ==================== VIEW: INBOX ==================== -->
+      <div class="view" id="view-inbox">
+        <section>
+          <div class="wrap">
+            <div class="sec-head reveal">
+              <p class="kicker">Messages</p>
+              <h2>Inbox</h2>
+              <p>Notifications, club broadcasts, personal messages and squad chats — all in one place.</p>
+            </div>
+            <p class="pf-note" id="inboxGate" hidden>Log in to see your messages.</p>
+            <div class="inbox-shell glass reveal" id="inboxShell">
+              <aside class="inbox-list" id="inboxList"><p class="pf-note" style="padding:16px">Loading…</p></aside>
+              <div class="inbox-pane" id="inboxPane"><p class="pf-note" style="padding:16px">Pick a conversation.</p></div>
             </div>
           </div>
         </section>
@@ -2456,41 +2555,16 @@
           <div class="wrap">
             <div class="sec-head reveal">
               <p class="kicker">Squad</p>
-              <h2>Knight Strikers</h2>
-              <p>eFootball squad · 10 of 10 seats filled · Captained by Bijoy Rahman</p>
+              <h2 id="squadName">Squad</h2>
+              <p id="squadMeta">Loading…</p>
             </div>
-            <div class="squad-grid">
-              <div class="pf-panel glass reveal">
-                <h3 class="pf-title">Roster</h3>
-                <p class="pf-sub">Every Warrior in the squad, with the role their captain gave them.</p>
-                <div class="roster">
-                  <div class="roster-member"><span class="mini-avatar">BR</span><span class="rm-name">Bijoy Rahman <span class="role-sm">· Captain</span></span></div>
-                  <div class="roster-member"><span class="mini-avatar">FM</span><span class="rm-name">Farhan Mahee <span class="role-sm">· Vice-Captain</span></span></div>
-                  <div class="roster-member"><span class="mini-avatar">AAM</span><span class="rm-name">Abdullah Al Mahmud <span class="role-sm">· Striker</span></span></div>
-                  <div class="roster-member"><span class="mini-avatar">AM</span><span class="rm-name">Ahmed Mizan <span class="role-sm">· Playmaker</span></span></div>
-                  <div class="roster-member"><span class="mini-avatar">FIM</span><span class="rm-name">Foysal Islam Muaz <span class="role-sm">· Midfielder</span></span></div>
-                  <div class="roster-member"><span class="mini-avatar">FR</span><span class="rm-name">Fozle Rabbie <span class="role-sm">· Defender</span></span></div>
-                  <div class="roster-member"><span class="mini-avatar">GS</span><span class="rm-name">Gowrob Saha <span class="role-sm">· Goalkeeper</span></span></div>
-                  <div class="roster-member"><span class="mini-avatar">HT</span><span class="rm-name">Hasib Al Hasan Talukder <span class="role-sm">· Winger</span></span></div>
-                  <div class="roster-member"><span class="mini-avatar">JH</span><span class="rm-name">Jahid Hasan <span class="role-sm">· Defender</span></span></div>
-                  <div class="roster-member"><span class="mini-avatar">KZ</span><span class="rm-name">Kamrul Islam Ziad <span class="role-sm">· Support</span></span></div>
-                </div>
-              </div>
-              <div class="pf-panel glass reveal">
-                <h3 class="pf-title">Group Chat</h3>
-                <p class="pf-sub">Knight Strikers only — every member can send messages.</p>
-                <div class="chat-log" id="chatLog">
-                  <div class="chat-msg"><span class="mini-avatar">BR</span><div class="chat-bubble"><p class="chat-sender">Bijoy Rahman <span class="role-sm">· Captain</span></p><p class="chat-text">Practice is Friday 8 PM, everyone. Strikers lobby opens 15 minutes early.</p><p class="chat-time">7:42 PM</p></div></div>
-                  <div class="chat-msg"><span class="mini-avatar">FM</span><div class="chat-bubble"><p class="chat-sender">Farhan Mahee <span class="role-sm">· Vice-Captain</span></p><p class="chat-text">I'll run the defensive drills first, then we do the 3v3 rotations.</p><p class="chat-time">7:45 PM</p></div></div>
-                  <div class="chat-msg"><span class="mini-avatar">AM</span><div class="chat-bubble"><p class="chat-sender">Ahmed Mizan <span class="role-sm">· Playmaker</span></p><p class="chat-text">Updated my team strength to 3,050 — the new formation is ready.</p><p class="chat-time">7:51 PM</p></div></div>
-                  <div class="chat-msg"><span class="mini-avatar">GS</span><div class="chat-bubble"><p class="chat-sender">Gowrob Saha <span class="role-sm">· Goalkeeper</span></p><p class="chat-text">Clean sheet again last night. Bring your best strikers on Friday.</p><p class="chat-time">8:03 PM</p></div></div>
-                </div>
-                <form class="chat-form" id="chatForm">
-                  <input id="chatInput" type="text" placeholder="Message Knight Strikers…" autocomplete="off" aria-label="Message Knight Strikers" />
-                  <button class="btn btn-red" type="submit">Send</button>
-                </form>
-              </div>
+            <div id="squadActions" style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px"></div>
+            <div class="pf-panel glass reveal">
+              <h3 class="pf-title">Roster</h3>
+              <p class="pf-sub">Every Warrior in the squad, with the role their captain gave them.</p>
+              <div class="roster" id="squadRoster"><p class="pf-note">Loading…</p></div>
             </div>
+            <div id="squadInviteBox" style="margin-top:18px"></div>
             <p style="margin-top:22px"><a class="btn btn-glass" href="#profile" data-pftab="squads">← Back to My Profile</a></p>
           </div>
         </section>
@@ -2568,13 +2642,15 @@
           <div>
             <h4>Club Life</h4>
             <ul class="foot-links">
-              <li><a href="#news" data-nav="news">Club News</a></li>
+              <li><a href="#home" data-nav="home">Home</a></li>
+              <li><a href="#news" data-nav="news">News</a></li>
+              <li><a href="#events" data-nav="events">Events</a></li>
               <li><a href="#leaderboard" data-nav="leaderboard">Leaderboard</a></li>
-              <li><a href="#events" data-nav="events">Events &amp; Tournaments</a></li>
-              <li><a href="#rules" data-nav="rules">Rules &amp; Code of Conduct</a></li>
-              <li><a href="#gallery" data-nav="gallery">Gallery</a></li>
-              <li><a href="#sponsors" data-nav="sponsors">Become a Sponsor</a></li>
-              <li><a href="#register" data-nav="register">Register</a></li>
+              <li><a href="#community" data-nav="community">Community</a></li>
+              <li><a href="#games" data-nav="games">Games</a></li>
+              <li><a href="#rules" data-nav="rules">Rules</a></li>
+              <li><a href="#about" data-nav="about">About</a></li>
+              <li><a href="#sponsors" data-nav="sponsors">Sponsors</a></li>
             </ul>
           </div>
         </div>
@@ -2616,7 +2692,7 @@
 
     <script>
       /* ---------- View router ---------- */
-      var VIEWS = ['home', 'about', 'community', 'games', 'news', 'article', 'events', 'tournament', 'leaderboard', 'rules', 'gallery', 'sponsors', 'register', 'login', 'profile', 'squad', 'createsquad', 'console', 'resetpassword', 'setpassword'];
+      var VIEWS = ['home', 'about', 'community', 'games', 'news', 'article', 'events', 'tournament', 'leaderboard', 'rules', 'sponsors', 'register', 'login', 'checkemail', 'profile', 'squad', 'createsquad', 'console', 'inbox', 'resetpassword', 'setpassword'];
       var HASH_ALIAS = {
         top: 'home', committee: 'community', members: 'community',
         provide: 'about', membership: 'about', practice: 'about',
@@ -2691,6 +2767,8 @@
         if ((m = h.match(/^news\/(.+)$/))) { openArticle(m[1]); return; }
         if ((m = h.match(/^tournament\/(.+)$/))) { openTournament(m[1]); return; }
         if ((m = h.match(/^profile\/(.+)$/))) { if (window.__routeProfile) { window.__routeProfile(m[1]); return; } }
+        if ((m = h.match(/^squad\/(.+)$/))) { if (window.__routeSquad) { window.__routeSquad(m[1]); return; } }
+        if (h === 'squad' && window.__routeSquad) { window.__routeSquad(''); return; }
         if (h === 'profile' && window.__routeProfile) { window.__routeProfile(''); return; }
         showView(h || 'home', false);
       }
@@ -2869,7 +2947,11 @@
       }
       function validateRegistration(focusFirst) {
         var name = document.getElementById('rName').value.trim();
-        var phone = document.getElementById('rPhone').value.trim();
+        var phoneEl = document.getElementById('rPhone');
+        var phone = phoneEl.value.trim().replace(/[\s-]/g, '');
+        if (phone.indexOf('+880') === 0) phone = '0' + phone.slice(4);
+        else if (phone.indexOf('880') === 0 && phone.length === 13) phone = '0' + phone.slice(3);
+        phoneEl.value = phone;
         var email = document.getElementById('rEmail').value.trim();
         var facebook = document.getElementById('rFacebook').value.trim();
         var games = regForm.querySelectorAll('input[name="games"]:checked');
@@ -2879,7 +2961,7 @@
         var confirm = document.getElementById('rConfirm').value;
         var checks = [
           ['name', !name],
-          ['phone', !phone],
+          ['phone', !/^01\d{9}$/.test(phone)],
           ['email', !email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)],
           ['facebook', !facebook],
           ['games', games.length === 0],
@@ -3140,7 +3222,7 @@
         NEWS_POSTS.forEach(function (p, i) {
           items.push({
             id: 'post-' + i, type: 'post', chip: 'Club News', tag: p.tag, tourneyId: p.tourneyId || null,
-            title: p.title, body: p.body, linkView: p.linkView, linkLabel: p.linkLabel,
+            title: p.title, body: p.body, linkView: p.linkView, linkLabel: p.linkLabel, youtube: p.youtube || '',
             date: '', photo: CLUB_ART, photoAlt: 'Knight Warriors Club — the bloody moon emblem'
           });
         });
@@ -3149,7 +3231,7 @@
       var ARROW_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
       function storyCardHTML(it) {
         return '<a class="story-card glass" href="#news/' + esc(it.id) + '" data-story="' + esc(it.id) + '" aria-label="Read the full story: ' + esc(it.title) + '">' +
-          '<span class="story-media"><img data-src="' + esc(it.photo) + '" alt="' + esc(it.photoAlt) + '" loading="lazy" /><span class="s-tag">' + esc(it.chip) + '</span></span>' +
+          '<span class="story-media"><img data-src="' + esc(it.photo) + '" alt="' + esc(it.photoAlt) + '" loading="lazy" /><span class="s-tag">' + esc(it.chip) + '</span>' + (it.youtube ? '<span class="s-video">&#9654; Video</span>' : '') + '</span>' +
           '<span class="story-card-body"><span class="story-card-title">' + esc(it.title) + '</span>' +
           (it.date ? '<span class="story-date">' + esc(it.date) + '</span>' : '') + '</span></a>';
       }
@@ -3162,7 +3244,7 @@
             '<span class="ticker-label">Breaking</span><span class="ticker-text">' + esc(f.title) + '</span></a>';
           portal += '<a class="story-feature" href="#news/' + esc(f.id) + '" data-story="' + esc(f.id) + '" aria-label="Read the full story: ' + esc(f.title) + '">' +
             '<img data-src="' + esc(f.photo) + '" alt="' + esc(f.photoAlt) + '" />' +
-            '<span class="story-feature-body"><span class="s-tag">' + esc(f.chip) + '</span>' +
+            '<span class="story-feature-body"><span class="s-tag">' + esc(f.chip) + '</span>' + (f.youtube ? '<span class="s-video inline">&#9654; Video</span>' : '') +
             '<span class="story-feature-title">' + esc(f.title) + '</span>' +
             (f.date ? '<span class="story-date">' + esc(f.date) + '</span>' : '') + '</span></a>';
           if (items.length > 1) portal += '<div class="news-grid">' + items.slice(1).map(storyCardHTML).join('') + '</div>';
@@ -3175,6 +3257,9 @@
         }).join('');
       }
 
+      function ytId(u) { var m = String(u || '').match(/(?:youtube\.com\/(?:watch\?v=|shorts\/|embed\/)|youtu\.be\/)([\w-]{6,})/); return m ? m[1] : ''; }
+      function ytEmbedHTML(u) { var id = ytId(u); if (!id) return ''; return '<div class="yt-wrap"><iframe src="https://www.youtube-nocookie.com/embed/' + id + '" title="YouTube video player" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></div>'; }
+
       /* ---------- News articles: one page per story, inside News ---------- */
       function articleHTML(it) {
         var h = '<a class="article-back" href="#news" data-nav="news">← All news</a>';
@@ -3183,6 +3268,7 @@
           (it.date ? '<span class="story-date">' + esc(it.date) + '</span>' : '') + '</div>';
         h += '<h2>' + esc(it.title) + '</h2>';
         if (it.photo) h += '<img class="article-hero" src="' + esc(it.photo) + '" alt="' + esc(it.photoAlt) + '" />';
+        if (it.youtube) h += ytEmbedHTML(it.youtube);
         h += '<div class="article-body">';
         if (it.type === 'post') {
           h += '<p>' + esc(it.body) + '</p>';
@@ -3249,10 +3335,9 @@
         return '<a class="t-name-link" href="#tournament" data-tourney="' + esc(t.id) + '" aria-label="Open the ' + esc(t.name) + ' tournament page">' + esc(t.name) + '<span class="t-arrow" aria-hidden="true">→</span></a>';
       }
       function renderEventBanners() {
-        var running = [], upcoming = [], finished = [];
+        var running = [], finished = [];
         TOURNAMENTS.forEach(function (t) {
           if (t.status === 'running') running.push(t);
-          else if (t.status === 'upcoming') upcoming.push(t);
           else if (t.status === 'finished') finished.push(t);
         });
         function entries(list, desc) {
@@ -3265,10 +3350,6 @@
           (running.length
             ? entries(running, function (t) { return esc(t.game || '') + ' — live now. Fixtures, results, the table and records are on its page.'; })
             : '<h3>Coming Soon</h3><p>The next tournament is being prepared — watch this space.</p>') + '</div>';
-        h += '<div class="ev-banner glass"><span class="ev-label">Upcoming</span>' +
-          (upcoming.length
-            ? entries(upcoming, function (t) { return esc(t.game || '') + ' — fixtures and participants appear on its tournament page.'; })
-            : '<h3>To Be Announced</h3><p>The next tournament will be announced here once it is set.</p>') + '</div>';
         h += '<div class="ev-banner glass"><span class="ev-label">Tournament History</span>' +
           (finished.length
             ? '<div class="ev-hist-list">' + finished.map(function (t) {
@@ -3791,24 +3872,26 @@
       function renderHonours() {
         var el = document.getElementById('honoursList');
         if (!el) return;
-        var html = '';
+        var boxes = '';
         TOURNAMENTS.forEach(function (t) {
           if (!t.participants || t.participants.indexOf(PREVIEW_MEMBER) === -1) return;
           var table = computeTable(t.results || []);
-          var pos = 0, pts = 0;
-          table.forEach(function (r, i) { if (r.name === PREVIEW_MEMBER) { pos = i + 1; pts = r.pts; } });
+          var pos = 0, row = null;
+          table.forEach(function (r, i) { if (r.name === PREVIEW_MEMBER) { pos = i + 1; row = r; } });
+          if (!pos) return;
           var isChamp = t.status === 'finished' && t.champion === PREVIEW_MEMBER;
-          if (isChamp) {
-            html += '<div class="honour win"><span class="honour-icon">' + TROPHY_SVG + '</span><div>' +
-              '<h4><span class="h-pos">Champion</span> — ' + esc(t.name) + '</h4>' +
-              '<p>' + esc(t.game) + ' · Finished ' + posLabel(pos) + ' of ' + table.length + ' · ' + pts + ' pts</p></div></div>';
-          } else if (pos) {
-            html += '<div class="honour"><span class="honour-icon">' + TROPHY_SVG + '</span><div>' +
-              '<h4>Finished <span class="h-pos">' + posLabel(pos) + '</span> — ' + esc(t.name) + '</h4>' +
-              '<p>' + esc(t.game) + ' · ' + pts + ' pts</p></div></div>';
-          }
+          var photo = isChamp ? championPhotoFor(t) : null;
+          var visual = photo
+            ? '<img src="' + esc(photo) + '" alt="Champion of ' + esc(t.name) + '" />'
+            : '<span class="tb-pos">' + posLabel(pos) + '</span>' + (isChamp ? '<span class="tb-champ">Champion</span>' : '');
+          boxes += '<div class="trophy-box' + (isChamp ? ' champ' : '') + '">' +
+            '<div class="tb-visual">' + visual + '</div>' +
+            '<div class="tb-body"><h4>' + esc(t.name) + '</h4>' +
+            '<p>' + esc(t.game || '') + ' · Finished ' + posLabel(pos) + ' of ' + table.length + '</p>' +
+            '<p>' + (row ? row.pts + ' pts · ' + row.w + 'W ' + row.d + 'D ' + row.l + 'L' : '') + '</p>' +
+            '<a class="tb-more" href="#tournament" data-tourney="' + esc(t.id) + '">See more &#8594;</a></div></div>';
         });
-        el.innerHTML = html || '<p class="pf-note">No tournament honours yet — your record appears here after your first tournament.</p>';
+        el.innerHTML = boxes ? '<div class="trophy-grid">' + boxes + '</div>' : '<p class="pf-note">No tournament honours yet — your record appears here after your first tournament.</p>';
       }
 
       /* ---------- Profile: squads list ---------- */
@@ -4320,6 +4403,7 @@
                 kwc.priv = rs[0].data || null;
                 kwc.games = rs[1].data || [];
                 applyMemberToPage();
+                if (typeof window.__onMemberReady === 'function') window.__onMemberReady();
                 setLoggedIn(true);
               });
             })
@@ -4394,12 +4478,12 @@
               /* Email confirmation is ON: the account exists but has no
                  session yet, so profile rows cannot be written now. They
                  ride in the auth metadata and ensureProfile() creates them
-                 at the member's first login. */
-              el('regCheckEmailAddr').textContent = email;
-              el('registerForm').style.display = 'none';
-              var chk = el('regCheckEmail');
-              chk.classList.add('show');
-              chk.focus();
+                 at the member's first login. Send the member to the
+                 dedicated check-email page. */
+              window.__pendingEmail = email;
+              var ca = el('checkEmailAddr');
+              if (ca) ca.textContent = email;
+              showView('checkemail', true);
               return null;
             }
             return sb.from('members').insert({
@@ -4441,6 +4525,22 @@
             else if (/password/i.test(msg)) showErr('regError', 'That password is too weak — use at least 6 characters and try again.');
             else showErr('regError', 'Something went wrong creating your account — please try again.');
           }).then(function () { setBusy(btn, false); });
+        }
+
+        /* ---------- Resend confirmation email ---------- */
+        var resendBtn = el('resendBtn');
+        if (resendBtn) {
+          resendBtn.addEventListener('click', function (e) {
+            e.preventDefault();
+            var em = window.__pendingEmail;
+            var note = el('resendNote');
+            if (!sb || !em) { if (note) note.textContent = 'Register again to get a fresh confirmation email.'; return; }
+            setBusy(resendBtn, true);
+            sb.auth.resend({ type: 'signup', email: em }).then(function (res) {
+              setBusy(resendBtn, false);
+              if (note) note.textContent = res.error ? 'Could not resend just now — wait a minute and try again.' : 'Sent again — check your inbox (and spam folder).';
+            });
+          });
         }
 
         /* ---------- Log in ---------- */
@@ -4809,7 +4909,7 @@
             return {
               tag: a.tag || a.date || '', title: a.title || '', body: a.body || '',
               linkView: a.linkView || a.link || '', linkLabel: a.linkLabel || a.linkText || '',
-              tourneyId: a.tourneyId || null
+              tourneyId: a.tourneyId || null, youtube: a.youtube || ''
             };
           });
         }
@@ -4878,8 +4978,8 @@
        Console, live Inbox, squad invites, push opt-ins ===== */
     (function () {
       var VAPID_PUBLIC = 'BE8UId7vYp0sbeIEEWTTKFDBBs8oHsV-_1iHHcvxNE0myt_TMjRfetKHWsHraqm9XAXmYAM_Jv4SzsuqT7nAdcc';
-      var TABS = ['about', 'games', 'trophy', 'squads', 'inbox', 'settings'];
-      var PANELS = { about: 'profileAbout', games: 'profileGames', trophy: 'profileHonours', squads: 'profileSquads', inbox: 'profileInbox', settings: 'profileSettings' };
+      var TABS = ['trophy', 'about', 'squads', 'settings'];
+      var PANELS = { trophy: 'profileHonours', about: 'profileAbout', squads: 'profileSquads', settings: 'profileSettings' };
       var ROLES = ['Member', 'Vice President', 'Secretary', 'Treasurer', 'Sponsorship Head', 'Events Coordinator', 'Public Relations Officer', 'Disciplinary Officer', 'Media & Promotion Head', 'Community Manager', 'President'];
       var guest = null;
       var guestGames = [];
@@ -4937,7 +5037,7 @@
 
       /* ---------- Profile tabs ---------- */
       window.setProfileTab = function (tab) {
-        if (TABS.indexOf(tab) === -1) tab = 'about';
+        if (TABS.indexOf(tab) === -1) tab = 'trophy';
         TABS.forEach(function (tb) {
           var p = $(PANELS[tb]); if (p) p.style.display = (tb === tab) ? '' : 'none';
         });
@@ -4945,11 +5045,10 @@
           b.classList.toggle('active', b.getAttribute('data-pftab') === tab);
         });
         if (tab === 'about') fillAbout();
-        if (tab === 'inbox' && !guest) loadInbox();
       };
       function gotoTab(tab) {
         exitGuest();
-        if (tab === 'about') showView('profile', true, 'profile');
+        if (tab === 'trophy') showView('profile', true, 'profile');
         else showView('profile', true, 'profile/' + tab);
         window.setProfileTab(tab);
       }
@@ -4966,10 +5065,12 @@
       /* ---------- Routing for #profile/... ---------- */
       window.__routeProfile = function (seg) {
         seg = String(seg || '').toLowerCase();
-        if (!seg) { exitGuest(); showView('profile', false); window.setProfileTab('about'); return; }
+        if (!seg) { exitGuest(); showView('profile', false); window.setProfileTab('trophy'); return; }
+        if (seg === 'inbox') { showView('inbox', false); return; }
+        if (seg === 'games') { exitGuest(); showView('profile', false); window.setProfileTab('settings'); return; }
         if (TABS.indexOf(seg) !== -1) { exitGuest(); showView('profile', false); window.setProfileTab(seg); return; }
         openMemberProfile(seg);
-      };
+      };;
 
       function exitGuest() {
         if (!guest) return;
@@ -4986,47 +5087,169 @@
       function arow(k, v) {
         return '<div class="about-row"><b>' + esc(k) + '</b><span>' + esc(v || '—') + '</span></div>';
       }
+      function honoursStats(name) {
+        var played = 0, titles = 0, wins = 0;
+        TOURNAMENTS.forEach(function (t) {
+          if (!t.participants || t.participants.indexOf(name) === -1) return;
+          played++;
+          computeTable(t.results || []).forEach(function (r) { if (r.name === name) wins += (r.w || 0); });
+          if (t.status === 'finished' && t.champion === name) titles++;
+        });
+        return { played: played, titles: titles, wins: wins };
+      }
+      function aboutCard(title, inner) {
+        return '<div class="about-card"><h4>' + esc(title) + '</h4>' + inner + '</div>';
+      }
+      function gamesCardHTML(list) {
+        if (!list || !list.length) return '<p class="pf-note">No games added yet.</p>';
+        return list.map(function (g) {
+          return '<div class="about-row"><b>' + esc(g.game) + '</b><span>' + (g.uid ? 'UID ' + esc(g.uid) : 'UID —') + (g.game === 'eFootball' && g.team_strength ? ' · Strength ' + esc(g.team_strength) : '') + '</span></div>';
+        }).join('');
+      }
+      function loadAboutSquads(memberId) {
+        var elx = $('aboutSquads'); if (!elx || !sb) return;
+        sb.from('squad_members').select('squad_id, squads(name)').eq('member_id', memberId)
+          .then(function (res) {
+            var names = (res.data || []).map(function (r) { return r.squads ? r.squads.name : null; }).filter(Boolean);
+            elx.textContent = names.length ? names.join(', ') : 'No squad yet';
+          }).catch(function () { elx.textContent = '—'; });
+      }
+      function loadAboutFriends(memberId) {
+        var elx = $('aboutFriends'); if (!elx || !sb) return;
+        sb.from('friendships').select('requester_id, addressee_id')
+          .eq('status', 'accepted')
+          .or('requester_id.eq.' + memberId + ',addressee_id.eq.' + memberId)
+          .then(function (res) {
+            var ids = (res.data || []).map(function (f) { return f.requester_id === memberId ? f.addressee_id : f.requester_id; });
+            if (!ids.length) { elx.innerHTML = '<p class="pf-note">No friends yet.</p>'; return null; }
+            return sb.from('members').select('id, full_name, username, avatar_url').in('id', ids).then(function (mres) {
+              var list = mres.data || [];
+              elx.innerHTML = list.slice(0, 10).map(function (f) {
+                var chip = '<img src="' + esc(f.avatar_url || initialAvatar(f.full_name)) + '" alt="" style="width:26px;height:26px;border-radius:50%" /><span>' + esc(f.full_name) + '</span>';
+                return f.username
+                  ? '<a class="friend-chip" href="#profile/' + esc(f.username) + '">' + chip + '</a>'
+                  : '<span class="friend-chip">' + chip + '</span>';
+              }).join('') + (list.length > 10 ? '<p class="pf-note">+ ' + (list.length - 10) + ' more</p>' : '');
+            });
+          }).catch(function () { elx.innerHTML = '<p class="pf-note">Friends unavailable right now.</p>'; });
+      }
+      function playerInfoCard(o) {
+        return aboutCard('Player Info',
+          arow('Role', o.role || 'Member') +
+          arow('Favourite game', o.favourite_game || 'Not picked yet') +
+          arow('Member since', monthYear(o.created_at)) +
+          '<div class="about-row"><b>Squads</b><span id="aboutSquads">Loading…</span></div>');
+      }
+      function recordCard(name) {
+        var st = honoursStats(name);
+        return aboutCard('Club Record',
+          arow('Tournaments played', String(st.played)) +
+          arow('Titles', String(st.titles)) +
+          arow('Match wins', String(st.wins)));
+      }
       function fillAbout() {
         var box = $('aboutDetails'); if (!box) return;
-        var priv = $('aboutPrivate'), pd = $('aboutPrivateDetails'), af = $('aboutFriend');
-        if (guest) {
-          var names = guestGames.map(function (g) { return g.game; }).join(', ');
-          var html = arow('Role', guest.role || 'Member') +
-            arow('Member since', monthYear(guest.created_at)) +
-            arow('Games', names);
-          if (guestLimited) html += '<p class="pf-note" style="margin-top:10px">This profile is friends-only — only the member\'s friends, the committee and the President can see the full profile.</p>';
-          box.innerHTML = html;
-          if (priv) priv.hidden = true;
-          if (af) {
-            if (me() && !guestLimited) {
-              af.innerHTML = '<button class="btn btn-glass btn-sm" type="button" id="addFriendBtn">Add Friend</button>';
-              var btn = $('addFriendBtn');
-              if (btn) btn.addEventListener('click', sendFriendRequest);
-            } else af.innerHTML = '';
-          }
-          return;
-        }
+        var priv = $('aboutPrivate'); if (priv) priv.hidden = true;
+        var af = $('aboutFriend'); if (af) af.innerHTML = '';
+        var pa = $('profileActions'); if (pa) { pa.hidden = true; pa.innerHTML = ''; }
+        if (guest) { fillAboutGuest(); return; }
         var m = me();
-        if (!m) {
-          box.innerHTML = '<p class="pf-note">This is a sample profile. Log in or register to see your own.</p>';
-          if (priv) priv.hidden = true;
-          if (af) af.innerHTML = '';
+        if (!m) { box.innerHTML = '<p class="pf-note">This is a sample profile. Log in or register to see your own.</p>'; return; }
+        var myGames = (typeof kwc !== 'undefined' && kwc.games) || [];
+        var html = '<div class="about-grid">';
+        html += playerInfoCard(m);
+        html += aboutCard('Bio', '<p class="about-bio">' + esc(m.bio || 'No bio yet — add one in Settings.') + '</p>');
+        html += aboutCard('My Games', gamesCardHTML(myGames));
+        html += recordCard(m.full_name);
+        html += aboutCard('Friends', '<div id="aboutFriends"><p class="pf-note">Loading…</p></div>');
+        var pv = (typeof kwc !== 'undefined' && kwc.priv) || null;
+        if (pv) html += aboutCard('Private Details — only you & the committee',
+          arow('Phone', pv.phone) + arow('Email', pv.email) +
+          arow('Date of birth', pv.date_of_birth) + arow('Gender', pv.gender));
+        html += '</div>';
+        box.innerHTML = html;
+        loadAboutSquads(m.id);
+        loadAboutFriends(m.id);
+      }
+      function fillAboutGuest() {
+        var box = $('aboutDetails'); if (!box || !guest) return;
+        var html = '<div class="about-grid">';
+        html += playerInfoCard(guest);
+        html += aboutCard('Bio', '<p class="about-bio">' + esc(guestLimited ? 'This profile is friends-only.' : (guest.bio || 'No bio yet.')) + '</p>');
+        if (!guestLimited) {
+          html += aboutCard('My Games', gamesCardHTML(guestGames));
+          html += recordCard(guest.full_name);
+          html += aboutCard('Friends', '<div id="aboutFriends"><p class="pf-note">Loading…</p></div>');
+        }
+        html += '<span id="aboutPrivateSlot"></span>';
+        html += '</div>';
+        if (guestLimited) html += '<p class="pf-note" style="margin-top:10px">This profile is friends-only — only the member\'s friends, the committee and the President can see the full profile.</p>';
+        box.innerHTML = html;
+        loadAboutSquads(guest.id);
+        if (!guestLimited) loadAboutFriends(guest.id);
+        if (isComm() && sb) {
+          sb.from('member_private').select('*').eq('member_id', guest.id).maybeSingle()
+            .then(function (res) {
+              var slot = $('aboutPrivateSlot'); if (!slot || !res.data) return;
+              var pv = res.data;
+              slot.outerHTML = aboutCard('Private Details — committee only',
+                arow('Phone', pv.phone) + arow('Email', pv.email) +
+                arow('Date of birth', pv.date_of_birth) + arow('Gender', pv.gender));
+            }).catch(function () {});
+        }
+        renderGuestActions();
+      }
+      function renderGuestActions() {
+        var pa = $('profileActions'); if (!pa || !guest) return;
+        if (!me()) {
+          pa.hidden = false;
+          pa.innerHTML = '<a class="btn btn-red" href="#login" data-nav="login">Log in to add friend or send a message</a>';
           return;
         }
-        box.innerHTML =
-          arow('Role', m.role || 'Member') +
-          arow('Username', m.username ? '@' + m.username : 'Not set yet') +
-          arow('Member since', monthYear(m.created_at)) +
-          arow('Your profile link', m.username ? 'knightwarriorsclub.com/#profile/' + m.username : 'Pick a username in Settings to get your link');
-        if (af) af.innerHTML = '';
-        if (priv && pd && typeof kwc !== 'undefined' && kwc.priv) {
-          priv.hidden = false;
-          pd.innerHTML =
-            arow('Phone', kwc.priv.phone) +
-            arow('Email', kwc.priv.email) +
-            arow('Date of birth', kwc.priv.date_of_birth) +
-            arow('Gender', kwc.priv.gender);
-        } else if (priv) priv.hidden = true;
+        if (me().id === guest.id) return;
+        pa.hidden = false;
+        pa.innerHTML = '<span id="friendBtnSlot"><button class="btn btn-glass" type="button" disabled>…</button></span>' +
+          '<button class="btn btn-red" type="button" id="msgBtn" style="margin-left:10px">Message</button>';
+        var mb = $('msgBtn');
+        if (mb) mb.addEventListener('click', function () {
+          if (window.__openDM) window.__openDM(guest.id, guest.full_name);
+          else window.location.hash = '#inbox';
+        });
+        refreshFriendBtn();
+      }
+      function refreshFriendBtn() {
+        var slot = $('friendBtnSlot'); if (!slot || !guest || !me() || !sb) return;
+        sb.from('friendships').select('*')
+          .or('and(requester_id.eq.' + me().id + ',addressee_id.eq.' + guest.id + '),and(requester_id.eq.' + guest.id + ',addressee_id.eq.' + me().id + ')')
+          .then(function (res) {
+            var f = (res.data || [])[0];
+            var h;
+            if (!f || f.status === 'declined') h = '<button class="btn btn-red" type="button" id="frAct" data-act="send">Add Friend</button>';
+            else if (f.status === 'accepted') h = '<button class="btn btn-glass" type="button" id="frAct" data-act="unfriend">&#10003; Friend — tap to unfriend</button>';
+            else if (f.requester_id === me().id) h = '<button class="btn btn-glass" type="button" disabled>Request sent</button>';
+            else h = '<button class="btn btn-red" type="button" id="frAct" data-act="accept">Accept friend request</button> <button class="btn btn-glass" type="button" id="frAct2" data-act="decline">Decline</button>';
+            slot.innerHTML = h;
+            var b = $('frAct'); if (b) b.addEventListener('click', function () { friendAction(b.getAttribute('data-act'), f); });
+            var b2 = $('frAct2'); if (b2) b2.addEventListener('click', function () { friendAction('decline', f); });
+          }).catch(function () {});
+      }
+      function friendAction(act, f) {
+        if (!me() || !guest || !sb) return;
+        var myId = me().id, gId = guest.id;
+        var pairOr = 'and(requester_id.eq.' + myId + ',addressee_id.eq.' + gId + '),and(requester_id.eq.' + gId + ',addressee_id.eq.' + myId + ')';
+        var done = function () { refreshFriendBtn(); };
+        if (act === 'send') {
+          sb.from('friendships').delete().or(pairOr).then(function () {
+            sb.from('friendships').insert({ requester_id: myId, addressee_id: gId, status: 'pending' }).then(done).catch(done);
+          }).catch(done);
+        } else if (act === 'accept') {
+          sb.from('friendships').update({ status: 'accepted' }).eq('requester_id', gId).eq('addressee_id', myId).then(done).catch(done);
+        } else if (act === 'decline') {
+          sb.from('friendships').update({ status: 'declined' }).eq('requester_id', gId).eq('addressee_id', myId).then(done).catch(done);
+        } else if (act === 'unfriend') {
+          if (!window.confirm('Unfriend ' + (guest.full_name || 'this member') + '?')) return;
+          sb.from('friendships').delete().or(pairOr).then(done).catch(done);
+        }
       }
       function sendFriendRequest() {
         var m = me(); if (!m || !guest || !sb) return;
@@ -5049,7 +5272,7 @@
         if (!sb) { showView('community', false); return; }
         var m = me();
         if (m && m.username && username === String(m.username).toLowerCase()) {
-          exitGuest(); showView('profile', false); window.setProfileTab('about'); return;
+          exitGuest(); showView('profile', false); window.setProfileTab('trophy'); return;
         }
         sb.from('members').select('*').eq('username', username).maybeSingle()
           .then(function (res) {
@@ -5059,7 +5282,7 @@
               showView('community', false);
               return;
             }
-            if (m && g.id === m.id) { exitGuest(); showView('profile', false); window.setProfileTab('about'); return; }
+            if (m && g.id === m.id) { exitGuest(); showView('profile', false); window.setProfileTab('trophy'); return; }
             var limitedP;
             if (g.profile_visibility === 'friends' && !isComm()) {
               if (!m) limitedP = Promise.resolve(true);
@@ -5103,7 +5326,7 @@
         gn.hidden = false;
         document.querySelectorAll('#pfTabs .pf-tab').forEach(function (b) {
           var t = b.getAttribute('data-pftab');
-          b.style.display = (t === 'inbox' || t === 'settings') ? 'none' : '';
+          b.style.display = (t === 'settings') ? 'none' : '';
         });
         /* Games, read-only */
         var list = $('myGamesList');
@@ -5121,40 +5344,32 @@
         PREVIEW_MEMBER = g.full_name;
         if (typeof renderHonours === 'function') renderHonours();
         loadSquadsInto(g.id, true);
-        window.setProfileTab('about');
+        window.setProfileTab('trophy');
       }
 
       /* ---------- Squads list (profile tab) ---------- */
       function loadSquadsInto(memberId, isGuestView) {
-        if (!sb) return;
-        sb.from('squad_members')
-          .select('role, squad_id, squads(name, game)')
-          .eq('member_id', memberId)
+        var box = $('profileSquadsList'); if (!box) return;
+        var cb = document.querySelector('#profileSquads a[data-nav="createsquad"]');
+        if (cb) cb.style.display = (!isGuestView && me() && (me().can_create_squad || isPres())) ? '' : 'none';
+        if (!sb) { box.innerHTML = '<p class="pf-note">Squads are unavailable right now.</p>'; return; }
+        box.innerHTML = '<p class="pf-note">Loading…</p>';
+        sb.from('squad_members').select('squad_id, role, squads(id, name, game, captain_member_id)').eq('member_id', memberId)
           .then(function (res) {
-            if (res.error) return; /* pre-Part 2: leave current content */
-            var rows = res.data || [];
-            var box = $('profileSquadsList'); if (!box) return;
-            if (!rows.length) {
-              box.innerHTML = '<p class="pf-note">No squads yet.' + (isGuestView ? '' : ' When the President invites you — or if you already have permission — create the first one below.') + '</p>';
-            } else {
-              box.innerHTML = rows.map(function (r) {
-                var sq = r.squads || {};
-                return '<div class="squad-row"><span class="squad-crest">' + esc(initialsOf(sq.name || 'S')) + '</span>' +
-                  '<span class="sq-main"><span class="sq-name">' + esc(sq.name || 'Squad') + '</span>' +
-                  '<span class="sq-meta">' + esc(sq.game || '') + '</span></span>' +
-                  '<span class="sq-count">' + esc(r.role || 'Member') + '</span></div>';
-              }).join('');
-            }
-            var btn = document.querySelector('#profileSquads a[data-nav="createsquad"]');
-            if (btn) {
-              if (isGuestView) btn.style.display = 'none';
-              else {
-                var m = me();
-                btn.style.display = (m && (m.can_create_squad || m.role === 'President')) ? '' : 'none';
-              }
-            }
+            if (res.error) throw res.error;
+            var rows = (res.data || []).filter(function (r) { return r.squads; });
+            if (!rows.length) { box.innerHTML = '<p class="pf-note">No squads yet — squads you join or captain appear here.</p>'; return; }
+            box.innerHTML = rows.map(function (r) {
+              var sq = r.squads;
+              var inner = '<span class="squad-crest">' + esc(initialsOf(sq.name)) + '</span>' +
+                '<span class="sq-main"><span class="sq-name">' + esc(sq.name) + '</span>' +
+                '<span class="sq-meta">' + esc(sq.game || '') + ' <span class="role-sm">· ' + esc(r.role || 'Member') + '</span></span></span>';
+              return isGuestView
+                ? '<div class="squad-row">' + inner + '</div>'
+                : '<a class="squad-row" href="#squad/' + sq.id + '">' + inner + '</a>';
+            }).join('');
           })
-          .catch(function () {});
+          .catch(function () { box.innerHTML = '<p class="pf-note">Squads could not be loaded right now.</p>'; });
       }
 
       /* ---------- Create Squad: real insert when logged in ---------- */
@@ -5213,6 +5428,7 @@
           linkBtn + '</div></div>';
       }
       function loadInbox() {
+        if (!$('inboxNotifs')) return; /* Inbox lives on its own page now (Layer 3). */
         var m = me(); if (!m || !sb) return;
         sb.from('notifications').select('*').eq('member_id', m.id)
           .order('created_at', { ascending: false }).limit(60)
@@ -5316,7 +5532,7 @@
           var sub = (mb.username ? '@' + mb.username + ' · ' : '') + (pv.phone || '') + (pv.email ? ' · ' + pv.email : '');
           var html = '<div class="roster-member" style="align-items:flex-start">' +
             '<span class="mini-avatar">' + esc(initialsOf(mb.full_name)) + '</span>' +
-            '<div style="flex:1;min-width:0"><span class="rm-name">' + esc(mb.full_name || '') +
+            '<div style="flex:1;min-width:0"><span class="rm-name">' + (mb.username ? '<a class="member-link" href="#profile/' + esc(mb.username) + '">' + esc(mb.full_name || '') + '</a>' : esc(mb.full_name || '')) +
             ' <span class="role-sm">· ' + esc(mb.role || 'Member') + (mb.is_committee ? ' · Committee' : '') + '</span></span>' +
             '<span class="rm-sub">' + esc(sub) + '</span>' +
             '<span class="rm-sub">' + esc(games ? 'Games: ' + games : 'No games yet') + ' · Joined ' + esc(monthYear(mb.created_at) || '') + '</span>';
@@ -5547,7 +5763,7 @@
       }, 500);
 
       /* ---------- First paint ---------- */
-      window.setProfileTab('about');
+      window.setProfileTab('trophy');
       refreshPushBtn();
       var h0 = (window.location.hash || '').replace(/^#/, '');
       var m0 = h0.match(/^profile\/(.+)$/);
@@ -5560,6 +5776,669 @@
         var mm = h.match(/^profile\/(.+)$/);
         if (mm && document.body.getAttribute('data-view') !== 'profile') window.__routeProfile(mm[1]);
       });
+    })();
+  </script>
+
+<script>
+    /* ===== Layer 3: Inbox page (notifications, broadcasts, personal
+       messages, squad chats), squad pages, photo uploads, favourite
+       game ===== */
+    (function () {
+      function $(id) { return document.getElementById(id); }
+      function me() { return (typeof kwc !== 'undefined' && kwc.member) ? kwc.member : null; }
+      function isPres() { var m = me(); return !!(m && m.role === 'President'); }
+      function missing(err) { return !!(err && (err.code === '42P01' || err.code === 'PGRST205' || /does not exist/i.test(err.message || ''))); }
+      function initials(name) { return String(name || '?').split(/\s+/).map(function (w) { return w.charAt(0); }).join('').slice(0, 2).toUpperCase(); }
+      function fmtTime(iso) {
+        var d = new Date(iso); if (!d.getTime()) return '';
+        var today = new Date(); var sameDay = d.toDateString() === today.toDateString();
+        var t = d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+        return sameDay ? t : d.toLocaleDateString([], { day: 'numeric', month: 'short' }) + ', ' + t;
+      }
+      function toast(title, body, link) { if (window.kwcToast) window.kwcToast(title, body, link); }
+      var SETUP_NOTE = 'Club messaging switches on once the President runs the Part 3 database setup (one paste in the SQL Editor).';
+      var nameCache = {};
+      function cacheNames(list) { (list || []).forEach(function (x) { if (x && x.id) nameCache[x.id] = x; }); }
+      function memberName(id, fallback) { var m = nameCache[id]; return m ? m.full_name : (fallback || 'A member'); }
+
+      /* ---------- Own-profile pencils + member-ready hook ---------- */
+      function syncOwnClass() {
+        var own = !!me() && !$('view-profile').classList.contains('guest-mode');
+        document.body.classList.toggle('own-profile', own && document.body.getAttribute('data-view') === 'profile');
+        var fg = $('sFavGame'); var m = me();
+        if (fg && m && document.activeElement !== fg) fg.value = m.favourite_game || '';
+      }
+      window.__onMemberReady = function () {
+        syncOwnClass();
+        subscribeRealtime();
+        refreshBadges3();
+        if (document.body.getAttribute('data-view') === 'inbox') renderInboxList();
+      };
+      setInterval(syncOwnClass, 1500);
+
+      /* ---------- Badges: notifications + unread DMs ---------- */
+      function refreshBadges3() {
+        var m = me(); if (!m || !sb) return;
+        var total = 0; var pending = 2;
+        function done() { if (--pending > 0) return;
+          ['inboxBadge', 'inboxBadge2'].forEach(function (id) {
+            var b = $(id); if (!b) return;
+            b.textContent = total > 0 ? String(total) : '';
+            b.hidden = !(total > 0);
+          });
+        }
+        sb.from('notifications').select('id', { count: 'exact', head: true }).eq('member_id', m.id).eq('is_read', false)
+          .then(function (r) { if (!r.error) total += (r.count || 0); done(); }).catch(done);
+        sb.from('direct_messages').select('id', { count: 'exact', head: true }).eq('recipient_member_id', m.id).eq('is_read', false)
+          .then(function (r) { if (!r.error) total += (r.count || 0); done(); }).catch(done);
+      }
+
+      /* ---------- Photo uploads (profile + cover) ---------- */
+      function downscale(file, maxDim, cb) {
+        var url = URL.createObjectURL(file);
+        var img = new Image();
+        img.onload = function () {
+          var scale = Math.min(1, maxDim / Math.max(img.width || 1, img.height || 1));
+          var c = document.createElement('canvas');
+          c.width = Math.max(1, Math.round(img.width * scale));
+          c.height = Math.max(1, Math.round(img.height * scale));
+          c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+          URL.revokeObjectURL(url);
+          if (c.toBlob) c.toBlob(function (b) { cb(b); }, 'image/jpeg', 0.85); else cb(null);
+        };
+        img.onerror = function () { URL.revokeObjectURL(url); cb(null); };
+        img.src = url;
+      }
+      function uploadPhoto(kind) {
+        var m = me(); if (!m || !sb || typeof kwc === 'undefined' || !kwc.user) { toast('Log in first', 'Log in to change your photo.'); return; }
+        var input = $(kind === 'avatar' ? 'avatarFile' : 'coverFile');
+        var file = input && input.files && input.files[0];
+        if (!file) return;
+        downscale(file, kind === 'avatar' ? 512 : 1280, function (blob) {
+          if (!blob) { toast('Upload failed', 'That image could not be read — try another one.'); return; }
+          var bucket = kind === 'avatar' ? 'avatars' : 'covers';
+          var path = kwc.user.id + '/' + kind + '-' + Date.now() + '.jpg';
+          sb.storage.from(bucket).upload(path, blob, { contentType: 'image/jpeg', upsert: true })
+            .then(function (res) {
+              if (res.error) throw res.error;
+              var url = sb.storage.from(bucket).getPublicUrl(path).data.publicUrl;
+              var upd = {}; upd[kind === 'avatar' ? 'avatar_url' : 'cover_url'] = url;
+              return sb.from('members').update(upd).eq('id', m.id).then(function (u) {
+                if (u.error) throw u.error;
+                if (kind === 'avatar') { $('profileAvatarImg').src = url; kwc.member.avatar_url = url; }
+                else { $('profileCoverImg').src = url; kwc.member.cover_url = url; }
+                if (typeof applyMemberToPage === 'function') applyMemberToPage();
+                toast('Photo updated', 'Your new ' + (kind === 'avatar' ? 'profile' : 'cover') + ' photo is live.');
+              });
+            })
+            .catch(function (err) {
+              var msg = err && err.message ? String(err.message) : '';
+              if (/bucket/i.test(msg)) toast('Photos not switched on yet', 'Photo uploads start working after the Part 3 database setup.');
+              else toast('Upload failed', 'That photo could not be saved — please try again.');
+            });
+        });
+        input.value = '';
+      }
+      var ab = $('avatarEditBtn'); if (ab) ab.addEventListener('click', function () { var f = $('avatarFile'); if (f) f.click(); });
+      var cb2 = $('coverEditBtn'); if (cb2) cb2.addEventListener('click', function () { var f = $('coverFile'); if (f) f.click(); });
+      var af2 = $('avatarFile'); if (af2) af2.addEventListener('change', function () { uploadPhoto('avatar'); });
+      var cf2 = $('coverFile'); if (cf2) cf2.addEventListener('change', function () { uploadPhoto('cover'); });
+
+      /* ---------- Favourite game (Settings) ---------- */
+      var sf = $('settingsForm');
+      if (sf) sf.addEventListener('submit', function () {
+        var m = me(); if (!m || !sb) return;
+        var fg = $('sFavGame'); if (!fg) return;
+        sb.from('members').update({ favourite_game: fg.value || null }).eq('id', m.id)
+          .then(function (res) { if (!res.error && kwc.member) kwc.member.favourite_game = fg.value || null; })
+          .catch(function () {});
+      });
+
+      /* ================= SQUAD PAGE ================= */
+      var squadCtx = null;
+      var squadOpenInvite = false;
+      window.__routeSquad = function (id) {
+        if (!id) {
+          showView('profile', false, 'profile/squads');
+          if (window.setProfileTab) window.setProfileTab('squads');
+          return;
+        }
+        showView('squad', false);
+        loadSquadPage(parseInt(id, 10));
+      };
+      function loadSquadPage(sid) {
+        var nameEl = $('squadName'), meta = $('squadMeta'), roster = $('squadRoster'),
+            actions = $('squadActions'), inviteBox = $('squadInviteBox');
+        if (!nameEl) return;
+        nameEl.textContent = 'Squad';
+        meta.textContent = 'Loading…';
+        roster.innerHTML = '<p class="pf-note">Loading…</p>';
+        actions.innerHTML = ''; inviteBox.innerHTML = '';
+        if (!sb) { meta.textContent = 'Squads are unavailable right now.'; return; }
+        sb.from('squads').select('*').eq('id', sid).maybeSingle().then(function (sres) {
+          if (sres.error || !sres.data) { meta.textContent = 'This squad could not be found.'; roster.innerHTML = ''; return null; }
+          var sq = sres.data;
+          return sb.from('squad_members').select('member_id, role').eq('squad_id', sid).then(function (mres) {
+            var rows = mres.data || [];
+            var ids = rows.map(function (r) { return r.member_id; });
+            return sb.from('members').select('id, full_name, username, avatar_url').in('id', ids.length ? ids : [0]).then(function (pres2) {
+              cacheNames(pres2.data);
+              var byId = {}; (pres2.data || []).forEach(function (x) { byId[x.id] = x; });
+              rows.sort(function (a, b) {
+                if (a.member_id === sq.captain_member_id) return -1;
+                if (b.member_id === sq.captain_member_id) return 1;
+                return 0;
+              });
+              squadCtx = { squad: sq, rows: rows, byId: byId,
+                myRow: me() ? (rows.filter(function (r) { return r.member_id === me().id; })[0] || null) : null,
+                isCaptain: !!(me() && sq.captain_member_id === me().id) };
+              var captain = byId[sq.captain_member_id];
+              nameEl.textContent = sq.name;
+              meta.textContent = (sq.game || '') + ' squad · ' + rows.length + ' of 10 seats' +
+                (captain ? ' · Captained by ' + captain.full_name : '');
+              renderSquadActions();
+              renderSquadRoster();
+              if (squadOpenInvite) { squadOpenInvite = false; renderSquadInvite(); }
+            });
+          });
+        }).catch(function () { meta.textContent = 'This squad could not be loaded right now.'; });
+      }
+      function renderSquadActions() {
+        var box = $('squadActions'); if (!box || !squadCtx) return;
+        var sq = squadCtx.squad;
+        var h = '';
+        if (squadCtx.myRow || isPres()) h += '<button class="btn btn-red" type="button" id="sqChatBtn">Open Group Chat</button>';
+        if (squadCtx.isCaptain || isPres()) h += '<button class="btn btn-glass" type="button" id="sqInviteBtn">Invite Member</button>';
+        if (squadCtx.myRow && !squadCtx.isCaptain) h += '<button class="btn btn-glass" type="button" id="sqLeaveBtn">Leave Squad</button>';
+        if (squadCtx.isCaptain || isPres()) h += '<button class="btn btn-glass" type="button" id="sqDeleteBtn" style="color:#ff8089">Delete Squad</button>';
+        box.innerHTML = h;
+        var chat = $('sqChatBtn'); if (chat) chat.addEventListener('click', function () { openInboxThread('squad', sq.id); });
+        var inv = $('sqInviteBtn'); if (inv) inv.addEventListener('click', renderSquadInvite);
+        var lv = $('sqLeaveBtn'); if (lv) lv.addEventListener('click', leaveSquad);
+        var del = $('sqDeleteBtn'); if (del) del.addEventListener('click', deleteSquad);
+      }
+      function renderSquadRoster() {
+        var box = $('squadRoster'); if (!box || !squadCtx) return;
+        var canManage = squadCtx.isCaptain || isPres();
+        box.innerHTML = squadCtx.rows.map(function (r) {
+          var p = squadCtx.byId[r.member_id] || { full_name: 'Member' };
+          var nameHtml = p.username
+            ? '<a class="member-link" href="#profile/' + esc(p.username) + '">' + esc(p.full_name) + '</a>'
+            : esc(p.full_name);
+          var kebab = '';
+          if (canManage && r.member_id !== squadCtx.squad.captain_member_id) {
+            kebab = '<span class="kebab-wrap"><button class="kebab-btn" type="button" data-kebab="' + r.member_id + '" aria-label="Member options">&#8943;</button>' +
+              '<span class="kebab-menu" hidden data-menu="' + r.member_id + '">' +
+              '<button type="button" data-kact="role" data-mid="' + r.member_id + '">Give role…</button>' +
+              '<button type="button" class="danger" data-kact="remove" data-mid="' + r.member_id + '">Remove from squad</button></span></span>';
+          }
+          return '<div class="roster-member">' +
+            (p.avatar_url ? '<img class="mini-avatar" src="' + esc(p.avatar_url) + '" alt="" style="object-fit:cover" />' : '<span class="mini-avatar">' + esc(initials(p.full_name)) + '</span>') +
+            '<span class="rm-name">' + nameHtml + ' <span class="role-sm">· ' + esc(r.role || 'Member') + '</span></span>' + kebab + '</div>';
+        }).join('') || '<p class="pf-note">No members yet.</p>';
+      }
+      document.addEventListener('click', function (e) {
+        var kb = e.target.closest ? e.target.closest('[data-kebab]') : null;
+        document.querySelectorAll('.kebab-menu').forEach(function (mn) {
+          if (!kb || mn.getAttribute('data-menu') !== kb.getAttribute('data-kebab')) mn.hidden = true;
+        });
+        if (kb) { var m2 = document.querySelector('[data-menu="' + kb.getAttribute('data-kebab') + '"]'); if (m2) m2.hidden = !m2.hidden; return; }
+        var act = e.target.closest ? e.target.closest('[data-kact]') : null;
+        if (act && squadCtx) {
+          var mid = parseInt(act.getAttribute('data-mid'), 10);
+          var row = squadCtx.rows.filter(function (r) { return r.member_id === mid; })[0];
+          var p = squadCtx.byId[mid] || {};
+          if (act.getAttribute('data-kact') === 'role') {
+            var role = window.prompt('Squad role for ' + (p.full_name || 'this member') + ' (e.g. Vice-Captain, Striker):', row ? (row.role || '') : '');
+            if (role === null) return;
+            sb.from('squad_members').update({ role: role.trim() || 'Member' }).eq('squad_id', squadCtx.squad.id).eq('member_id', mid)
+              .then(function () { loadSquadPage(squadCtx.squad.id); }).catch(function () {});
+          } else if (act.getAttribute('data-kact') === 'remove') {
+            if (!window.confirm('Remove ' + (p.full_name || 'this member') + ' from ' + squadCtx.squad.name + '?')) return;
+            sb.from('squad_members').delete().eq('squad_id', squadCtx.squad.id).eq('member_id', mid)
+              .then(function () { toast('Removed', (p.full_name || 'Member') + ' is no longer in the squad.'); loadSquadPage(squadCtx.squad.id); }).catch(function () {});
+          }
+        }
+      });
+      function renderSquadInvite() {
+        var box = $('squadInviteBox'); if (!box || !squadCtx || !sb) return;
+        var inIds = squadCtx.rows.map(function (r) { return r.member_id; });
+        sb.from('members').select('id, full_name, username').order('full_name').then(function (res) {
+          var candidates = (res.data || []).filter(function (x) { return inIds.indexOf(x.id) === -1; });
+          if (!candidates.length) { box.innerHTML = '<p class="pf-note">Every registered member is already in this squad.</p>'; return; }
+          box.innerHTML = '<div class="pf-panel glass" style="padding:18px"><h3 class="pf-title">Invite a member</h3>' +
+            '<p class="pf-sub">The invite lands in their Inbox — they join from there.</p>' +
+            '<div style="display:flex;gap:9px;flex-wrap:wrap"><select id="sqInviteSel" style="flex:1;min-width:200px">' +
+            candidates.map(function (c) { return '<option value="' + c.id + '">' + esc(c.full_name) + (c.username ? ' (@' + esc(c.username) + ')' : '') + '</option>'; }).join('') +
+            '</select><button class="btn btn-red" type="button" id="sqInviteSend">Send Invite</button></div>' +
+            '<p class="form-ok" id="sqInviteOk"></p></div>';
+          $('sqInviteSend').addEventListener('click', function () {
+            var target = parseInt($('sqInviteSel').value, 10);
+            var sq = squadCtx.squad;
+            sb.from('squad_invites').insert({ squad_id: sq.id, member_id: target, invited_by: me().id }).then(function (r) {
+              if (r.error) {
+                if (missing(r.error)) { $('sqInviteOk').textContent = SETUP_NOTE; return; }
+                throw r.error;
+              }
+              sb.from('notifications').insert({ member_id: target, type: 'squad_invite',
+                title: 'Squad invitation',
+                body: me().full_name + ' invited you to join ' + sq.name + ' (' + (sq.game || '') + '). Open your Inbox to accept.',
+                link: 'inbox' }).then(function () {}, function () {});
+              $('sqInviteOk').textContent = 'Invite sent — it is in their Inbox now.';
+              toast('Invite sent', 'Your invitation is in their Inbox.');
+            }).catch(function () { $('sqInviteOk').textContent = 'That invite could not be sent — they may already have one pending.'; });
+          });
+        }).catch(function () { box.innerHTML = '<p class="pf-note">Member list unavailable right now.</p>'; });
+      }
+      function leaveSquad() {
+        if (!squadCtx || !me()) return;
+        if (!window.confirm('Leave ' + squadCtx.squad.name + '?')) return;
+        sb.from('squad_members').delete().eq('squad_id', squadCtx.squad.id).eq('member_id', me().id)
+          .then(function () { toast('Left squad', 'You have left ' + squadCtx.squad.name + '.'); window.__routeSquad(''); })
+          .catch(function () { toast('Could not leave', 'Please try again in a moment.'); });
+      }
+      function deleteSquad() {
+        if (!squadCtx) return;
+        var sq = squadCtx.squad;
+        if (!window.confirm('Delete ' + sq.name + ' permanently? Its roster and group chat will be removed.')) return;
+        var sid = sq.id;
+        sb.from('squad_members').delete().eq('squad_id', sid).then(function () {
+          return sb.from('squad_messages').delete().eq('squad_id', sid).then(function () {}, function () {});
+        }).then(function () {
+          return sb.from('squad_invites').delete().eq('squad_id', sid).then(function () {}, function () {});
+        }).then(function () {
+          return sb.from('squads').delete().eq('id', sid);
+        }).then(function (r) {
+          if (r.error) throw r.error;
+          toast('Squad deleted', sq.name + ' has been removed.');
+          window.__routeSquad('');
+        }).catch(function () { toast('Could not delete', 'The squad could not be deleted — please try again.'); });
+      }
+
+      /* ================= INBOX PAGE ================= */
+      var ibSel = { type: 'notif', id: null };
+      var ibPending = null;
+      window.__openDM = function (memberId, name) {
+        ibPending = { type: 'dm', id: memberId };
+        if (name) nameCache[memberId] = { id: memberId, full_name: name };
+        if (document.body.getAttribute('data-view') === 'inbox') renderInboxList();
+        else window.location.hash = '#inbox';
+      };
+      function openInboxThread(type, id) {
+        ibPending = { type: type, id: id };
+        if (document.body.getAttribute('data-view') === 'inbox') renderInboxList();
+        else window.location.hash = '#inbox';
+      }
+      var ibMo = new MutationObserver(function () {
+        if (document.body.getAttribute('data-view') === 'inbox') renderInboxList();
+      });
+      ibMo.observe(document.body, { attributes: true, attributeFilter: ['data-view'] });
+
+      function ibItem(type, id, avatarHtml, name, sub, unread) {
+        var active = ibSel.type === type && String(ibSel.id) === String(id);
+        return '<button type="button" class="ib-item' + (active ? ' active' : '') + '" data-ibtype="' + type + '" data-ibid="' + (id == null ? '' : id) + '">' +
+          avatarHtml + '<span class="ib-main"><span class="ib-name">' + esc(name) + '</span>' +
+          '<span class="ib-sub">' + esc(sub || '') + '</span></span>' +
+          (unread ? '<span class="ib-unread">' + unread + '</span>' : '') + '</button>';
+      }
+      function avatarFor(p, fallbackLetter) {
+        if (p && p.avatar_url) return '<img class="mini-avatar" src="' + esc(p.avatar_url) + '" alt="" style="object-fit:cover" />';
+        return '<span class="mini-avatar">' + esc(fallbackLetter || initials(p ? p.full_name : '?')) + '</span>';
+      }
+      function renderInboxList() {
+        var list = $('inboxList'); if (!list) return;
+        var gate = $('inboxGate'), shell = $('inboxShell');
+        if (!me() || !sb) {
+          if (gate) gate.hidden = false;
+          if (shell) shell.style.display = 'none';
+          if (!me()) list.innerHTML = '';
+          return;
+        }
+        if (gate) gate.hidden = true;
+        if (shell) shell.style.display = '';
+        var m = me();
+        if (ibPending) { ibSel = { type: ibPending.type, id: ibPending.id }; ibPending = null; }
+        var jobs = [
+          sb.from('notifications').select('id', { count: 'exact', head: true }).eq('member_id', m.id).eq('is_read', false).then(function (r) { return r.error ? 0 : (r.count || 0); }).catch(function () { return 0; }),
+          sb.from('squad_members').select('squad_id, squads(id, name, game)').eq('member_id', m.id).then(function (r) { return r.error ? [] : (r.data || []); }).catch(function () { return []; }),
+          sb.from('direct_messages').select('sender_member_id, recipient_member_id, created_at').or('sender_member_id.eq.' + m.id + ',recipient_member_id.eq.' + m.id).order('created_at', { ascending: false }).limit(120).then(function (r) { return r.error ? null : (r.data || []); }).catch(function () { return null; }),
+          sb.from('friendships').select('requester_id, addressee_id').eq('status', 'accepted').or('requester_id.eq.' + m.id + ',addressee_id.eq.' + m.id).then(function (r) { return r.error ? [] : (r.data || []); }).catch(function () { return []; })
+        ];
+        Promise.all(jobs).then(function (rs) {
+          var unreadNotifs = rs[0];
+          var mySquads = rs[1].filter(function (x) { return x.squads; });
+          var dms = rs[2];
+          var friends = rs[3];
+          var partnerIds = [];
+          if (dms) dms.forEach(function (d) {
+            var other = d.sender_member_id === m.id ? d.recipient_member_id : d.sender_member_id;
+            if (partnerIds.indexOf(other) === -1) partnerIds.push(other);
+          });
+          var friendIds = friends.map(function (f) { return f.requester_id === m.id ? f.addressee_id : f.requester_id; });
+          var allIds = partnerIds.concat(friendIds.filter(function (x) { return partnerIds.indexOf(x) === -1; }));
+          var finish = function () {
+            var h = '<p class="inbox-group" style="padding:14px 16px 4px">Conversations</p>';
+            h += ibItem('notif', null, '<span class="mini-avatar">&#128276;</span>', 'Notifications', 'Club news, requests & invites', unreadNotifs);
+            h += ibItem('cast', null, '<span class="mini-avatar">KW</span>', 'Everyone', isPres() ? 'Broadcast to all members' : 'Club broadcasts from the President', 0);
+            partnerIds.forEach(function (pid) {
+              var p = nameCache[pid] || { full_name: 'Member' };
+              h += ibItem('dm', pid, avatarFor(p), p.full_name, 'Personal messages', 0);
+            });
+            mySquads.forEach(function (x) {
+              h += ibItem('squad', x.squads.id, '<span class="mini-avatar">' + esc(initials(x.squads.name)) + '</span>', x.squads.name, (x.squads.game || '') + ' · Squad chat', 0);
+            });
+            var newFriends = friendIds.filter(function (x) { return partnerIds.indexOf(x) === -1; });
+            if (newFriends.length) {
+              h += '<p class="inbox-group" style="padding:14px 16px 4px">Friends — tap to message</p>';
+              newFriends.forEach(function (pid) {
+                var p = nameCache[pid] || { full_name: 'Member' };
+                h += ibItem('dm', pid, avatarFor(p), p.full_name, 'Start a conversation', 0);
+              });
+            }
+            if (dms === null) h += '<p class="pf-note" style="padding:12px 16px">' + SETUP_NOTE + '</p>';
+            list.innerHTML = h;
+            renderPane();
+          };
+          if (allIds.length) {
+            sb.from('members').select('id, full_name, username, avatar_url').in('id', allIds)
+              .then(function (r) { cacheNames(r.data); finish(); }).catch(finish);
+          } else finish();
+        });
+      }
+      var listEl = $('inboxList');
+      if (listEl) listEl.addEventListener('click', function (e) {
+        var b = e.target.closest ? e.target.closest('[data-ibtype]') : null;
+        if (!b) return;
+        ibSel = { type: b.getAttribute('data-ibtype'), id: b.getAttribute('data-ibid') ? parseInt(b.getAttribute('data-ibid'), 10) : null };
+        var shell = $('inboxShell'); if (shell) shell.classList.add('open');
+        renderInboxList();
+      });
+      function paneHead(title, extra) {
+        return '<div class="ib-pane-head"><button class="btn btn-glass btn-sm ib-back" type="button" id="ibBack">&#8592;</button><h3>' + esc(title) + '</h3>' + (extra || '') + '</div>';
+      }
+      function wireBack() {
+        var b = $('ibBack');
+        if (b) b.addEventListener('click', function () { var sh = $('inboxShell'); if (sh) sh.classList.remove('open'); });
+      }
+      function renderPane() {
+        var pane = $('inboxPane'); if (!pane) return;
+        if (ibSel.type === 'notif') renderNotifPane(pane);
+        else if (ibSel.type === 'cast') renderCastPane(pane);
+        else if (ibSel.type === 'dm') renderDMPane(pane, ibSel.id);
+        else if (ibSel.type === 'squad') renderSquadPane(pane, ibSel.id);
+      }
+
+      /* ----- Notifications pane ----- */
+      function renderNotifPane(pane) {
+        var m = me(); if (!m) return;
+        pane.innerHTML = paneHead('Notifications') + '<div class="ib-scroll"><p class="pf-note">Loading…</p></div>';
+        wireBack();
+        Promise.all([
+          sb.from('notifications').select('*').eq('member_id', m.id).order('created_at', { ascending: false }).limit(40).then(function (r) { return r.data || []; }).catch(function () { return []; }),
+          sb.from('friendships').select('*').eq('addressee_id', m.id).eq('status', 'pending').then(function (r) { return r.data || []; }).catch(function () { return []; }),
+          sb.from('squad_invites').select('*, squads(name, game)').eq('member_id', m.id).eq('status', 'pending').then(function (r) { return r.error ? null : (r.data || []); }).catch(function () { return null; })
+        ]).then(function (rs) {
+          var notifs = rs[0], reqs = rs[1], invites = rs[2];
+          var ids = reqs.map(function (r) { return r.requester_id; });
+          var build = function () {
+            var h = paneHead('Notifications') + '<div class="ib-scroll">';
+            if (invites === null) h += '<p class="pf-note">' + SETUP_NOTE + '</p>';
+            if (invites && invites.length) {
+              h += '<p class="inbox-group">Squad Invites</p>' + invites.map(function (iv) {
+                return '<div class="notif-row unread"><span class="mini-avatar">' + esc(initials(iv.squads ? iv.squads.name : 'S')) + '</span><div style="flex:1">' +
+                  '<p style="margin:0"><b>' + esc(iv.squads ? iv.squads.name : 'A squad') + '</b> — you are invited to join this squad.</p>' +
+                  '<p style="margin:4px 0 0"><button class="btn btn-red btn-sm" type="button" data-invjoin="' + iv.id + '" data-squad="' + iv.squad_id + '">Join Squad</button> ' +
+                  '<button class="btn btn-glass btn-sm" type="button" data-invdec="' + iv.id + '">Decline</button></p></div></div>';
+              }).join('');
+            }
+            if (reqs.length) {
+              h += '<p class="inbox-group">Friend Requests</p>' + reqs.map(function (r) {
+                var who = nameCache[r.requester_id] || { full_name: 'A member' };
+                return '<div class="notif-row unread"><span class="mini-avatar">' + esc(initials(who.full_name)) + '</span><div style="flex:1">' +
+                  '<p style="margin:0"><b>' + esc(who.full_name) + '</b> wants to be your friend.</p>' +
+                  '<p style="margin:4px 0 0"><button class="btn btn-red btn-sm" type="button" data-fracc="' + r.requester_id + '">Accept</button> ' +
+                  '<button class="btn btn-glass btn-sm" type="button" data-frdec="' + r.requester_id + '">Decline</button></p></div></div>';
+              }).join('');
+            }
+            h += '<p class="inbox-group">Latest</p>';
+            h += notifs.length ? notifs.map(function (n) {
+              return '<div class="notif-row' + (n.is_read ? '' : ' unread') + '"><span class="mini-avatar">KW</span><div style="flex:1">' +
+                '<p style="margin:0"><b>' + esc(n.title || 'Notification') + '</b></p>' +
+                (n.body ? '<p style="margin:2px 0 0">' + esc(n.body) + '</p>' : '') +
+                '<p class="dm-meta">' + esc(fmtTime(n.created_at)) + '</p></div></div>';
+            }).join('') : '<p class="pf-note">No notifications yet.</p>';
+            h += '</div>';
+            pane.innerHTML = h;
+            wireBack();
+            wireNotifActions(pane);
+            sb.from('notifications').update({ is_read: true }).eq('member_id', m.id).eq('is_read', false)
+              .then(function () { refreshBadges3(); }).catch(function () {});
+          };
+          if (ids.length) {
+            sb.from('members').select('id, full_name, username, avatar_url').in('id', ids)
+              .then(function (r) { cacheNames(r.data); build(); }).catch(build);
+          } else build();
+        });
+      }
+      function wireNotifActions(pane) {
+        pane.querySelectorAll('[data-fracc]').forEach(function (b) {
+          b.addEventListener('click', function () {
+            sb.from('friendships').update({ status: 'accepted' }).eq('requester_id', parseInt(b.getAttribute('data-fracc'), 10)).eq('addressee_id', me().id)
+              .then(function () { renderNotifPane(pane); });
+          });
+        });
+        pane.querySelectorAll('[data-frdec]').forEach(function (b) {
+          b.addEventListener('click', function () {
+            sb.from('friendships').update({ status: 'declined' }).eq('requester_id', parseInt(b.getAttribute('data-frdec'), 10)).eq('addressee_id', me().id)
+              .then(function () { renderNotifPane(pane); });
+          });
+        });
+        pane.querySelectorAll('[data-invjoin]').forEach(function (b) {
+          b.addEventListener('click', function () {
+            var invId = parseInt(b.getAttribute('data-invjoin'), 10);
+            var sid = parseInt(b.getAttribute('data-squad'), 10);
+            sb.from('squad_members').select('member_id').eq('squad_id', sid).then(function (cnt) {
+              if ((cnt.data || []).length >= 10) { toast('Squad is full', 'That squad already has 10 members.'); return; }
+              sb.from('squad_members').insert({ squad_id: sid, member_id: me().id, role: 'Member' }).then(function (r) {
+                if (r.error) { toast('Could not join', 'That invite could not be completed.'); return; }
+                sb.from('squad_invites').update({ status: 'accepted' }).eq('id', invId).then(function () {
+                  toast('Welcome to the squad', 'You joined the squad — its chat is now in your Inbox.');
+                  renderInboxList();
+                });
+              });
+            });
+          });
+        });
+        pane.querySelectorAll('[data-invdec]').forEach(function (b) {
+          b.addEventListener('click', function () {
+            sb.from('squad_invites').update({ status: 'declined' }).eq('id', parseInt(b.getAttribute('data-invdec'), 10))
+              .then(function () { renderNotifPane(pane); });
+          });
+        });
+      }
+
+      /* ----- Broadcasts pane ----- */
+      function renderCastPane(pane) {
+        pane.innerHTML = paneHead('Everyone — Club Broadcasts') + '<div class="ib-scroll"><p class="pf-note">Loading…</p></div>';
+        wireBack();
+        sb.from('broadcasts').select('*').order('created_at', { ascending: false }).limit(50)
+          .then(function (res) {
+            var items = res.data || [];
+            var h = paneHead('Everyone — Club Broadcasts') + '<div class="ib-scroll">';
+            h += items.length ? items.map(function (b) {
+              return '<div class="dm-row"><div class="dm-bubble" style="max-width:92%"><p><b>' + esc(b.title || 'Announcement') + '</b></p>' +
+                (b.body ? '<p>' + esc(b.body) + '</p>' : '') +
+                '<p class="dm-meta">President · ' + esc(fmtTime(b.created_at)) + '</p></div></div>';
+            }).join('') : '<p class="pf-note">No broadcasts yet.</p>';
+            h += '</div>';
+            if (isPres()) {
+              h += '<div style="padding:12px 14px;border-top:1px solid rgba(255,255,255,.09)">' +
+                '<div class="field"><label for="castTitle">Title</label><input id="castTitle" type="text" placeholder="e.g. Practice this Friday, 8 PM" /></div>' +
+                '<div class="field"><label for="castBody">Message to everyone</label><textarea id="castBody" rows="2" placeholder="Write once — every member gets it…"></textarea></div>' +
+                '<p class="form-err" id="castErr" role="alert"></p>' +
+                '<button class="btn btn-red" type="button" id="castSend">Send to Everyone</button></div>';
+            } else {
+              h += '<p class="pf-note" style="padding:10px 16px">Only the President can post in this channel.</p>';
+            }
+            pane.innerHTML = h;
+            wireBack();
+            var send = $('castSend');
+            if (send) send.addEventListener('click', function () {
+              var t = $('castTitle').value.trim(), bd = $('castBody').value.trim();
+              var err = $('castErr');
+              if (!t) { err.textContent = 'Give the broadcast a title.'; return; }
+              err.textContent = '';
+              sb.from('broadcasts').insert({ sender_member_id: me().id, title: t, body: bd }).then(function (r) {
+                if (r.error) { err.textContent = 'That broadcast could not be sent.'; return; }
+                toast('Broadcast sent', 'Every member has it in their Inbox.');
+                renderCastPane(pane);
+              });
+            });
+          }).catch(function () { pane.innerHTML = paneHead('Everyone — Club Broadcasts') + '<div class="ib-scroll"><p class="pf-note">Broadcasts unavailable right now.</p></div>'; wireBack(); });
+      }
+
+      /* ----- Personal messages pane ----- */
+      function renderDMPane(pane, partnerId) {
+        var m = me(); if (!m || !partnerId) return;
+        var partner = nameCache[partnerId];
+        var title = partner ? partner.full_name : 'Conversation';
+        pane.innerHTML = paneHead(title) + '<div class="ib-scroll" id="dmScroll"><p class="pf-note">Loading…</p></div>' +
+          '<form class="ib-compose" id="dmForm"><input id="dmInput" type="text" placeholder="Write a message…" autocomplete="off" maxlength="2000" /><button class="btn btn-red" type="submit">Send</button></form>';
+        wireBack();
+        if (!partner) {
+          sb.from('members').select('id, full_name, username, avatar_url').eq('id', partnerId).maybeSingle()
+            .then(function (r) { cacheNames(r.data ? [r.data] : []); if (r.data) pane.querySelector('.ib-pane-head h3').textContent = r.data.full_name; }).catch(function () {});
+        }
+        loadDMThread(partnerId);
+        $('dmForm').addEventListener('submit', function (e) {
+          e.preventDefault();
+          var inp = $('dmInput'); var text = inp.value.trim(); if (!text) return;
+          inp.value = '';
+          sb.from('direct_messages').insert({ sender_member_id: m.id, recipient_member_id: partnerId, body: text })
+            .then(function (r) {
+              if (r.error) {
+                if (missing(r.error)) toast('Messaging not switched on', SETUP_NOTE);
+                else toast('Message not sent', 'Please try again in a moment.');
+                return;
+              }
+              loadDMThread(partnerId);
+            });
+        });
+      }
+      function loadDMThread(partnerId) {
+        var m = me(); var sc = $('dmScroll'); if (!m || !sc) return;
+        sb.from('direct_messages').select('*')
+          .or('and(sender_member_id.eq.' + m.id + ',recipient_member_id.eq.' + partnerId + '),and(sender_member_id.eq.' + partnerId + ',recipient_member_id.eq.' + m.id + ')')
+          .order('created_at', { ascending: true }).limit(200)
+          .then(function (res) {
+            if (res.error) {
+              sc.innerHTML = '<p class="pf-note">' + (missing(res.error) ? SETUP_NOTE : 'Messages unavailable right now.') + '</p>';
+              return;
+            }
+            var msgs = res.data || [];
+            sc.innerHTML = msgs.length ? msgs.map(function (x) {
+              var mine = x.sender_member_id === m.id;
+              return '<div class="dm-row' + (mine ? ' mine' : '') + '"><div class="dm-bubble"><p>' + esc(x.body) + '</p><p class="dm-meta">' + esc(fmtTime(x.created_at)) + '</p></div></div>';
+            }).join('') : '<p class="pf-note">No messages yet — say hello.</p>';
+            sc.scrollTop = sc.scrollHeight;
+            sb.from('direct_messages').update({ is_read: true })
+              .eq('sender_member_id', partnerId).eq('recipient_member_id', m.id).eq('is_read', false)
+              .then(function () { refreshBadges3(); }).catch(function () {});
+          });
+      }
+
+      /* ----- Squad chat pane ----- */
+      function renderSquadPane(pane, squadId) {
+        var m = me(); if (!m || !squadId) return;
+        pane.innerHTML = paneHead('Squad chat') + '<div class="ib-scroll"><p class="pf-note">Loading…</p></div>';
+        wireBack();
+        sb.from('squads').select('*').eq('id', squadId).maybeSingle().then(function (sres) {
+          var sq = sres.data;
+          if (!sq) { pane.innerHTML = paneHead('Squad chat') + '<div class="ib-scroll"><p class="pf-note">This squad could not be found.</p></div>'; wireBack(); return; }
+          var isCaptain = sq.captain_member_id === m.id;
+          sb.from('squad_members').select('member_id').eq('squad_id', squadId).then(function (mm) {
+            var amIn = (mm.data || []).some(function (r) { return r.member_id === m.id; });
+            var extra = '<a class="btn btn-glass btn-sm" href="#squad/' + sq.id + '">Squad Page</a>' +
+              ((isCaptain || isPres()) ? ' <button class="btn btn-red btn-sm" type="button" id="paneInviteBtn">Invite</button>' : '');
+            var h = paneHead(sq.name + ' — Group Chat', extra) + '<div class="ib-scroll" id="sqScroll"></div>';
+            if (amIn) {
+              h += '<form class="ib-compose" id="sqForm"><input id="sqInput" type="text" placeholder="Message ' + esc(sq.name) + '…" autocomplete="off" maxlength="2000" /><button class="btn btn-red" type="submit">Send</button></form>';
+            } else {
+              h += '<p class="pf-note" style="padding:10px 16px">You are viewing as President — only squad members can post here.</p>';
+            }
+            pane.innerHTML = h;
+            wireBack();
+            var ib2 = $('paneInviteBtn');
+            if (ib2) ib2.addEventListener('click', function () { squadOpenInvite = true; window.__routeSquad(String(sq.id)); });
+            loadSquadThread(squadId);
+            var form = $('sqForm');
+            if (form) form.addEventListener('submit', function (e) {
+              e.preventDefault();
+              var inp = $('sqInput'); var text = inp.value.trim(); if (!text) return;
+              inp.value = '';
+              sb.from('squad_messages').insert({ squad_id: squadId, sender_member_id: m.id, body: text })
+                .then(function (r) {
+                  if (r.error) {
+                    if (missing(r.error)) toast('Squad chat not switched on', SETUP_NOTE);
+                    else toast('Message not sent', 'Please try again in a moment.');
+                    return;
+                  }
+                  loadSquadThread(squadId);
+                });
+            });
+          });
+        }).catch(function () {});
+      }
+      function loadSquadThread(squadId) {
+        var sc = $('sqScroll'); if (!sc) return;
+        sb.from('squad_messages').select('*').eq('squad_id', squadId).order('created_at', { ascending: true }).limit(200)
+          .then(function (res) {
+            if (res.error) {
+              sc.innerHTML = '<p class="pf-note">' + (missing(res.error) ? SETUP_NOTE : 'Chat unavailable right now.') + '</p>';
+              return;
+            }
+            var msgs = res.data || [];
+            var ids = []; msgs.forEach(function (x) { if (ids.indexOf(x.sender_member_id) === -1) ids.push(x.sender_member_id); });
+            var draw = function () {
+              sc.innerHTML = msgs.length ? msgs.map(function (x) {
+                var mine = me() && x.sender_member_id === me().id;
+                return '<div class="dm-row' + (mine ? ' mine' : '') + '"><div class="dm-bubble">' +
+                  (mine ? '' : '<p class="dm-meta" style="margin:0 0 2px">' + esc(memberName(x.sender_member_id)) + '</p>') +
+                  '<p>' + esc(x.body) + '</p><p class="dm-meta">' + esc(fmtTime(x.created_at)) + '</p></div></div>';
+              }).join('') : '<p class="pf-note">No messages yet — start the conversation.</p>';
+              sc.scrollTop = sc.scrollHeight;
+            };
+            var unknown = ids.filter(function (id) { return !nameCache[id]; });
+            if (unknown.length) {
+              sb.from('members').select('id, full_name, username, avatar_url').in('id', unknown)
+                .then(function (r) { cacheNames(r.data); draw(); }).catch(draw);
+            } else draw();
+          });
+      }
+
+      /* ---------- Realtime: DMs + squad chats ---------- */
+      var rtStarted = false;
+      function subscribeRealtime() {
+        if (rtStarted || !sb || !me()) return;
+        rtStarted = true;
+        try {
+          sb.channel('kwc-layer3')
+            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'direct_messages' }, function (pl) {
+              var n = pl.new; var m = me(); if (!n || !m) return;
+              if (n.sender_member_id !== m.id && n.recipient_member_id !== m.id) return;
+              refreshBadges3();
+              if (document.body.getAttribute('data-view') === 'inbox') {
+                if (ibSel.type === 'dm' && (ibSel.id === n.sender_member_id || ibSel.id === n.recipient_member_id)) loadDMThread(ibSel.id);
+                else if (n.recipient_member_id === m.id) toast('New message', memberName(n.sender_member_id) + ' sent you a message.', 'inbox');
+              }
+            })
+            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'squad_messages' }, function (pl) {
+              var n = pl.new; var m = me(); if (!n || !m) return;
+              if (document.body.getAttribute('data-view') === 'inbox' && ibSel.type === 'squad' && ibSel.id === n.squad_id) loadSquadThread(n.squad_id);
+            })
+            .subscribe();
+        } catch (e) { /* realtime unavailable — panes still load on open */ }
+      }
     })();
   </script>
 

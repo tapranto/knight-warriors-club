@@ -53,6 +53,11 @@ collections:
                 name: linkText
                 widget: string
                 required: false
+              - label: "YouTube video link (optional)"
+                name: youtube
+                widget: string
+                required: false
+                hint: "Paste a YouTube link — the video plays inside the article on the website"
 
   # ------------------------------------------------------------------
   - name: tournaments
