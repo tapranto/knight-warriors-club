@@ -5154,7 +5154,28 @@
         var pa = $('profileActions'); if (pa) { pa.hidden = true; pa.innerHTML = ''; }
         if (guest) { fillAboutGuest(); return; }
         var m = me();
-        if (!m) { box.innerHTML = '<p class="pf-note">This is a sample profile. Log in or register to see your own.</p>'; return; }
+        if (!m) {
+          /* Logged-out sample profile: show the same card grid with the
+             demo member's details, so the design is visible to everyone. */
+          var sName = ($('profileName') && $('profileName').textContent) || 'Bijoy Rahman';
+          var sBio = ($('profileBio') && $('profileBio').textContent) || '';
+          var sSince = (($('profileSince') && $('profileSince').textContent) || '').replace(/^Member since /, '');
+          var sGames = [];
+          document.querySelectorAll('#myGamesList .game-row').forEach(function (row) {
+            var h = row.querySelector('h4'); if (!h) return;
+            var ins = row.querySelectorAll('input');
+            sGames.push({ game: h.textContent, uid: ins[0] ? ins[0].value : '', team_strength: ins[1] ? ins[1].value : '' });
+          });
+          box.innerHTML = '<div class="about-grid">' +
+            aboutCard('Player Info', arow('Role', 'Member') + arow('Favourite game', 'eFootball') + arow('Member since', sSince) +
+              '<div class="about-row"><b>Squads</b><span>Knight Strikers</span></div>') +
+            aboutCard('Bio', '<p class="about-bio">' + esc(sBio || 'No bio yet.') + '</p>') +
+            aboutCard('My Games', gamesCardHTML(sGames)) +
+            recordCard(sName) +
+            aboutCard('Friends', '<p class="pf-note">Log in to connect with friends.</p>') +
+            '</div><p class="pf-note" style="margin-top:10px">This is a sample profile — log in or register to see your own.</p>';
+          return;
+        }
         var myGames = (typeof kwc !== 'undefined' && kwc.games) || [];
         var html = '<div class="about-grid">';
         html += playerInfoCard(m);
