@@ -62,7 +62,29 @@
       body[data-view="rules"] .bg-layer { background-image: none; background-color: #ffffff; }
       body[data-view="gallery"] .bg-layer { background-image: url("assets/background-gallery.jpg"); }
       body[data-view="sponsors"] .bg-layer { background-image: url("assets/sections/section-sponsors-arena.webp"); }
-      body[data-view="join"] .bg-layer { background-image: url("assets/sections/section-join-oath.webp"); }
+      body[data-view="register"] .bg-layer { background-image: url("assets/register-background.webp"); background-color: #f5a301; }
+      body[data-view="login"] .bg-layer { background-image: url("assets/login-background.webp"); }
+      body[data-view="resetpassword"] .bg-layer { background-image: url("assets/login-background.webp"); }
+      body[data-view="setpassword"] .bg-layer { background-image: url("assets/login-background.webp"); }
+      body[data-view="profile"] .bg-layer { background-image: url("assets/profile-background.webp"); }
+      body[data-view="squad"] .bg-layer { background-image: url("assets/background-tournament-arena.webp"); }
+      body[data-view="createsquad"] .bg-layer { background-image: url("assets/sections/section-games-arena.webp"); }
+      /* Dark cinematic treatment over the bright profile artwork, so the
+         swordsman stays visible while profile content stays readable. */
+      .bg-layer::after { content: ""; position: absolute; inset: 0; }
+      body[data-view="profile"] .bg-layer::after {
+        background: linear-gradient(180deg, rgba(7,7,11,0.52) 0%, rgba(7,7,11,0.74) 55%, rgba(7,7,11,0.9) 100%);
+      }
+      /* Register view: the yellow artwork is bright — headings go dark and the
+         form/info panels sit on solid dark so they stay readable. */
+      body[data-view="register"] .sec-head h2 { color: #17171f; text-shadow: none; }
+      body[data-view="register"] .sec-head p { color: #43435c; text-shadow: none; }
+      body[data-view="register"] .kicker { color: #b30f1e; }
+      body[data-view="register"] .join-form,
+      body[data-view="register"] .join-info {
+        background: rgba(9, 9, 15, 0.97);
+        backdrop-filter: none; -webkit-backdrop-filter: none;
+      }
       body[data-view="news"] .bg-layer { background-image: url("assets/banner-winged-knight.jpg"); }
       body[data-view="article"] .bg-layer { background-image: url("assets/banner-winged-knight.jpg"); }
       body[data-view="tournament"] .bg-layer { background-image: url("assets/background-tournament-arena.webp"); }
@@ -588,6 +610,76 @@
       .app-output .note { color: var(--muted); font-size: 16.5px; margin-bottom: 14px; }
       .copy-msg { color: #7ee2a0; font-weight: 600; margin-left: 12px; font-size: 16px; }
 
+      /* ---------- Register / Log in ---------- */
+      .field .err {
+        display: none; margin-top: 7px; font-size: 15px; font-weight: 600; color: #ff8a94;
+      }
+      .field.invalid .err { display: block; }
+      .field.invalid input, .field.invalid select { border-color: var(--red-bright); background: rgba(225,29,46,0.08); }
+      fieldset.field { border: none; margin: 0 0 16px; padding: 0; }
+      fieldset.field legend {
+        font-weight: 600; font-size: 15.5px; letter-spacing: 0.04em; margin-bottom: 9px; color: #e8e8f0; padding: 0;
+      }
+      fieldset.field.invalid .game-opts { border-color: var(--red-bright); }
+      .game-opts {
+        display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+        border: 1px solid transparent; border-radius: 12px; padding: 2px;
+      }
+      .game-opt { position: relative; display: block; cursor: pointer; }
+      .game-opt input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+      .game-opt span {
+        display: flex; align-items: center; gap: 10px; padding: 13px 15px; border-radius: 12px;
+        background: rgba(255,255,255,0.06); border: 1px solid var(--glass-border);
+        font-weight: 600; font-size: 17px; color: #e8e8f0; transition: border-color .2s, background .2s;
+      }
+      .game-opt span::before {
+        content: ""; width: 19px; height: 19px; border-radius: 5px; flex-shrink: 0;
+        border: 2px solid var(--faint); background: transparent; transition: all .15s;
+      }
+      .game-opt:hover span { border-color: rgba(255,255,255,0.3); }
+      .game-opt input:checked + span { border-color: var(--red); background: rgba(225,29,46,0.14); color: #fff; }
+      .game-opt input:checked + span::before { background: var(--red); border-color: var(--red); box-shadow: inset 0 0 0 3px rgba(9,9,16,0.55); }
+      .game-opt input:focus-visible + span { outline: 2px solid var(--red-bright); outline-offset: 2px; }
+      .reg-success { display: none; text-align: center; padding: 14px 6px 6px; }
+      .reg-success.show { display: block; }
+      .reg-success .rs-icon {
+        width: 66px; height: 66px; margin: 0 auto 18px; border-radius: 50%; display: grid; place-items: center;
+        background: rgba(46, 190, 110, 0.14); border: 1px solid rgba(46, 190, 110, 0.5);
+      }
+      .reg-success .rs-icon svg { width: 32px; height: 32px; stroke: #4ade80; }
+      .reg-success h3 { font-size: 22px; margin-bottom: 12px; }
+      .reg-success p { color: var(--muted); font-size: 18.5px; max-width: 460px; margin: 0 auto 10px; }
+      .reg-success p b { color: #fff; }
+      .reg-success .btn { margin-top: 16px; }
+      .auth-card { max-width: 560px; margin: 0 auto; padding: 38px 36px; }
+      .auth-card h3 { font-size: 21px; margin-bottom: 8px; }
+      .auth-card .auth-sub { color: var(--muted); margin-bottom: 22px; font-size: 17.5px; }
+      .auth-alt { margin-top: 20px; color: var(--muted); font-size: 17px; text-align: center; }
+      .auth-alt a { color: #ff97a1; font-weight: 700; text-decoration: none; }
+      .auth-alt a:hover { color: #fff; text-decoration: underline; }
+      .form-ok {
+        display: none; margin-top: 18px; padding: 14px 16px; border-radius: 12px;
+        background: rgba(46, 190, 110, 0.12); border: 1px solid rgba(46, 190, 110, 0.45);
+        color: #c9f5da; font-weight: 600; font-size: 16.5px;
+      }
+      .form-ok.show { display: block; }
+      .form-err {
+        display: none; margin-top: 16px; padding: 14px 16px; border-radius: 12px;
+        background: rgba(225, 29, 46, 0.12); border: 1px solid rgba(225, 29, 46, 0.5);
+        color: #ffc9cd; font-weight: 600; font-size: 16.5px;
+      }
+      .form-err.show { display: block; }
+      .avatar-initial {
+        position: absolute; inset: 0; display: grid; place-items: center; border-radius: 50%;
+        background: #1d1d28; color: #ff97a1; font-family: var(--font-display); font-size: 19px;
+      }
+      .avatar-initial[hidden] { display: none; }
+      #allMembersLink[hidden] { display: none; }
+      @media (max-width: 520px) {
+        .game-opts { grid-template-columns: 1fr; }
+        .auth-card { padding: 30px 22px; }
+      }
+
       /* ---------- Footer ---------- */
       footer { margin-top: 90px; border-top: 1px solid rgba(255,255,255,0.09); background: rgba(8,8,12,0.72); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); }
       .foot-in { padding: 52px 0 34px; display: grid; grid-template-columns: 1.4fr 1fr 1fr; gap: 36px; }
@@ -1040,6 +1132,187 @@
         .rank-badge { width: 22px; height: 22px; font-size: 11.5px; }
         .lb-panel.has-table { padding: 24px 14px; }
       }
+
+      /* ---------- Header account (logged-in state) ---------- */
+      .head-account { position: absolute; top: 11px; right: 4%; z-index: 120; }
+      .head-account[hidden] { display: none; }
+      .avatar-btn {
+        position: relative; width: 42px; height: 42px; border-radius: 50%; padding: 0; cursor: pointer;
+        border: 2px solid var(--glass-border-red); background: #13131a; overflow: visible;
+        box-shadow: 0 0 16px rgba(225,29,46,0.35);
+      }
+      .avatar-btn img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display: block; }
+      .avatar-badge {
+        position: absolute; top: -5px; right: -5px; min-width: 19px; height: 19px; padding: 0 5px;
+        border-radius: 999px; background: var(--red); color: #fff; border: 2px solid #0a0a10;
+        font-family: var(--font-body); font-size: 11.5px; font-weight: 700; line-height: 15px; text-align: center;
+      }
+      .avatar-badge[hidden] { display: none; }
+      .account-menu {
+        position: absolute; right: 0; top: 54px; width: 236px; padding: 10px;
+        background: rgba(10, 10, 17, 0.97); border: 1px solid var(--glass-border); border-radius: 14px;
+        box-shadow: var(--shadow);
+      }
+      .account-menu[hidden] { display: none; }
+      .am-head { padding: 8px 10px 12px; border-bottom: 1px solid rgba(255,255,255,0.09); margin-bottom: 8px; }
+      .am-head b { display: block; font-family: var(--font-display); font-size: 15px; letter-spacing: 0.02em; }
+      .am-head span { color: var(--muted); font-size: 14.5px; font-weight: 600; }
+      .account-menu a, .account-menu button.am-item {
+        display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%;
+        padding: 10px; border-radius: 9px; text-decoration: none; color: #ececf2;
+        font-family: var(--font-body); font-weight: 600; font-size: 16.5px;
+        background: none; border: none; cursor: pointer; text-align: left;
+      }
+      .account-menu a:hover, .account-menu button.am-item:hover { background: rgba(255,255,255,0.08); color: #fff; }
+      .am-badge {
+        min-width: 20px; height: 20px; padding: 0 6px; border-radius: 999px; background: var(--red); color: #fff;
+        font-size: 12px; font-weight: 700; line-height: 20px; text-align: center;
+      }
+      .am-badge[hidden] { display: none; }
+
+      /* ---------- Profile ---------- */
+      .profile-card { overflow: hidden; padding: 0; }
+      .profile-cover { height: 218px; overflow: hidden; }
+      .profile-cover img { width: 100%; height: 100%; object-fit: cover; }
+      .profile-main { display: flex; gap: 22px; align-items: flex-start; padding: 0 30px 26px; }
+      .profile-avatar {
+        width: 128px; height: 128px; border-radius: 50%; object-fit: cover; flex-shrink: 0;
+        margin-top: -56px; border: 4px solid rgba(13,13,20,0.9);
+        box-shadow: 0 0 0 2px var(--glass-border-red), 0 16px 36px rgba(0,0,0,0.55);
+        background: #13131a;
+      }
+      .profile-id { flex: 1; min-width: 0; padding-top: 16px; }
+      .profile-id h2 { font-size: clamp(24px, 3.6vw, 34px); font-weight: 800; text-transform: uppercase; letter-spacing: 0.02em; }
+      .profile-role { color: #ff97a1; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; font-size: 14px; margin-top: 4px; }
+      .profile-handle { color: var(--muted); font-weight: 600; font-size: 16.5px; margin-top: 3px; }
+      .profile-handle[hidden] { display: none; }
+      .profile-bio { color: #e6e6ee; font-size: 18.5px; margin-top: 10px; max-width: 560px; }
+      .profile-since { color: var(--muted); font-weight: 600; font-size: 15.5px; margin-top: 8px; }
+      .profile-socials { display: flex; gap: 10px; padding-top: 18px; flex-wrap: wrap; align-items: center; }
+      .discord-note { flex-basis: 100%; color: var(--muted); font-size: 14.5px; font-weight: 600; }
+      .discord-note[hidden] { display: none; }
+      .auth-forgot { text-align: right; margin: -4px 0 16px; }
+      .auth-forgot a { color: #ff97a1; font-weight: 600; font-size: 15.5px; text-decoration: none; }
+      .auth-forgot a:hover { color: #fff; text-decoration: underline; }
+      button.soc-btn { cursor: pointer; font: inherit; }
+      .soc-btn {
+        width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; flex-shrink: 0;
+        background: rgba(255,255,255,0.07); border: 1px solid var(--glass-border); color: #fff;
+        transition: background .2s, border-color .2s, transform .2s;
+      }
+      .soc-btn:hover { background: rgba(225,29,46,0.22); border-color: var(--glass-border-red); transform: translateY(-2px); }
+      .soc-btn svg { width: 21px; height: 21px; fill: currentColor; }
+      .profile-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px; align-items: start; }
+      .pf-panel { padding: 28px; scroll-margin-top: 128px; }
+      .pf-panel.wide { grid-column: 1 / -1; }
+      .pf-title { font-size: 18px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 6px; }
+      .pf-sub { color: var(--muted); font-size: 16.5px; margin-bottom: 18px; }
+      .pf-note { color: var(--faint); font-size: 15.5px; margin-top: 14px; }
+      .btn-sm { padding: 10px 18px; font-size: 12.5px; border-radius: 10px; }
+
+      /* My Games list */
+      .game-row { border: 1px solid rgba(255,255,255,0.09); border-radius: 14px; padding: 18px; margin-bottom: 14px; background: rgba(255,255,255,0.03); }
+      .game-row h4 { font-size: 16px; margin-bottom: 12px; }
+      .game-row .field { margin-bottom: 0; }
+      .add-game { border: 1px dashed rgba(255,255,255,0.22); border-radius: 14px; padding: 18px; margin-bottom: 6px; }
+      .add-game h4 { font-family: var(--font-body); font-size: 15px; letter-spacing: 0.1em; text-transform: uppercase; color: #ff97a1; margin-bottom: 12px; }
+
+      /* Honours */
+      .honour { display: flex; gap: 16px; align-items: center; border: 1px solid rgba(255,255,255,0.09); border-radius: 14px; padding: 16px 18px; margin-bottom: 12px; background: rgba(255,255,255,0.03); }
+      .honour.win { border-color: rgba(240, 190, 60, 0.5); background: rgba(240, 190, 60, 0.07); }
+      .honour-icon { width: 48px; height: 48px; border-radius: 50%; display: grid; place-items: center; flex-shrink: 0; background: rgba(255,255,255,0.07); border: 1px solid var(--glass-border); }
+      .honour.win .honour-icon { background: rgba(240,190,60,0.16); border-color: rgba(240,190,60,0.55); }
+      .honour-icon svg { width: 24px; height: 24px; stroke: #f2c14e; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+      .honour h4 { font-family: var(--font-body); font-size: 18px; font-weight: 700; }
+      .honour h4 .h-pos { color: #f2c14e; }
+      .honour p { color: var(--muted); font-size: 15.5px; }
+
+      /* Squads (profile + squad page) */
+      .squad-row {
+        display: flex; align-items: center; gap: 15px; width: 100%; text-align: left;
+        border: 1px solid rgba(255,255,255,0.09); border-radius: 14px; padding: 15px 18px; margin-bottom: 12px;
+        background: rgba(255,255,255,0.03); color: #fff; text-decoration: none;
+      }
+      a.squad-row { transition: border-color .2s, background .2s; }
+      a.squad-row:hover { border-color: var(--glass-border-red); background: rgba(225,29,46,0.07); }
+      .squad-crest {
+        width: 46px; height: 46px; border-radius: 12px; display: grid; place-items: center; flex-shrink: 0;
+        background: rgba(225,29,46,0.14); border: 1px solid var(--glass-border-red);
+        font-family: var(--font-display); font-weight: 800; font-size: 15px; color: #ffb3ba;
+      }
+      .squad-row .sq-main { flex: 1; min-width: 0; }
+      .squad-row .sq-name { font-weight: 700; font-size: 18px; display: block; }
+      .squad-row .sq-meta { color: var(--muted); font-size: 15.5px; display: block; }
+      .role-sm { font-size: 0.78em; font-weight: 600; color: #ff97a1; letter-spacing: 0.03em; white-space: nowrap; }
+      .squad-row .sq-count { color: var(--faint); font-weight: 600; font-size: 15px; white-space: nowrap; }
+      .roster { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 18px; }
+      .roster-member { display: flex; align-items: center; gap: 12px; padding: 9px 10px; border-radius: 12px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07); }
+      .mini-avatar {
+        width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0; display: grid; place-items: center;
+        background: rgba(225,29,46,0.16); border: 1px solid var(--glass-border-red);
+        font-family: var(--font-display); font-size: 13px; font-weight: 700; color: #ffd7db;
+      }
+      .roster-member .rm-name { font-weight: 600; font-size: 16.5px; line-height: 1.3; }
+      .squad-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start; }
+
+      /* Group chat */
+      .chat-log { display: grid; gap: 14px; max-height: 430px; overflow-y: auto; padding: 4px 2px 10px; }
+      .chat-msg { display: flex; gap: 10px; align-items: flex-start; }
+      .chat-msg .mini-avatar { width: 34px; height: 34px; font-size: 11.5px; }
+      .chat-bubble { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.09); border-radius: 4px 14px 14px 14px; padding: 10px 14px; max-width: 88%; }
+      .chat-msg.mine { flex-direction: row-reverse; }
+      .chat-msg.mine .chat-bubble { background: rgba(225,29,46,0.16); border-color: var(--glass-border-red); border-radius: 14px 4px 14px 14px; }
+      .chat-sender { font-weight: 700; font-size: 15px; margin-bottom: 2px; }
+      .chat-text { color: #ececf2; font-size: 16.5px; line-height: 1.45; }
+      .chat-time { color: var(--faint); font-size: 13px; margin-top: 4px; }
+      .chat-form { display: flex; gap: 10px; margin-top: 14px; }
+      .chat-form input {
+        flex: 1; min-width: 0; background: rgba(255,255,255,0.06); border: 1px solid var(--glass-border); border-radius: 12px;
+        color: #fff; font-family: var(--font-body); font-size: 16.5px; font-weight: 500; padding: 12px 15px; outline: none;
+      }
+      .chat-form input:focus { border-color: var(--red); }
+      .chat-form .btn { flex-shrink: 0; padding: 12px 22px; }
+
+      /* Inbox (inside Profile) */
+      .inbox-group { font-family: var(--font-body); font-size: 13.5px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: #ff97a1; margin: 20px 0 10px; }
+      .inbox-group:first-of-type { margin-top: 4px; }
+      .notif { display: flex; gap: 14px; border: 1px solid rgba(255,255,255,0.09); border-radius: 14px; padding: 16px 18px; margin-bottom: 12px; background: rgba(255,255,255,0.03); }
+      .notif.grant { border-color: rgba(240,190,60,0.5); background: rgba(240,190,60,0.06); }
+      .notif-icon { width: 42px; height: 42px; border-radius: 50%; flex-shrink: 0; display: grid; place-items: center; background: rgba(255,255,255,0.07); border: 1px solid var(--glass-border); }
+      .notif.grant .notif-icon { background: rgba(240,190,60,0.15); border-color: rgba(240,190,60,0.55); }
+      .notif-icon svg { width: 20px; height: 20px; stroke: #f2c14e; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+      .notif-icon.plain svg { stroke: var(--red-bright); }
+      .notif-body { flex: 1; min-width: 0; }
+      .notif-body b { color: #fff; }
+      .notif-body p { color: #e2e2ea; font-size: 16.5px; line-height: 1.45; }
+      .notif-time { color: var(--faint); font-size: 14px; font-weight: 600; margin-top: 3px; }
+      .notif .btn { margin-top: 10px; }
+      .fr-row { display: flex; align-items: center; gap: 13px; border: 1px solid rgba(255,255,255,0.09); border-radius: 14px; padding: 13px 16px; margin-bottom: 12px; background: rgba(255,255,255,0.03); }
+      .fr-row .fr-name { flex: 1; min-width: 0; font-weight: 600; font-size: 17px; }
+      .fr-row .fr-name span { display: block; color: var(--muted); font-size: 14.5px; font-weight: 500; }
+      .fr-actions { display: flex; gap: 8px; flex-shrink: 0; }
+      .fr-btn { font-family: var(--font-display); font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 9px 15px; border-radius: 9px; cursor: pointer; border: 1px solid transparent; }
+      .fr-accept { background: var(--red); color: #fff; }
+      .fr-decline { background: rgba(255,255,255,0.07); color: var(--muted); border-color: var(--glass-border); }
+      .fr-done { font-weight: 700; color: #7ee2a0; font-size: 15.5px; }
+      .fr-gone { color: var(--faint); font-weight: 600; font-size: 15.5px; }
+
+      /* Privacy radios reuse the game-opt chips */
+      .privacy-opts { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+      .privacy-opts .game-opt span { border-radius: 12px; }
+
+      @media (max-width: 760px) {
+        .profile-grid, .squad-grid { grid-template-columns: 1fr; }
+        .profile-main { flex-wrap: wrap; padding: 0 20px 22px; gap: 14px; }
+        .profile-avatar { width: 104px; height: 104px; margin-top: -44px; }
+        .profile-cover { height: 150px; }
+        .profile-socials { padding-top: 4px; }
+        .pf-panel { padding: 22px 18px; }
+        .roster { grid-template-columns: 1fr; }
+        .privacy-opts { grid-template-columns: 1fr; }
+        .head-account { top: 14px; }
+        .avatar-btn { width: 36px; height: 36px; }
+      }
     </style>
   </head>
   <body data-view="home">
@@ -1069,8 +1342,25 @@
         <a href="#rules" data-nav="rules">Rules</a>
         <a href="#gallery" data-nav="gallery">Gallery</a>
         <a href="#sponsors" data-nav="sponsors">Sponsors</a>
-        <a href="#join" data-nav="join" class="nav-join">Join</a>
+        <a href="#login" data-nav="login" class="nav-auth">Log in</a>
+        <a href="#register" data-nav="register" class="nav-join nav-auth">Register</a>
       </nav>
+      <!-- Logged-in state: the member's round avatar replaces Log in / Register -->
+      <div class="head-account" id="headAccount" hidden>
+        <button class="avatar-btn" id="avatarBtn" type="button" aria-haspopup="true" aria-expanded="false" aria-label="Your account menu — Bijoy Rahman">
+          <img id="avatarImg" src="assets/champion-demo-photo.webp" alt="Bijoy Rahman" />
+          <span class="avatar-initial" id="avatarInitial" hidden>B</span>
+          <span class="avatar-badge" id="inboxBadge">4</span>
+        </button>
+        <div class="account-menu" id="accountMenu" hidden>
+          <div class="am-head"><b id="amName">Bijoy Rahman</b><span id="amSub">Member · eFootball</span></div>
+          <a href="#profile" data-nav="profile">Profile</a>
+          <a href="#profile" data-nav="profile" data-scrollto="profileSettings">Settings</a>
+          <a href="#profile" data-nav="profile" data-scrollto="profileInbox" id="inboxMenuLink">Inbox <span class="am-badge" id="inboxBadge2">4</span></a>
+          <a href="#community" data-nav="community" id="allMembersLink" hidden>All Members</a>
+          <button class="am-item" type="button" id="logoutBtn">Log out</button>
+        </div>
+      </div>
     </header>
 
     <main id="top">
@@ -1085,7 +1375,7 @@
             <p class="hero-sub">A sports &amp; e-sports club for passionate gamers — tournaments, practice, coaching and a community that brings the best out of every player.</p>
             <span class="since">Since 2023</span>
             <div class="hero-ctas">
-              <a class="btn btn-red" href="#join" data-nav="join">Join the Club</a>
+              <a class="btn btn-red" href="#register" data-nav="register">Join the Club</a>
               <a class="btn btn-glass" href="#community" data-nav="community">Meet the Committee</a>
             </div>
             <div class="stats glass">
@@ -1184,7 +1474,7 @@
             <div class="join-panel glass reveal">
               <h2>Ready to Become a Warrior?</h2>
               <p>Join 80+ gamers competing, practising and levelling up together across eFootball, PUBG, Clash of Clans and Call of Duty.</p>
-              <a class="btn btn-red" href="#join" data-nav="join">Join the Club</a>
+              <a class="btn btn-red" href="#register" data-nav="register">Join the Club</a>
             </div>
           </div>
         </section>
@@ -1729,7 +2019,7 @@
                   <li><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>A direct line to an engaged youth gaming audience</li>
                   <li><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Support grassroots esports and player development</li>
                 </ul>
-                <a class="btn btn-red" href="#join" data-nav="join">Talk to Us</a>
+                <a class="btn btn-red" href="#register" data-nav="register">Talk to Us</a>
                 <p class="sponsor-contact">Sponsorship enquiries are handled by our Sponsorship Head, <b>Efty Ahmed Titu</b> — reach the committee through the Join form.</p>
               </div>
             </div>
@@ -1737,18 +2027,18 @@
         </section>
       </div>
 
-      <!-- ==================== VIEW: JOIN ==================== -->
-      <div class="view" id="view-join">
+      <!-- ==================== VIEW: REGISTER ==================== -->
+      <div class="view" id="view-register">
         <section>
           <div class="wrap">
             <div class="sec-head reveal">
               <p class="kicker">Join Us</p>
               <h2>Become a Warrior</h2>
-              <p>Fill in the application below — it prepares a ready-to-send summary you can copy and hand to the club committee.</p>
+              <p>Create your member account below — registration is instant, and you are a member the moment you sign up.</p>
             </div>
             <div class="join-grid">
               <div class="join-info glass reveal">
-                <h3>Before you apply</h3>
+                <h3>Before you register</h3>
                 <p>Knight Warriors Club is open to passionate gamers across three membership tiers — Standard, Competitive Team and Honorary/Support.</p>
                 <p>Every member agrees to the club's <a href="#rules" data-nav="rules" style="color:#ff97a1;font-weight:600">Rules &amp; Code of Conduct</a>, attends meetings and events, and plays fair — no cheating, no toxicity, just teamwork.</p>
                 <ul>
@@ -1756,63 +2046,456 @@
                   <li><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Competitive spots are earned through tryouts or demonstrated skill</li>
                   <li><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Standard membership carries a monthly fee</li>
                 </ul>
+                <p style="margin-top:18px">Already a member? <a href="#login" data-nav="login" style="color:#ff97a1;font-weight:600">Log in here</a>.</p>
               </div>
-              <form class="join-form glass reveal" id="joinForm" name="join-application" method="POST" data-netlify="true" novalidate>
-                <h3>Membership Application</h3>
-                <div class="form-row">
-                  <div class="field">
-                    <label for="fName">Full name *</label>
-                    <input id="fName" name="name" type="text" required placeholder="Your name" autocomplete="name" />
+              <div class="join-form glass reveal">
+                <form id="registerForm" novalidate>
+                  <h3>Member Registration</h3>
+                  <div class="field" data-field="name">
+                    <label for="rName">Full name *</label>
+                    <input id="rName" name="name" type="text" required placeholder="Your full name" autocomplete="name" />
+                    <p class="err" role="alert">Please enter your full name.</p>
                   </div>
-                  <div class="field">
-                    <label for="fPhone">WhatsApp / phone *</label>
-                    <input id="fPhone" name="phone" type="tel" required placeholder="+880…" autocomplete="tel" />
+                  <div class="form-row">
+                    <div class="field" data-field="phone">
+                      <label for="rPhone">Phone / WhatsApp number *</label>
+                      <input id="rPhone" name="phone" type="tel" required placeholder="+880…" autocomplete="tel" />
+                      <p class="err" role="alert">Please enter your phone / WhatsApp number.</p>
+                    </div>
+                    <div class="field" data-field="email">
+                      <label for="rEmail">Email *</label>
+                      <input id="rEmail" name="email" type="email" required placeholder="you@example.com" autocomplete="email" />
+                      <p class="err" role="alert">Please enter a valid email address.</p>
+                    </div>
                   </div>
+                  <div class="field" data-field="facebook">
+                    <label for="rFacebook">Facebook ID link *</label>
+                    <input id="rFacebook" name="facebook" type="url" required placeholder="https://www.facebook.com/your.profile" autocomplete="url" />
+                    <p class="err" role="alert">Please enter your Facebook ID link.</p>
+                  </div>
+                  <fieldset class="field" data-field="games">
+                    <legend>Your Games * <span style="color:var(--faint);font-weight:500">(select one or more)</span></legend>
+                    <div class="game-opts">
+                      <label class="game-opt"><input type="checkbox" name="games" value="eFootball" /><span>eFootball</span></label>
+                      <label class="game-opt"><input type="checkbox" name="games" value="PUBG" /><span>PUBG</span></label>
+                      <label class="game-opt"><input type="checkbox" name="games" value="Clash of Clans" /><span>Clash of Clans</span></label>
+                      <label class="game-opt"><input type="checkbox" name="games" value="Call of Duty" /><span>Call of Duty</span></label>
+                    </div>
+                    <p class="err" role="alert">Please select at least one game.</p>
+                  </fieldset>
+                  <div class="form-row">
+                    <div class="field" data-field="dob">
+                      <label for="rDob">Date of birth *</label>
+                      <input id="rDob" name="dob" type="date" required autocomplete="bday" />
+                      <p class="err" role="alert">Please enter your date of birth.</p>
+                    </div>
+                    <div class="field" data-field="gender">
+                      <label for="rGender">Gender *</label>
+                      <select id="rGender" name="gender" required>
+                        <option value="">Select gender…</option>
+                        <option>Male</option>
+                        <option>Female</option>
+                        <option>Other</option>
+                      </select>
+                      <p class="err" role="alert">Please select your gender.</p>
+                    </div>
+                  </div>
+                  <div class="form-row">
+                    <div class="field" data-field="password">
+                      <label for="rPassword">Password *</label>
+                      <input id="rPassword" name="password" type="password" required placeholder="Create a password" autocomplete="new-password" />
+                      <p class="err" role="alert">Please create a password.</p>
+                    </div>
+                    <div class="field" data-field="confirm">
+                      <label for="rConfirm">Confirm password *</label>
+                      <input id="rConfirm" name="confirm" type="password" required placeholder="Type the password again" autocomplete="new-password" />
+                      <p class="err" role="alert">Passwords do not match — please type the same password again.</p>
+                    </div>
+                  </div>
+                  <p class="form-err" id="regError" role="alert"></p>
+                  <button class="btn btn-red" type="submit">Create My Account</button>
+                </form>
+                <div class="reg-success" id="regSuccess" aria-live="polite" tabindex="-1">
+                  <div class="rs-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></div>
+                  <h3>Account Created — Welcome to the Club!</h3>
+                  <p><b id="regSuccessName">Warrior</b>, your account has been created and you are now a member of Knight Warriors Club.</p>
+                  <p>A welcome email is on its way to <b id="regSuccessEmail">your email address</b>.</p>
+                  <a class="btn btn-red" href="#login" data-nav="login">Log In to Your Account</a>
                 </div>
-                <div class="form-row">
-                  <div class="field">
-                    <label for="fFacebook">Facebook ID link</label>
-                    <input id="fFacebook" name="facebook" type="url" placeholder="https://facebook.com/your.profile" autocomplete="url" />
-                  </div>
-                  <div class="field">
-                    <label for="fEmail">Email</label>
-                    <input id="fEmail" name="email" type="email" placeholder="you@example.com" autocomplete="email" />
-                  </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- ==================== VIEW: LOG IN ==================== -->
+      <div class="view" id="view-login">
+        <section>
+          <div class="wrap">
+            <div class="sec-head center reveal">
+              <p class="kicker">Members</p>
+              <h2>Welcome Back, Warrior</h2>
+              <p>Log in with the email and password you registered with.</p>
+            </div>
+            <div class="auth-card glass reveal">
+              <form id="loginForm" novalidate>
+                <h3>Log In</h3>
+                <p class="auth-sub">Member accounts are new — if you have not registered yet, create your account first.</p>
+                <div class="field" data-field="loginEmail">
+                  <label for="lEmail">Email *</label>
+                  <input id="lEmail" name="email" type="email" required placeholder="you@example.com" autocomplete="email" />
+                  <p class="err" role="alert">Please enter a valid email address.</p>
                 </div>
-                <div class="form-row">
-                  <div class="field">
-                    <label for="fGame">Main game *</label>
-                    <select id="fGame" name="game" required>
-                      <option value="">Choose your main game…</option>
-                      <option>eFootball</option>
-                      <option>PUBG</option>
-                      <option>Clash of Clans</option>
-                      <option>Call of Duty</option>
-                      <option>Other</option>
-                    </select>
-                  </div>
-                  <div class="field">
-                    <label for="fTier">Preferred membership tier *</label>
-                    <select id="fTier" name="tier" required>
-                      <option value="">Choose a tier…</option>
-                      <option>Standard Membership</option>
-                      <option>Competitive Team Membership</option>
-                      <option>Honorary / Support Member</option>
-                    </select>
-                  </div>
+                <div class="field" data-field="loginPassword">
+                  <label for="lPassword">Password *</label>
+                  <input id="lPassword" name="password" type="password" required placeholder="Your password" autocomplete="current-password" />
+                  <p class="err" role="alert">Please enter your password.</p>
                 </div>
-                <div class="field">
-                  <label for="fMsg">Message (optional)</label>
-                  <textarea id="fMsg" name="message" placeholder="Your experience, rank, or anything the committee should know…"></textarea>
-                </div>
-                <button class="btn btn-red" type="submit">Prepare My Application</button>
-                <div class="app-output" id="appOutput" aria-live="polite">
-                  <h4>Your application — ready to send</h4>
-                  <pre id="appText"></pre>
-                  <p class="note">Copy the application above and send it to the club committee (for example through the club's group chat) — they will take it from there.</p>
-                  <button class="btn btn-glass" type="button" id="copyBtn">Copy Application</button><span class="copy-msg" id="copyMsg"></span>
-                </div>
+                <p class="auth-forgot"><a href="#resetpassword" data-nav="resetpassword">Forgot password?</a></p>
+                <p class="form-err" id="loginError" role="alert" style="margin:0 0 16px"></p>
+                <button class="btn btn-red" type="submit" style="width:100%;justify-content:center">Log In</button>
+                <p class="form-ok" id="loginOk" aria-live="polite">Welcome back — opening your profile…</p>
               </form>
+              <p class="auth-alt">New to the club? <a href="#register" data-nav="register">Register here</a></p>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- ==================== VIEW: RESET PASSWORD ==================== -->
+      <div class="view" id="view-resetpassword">
+        <section>
+          <div class="wrap">
+            <div class="sec-head center reveal">
+              <p class="kicker">Members</p>
+              <h2>Reset Your Password</h2>
+              <p>Forgot it? No problem — tell us your account email and we will send you a reset link.</p>
+            </div>
+            <div class="auth-card glass reveal">
+              <form id="resetForm" novalidate>
+                <h3>Forgot Password</h3>
+                <p class="auth-sub">Enter the email address you registered with.</p>
+                <div class="field" data-field="resetEmail">
+                  <label for="rpEmail">Email *</label>
+                  <input id="rpEmail" name="email" type="email" required placeholder="you@example.com" autocomplete="email" />
+                  <p class="err" role="alert">Please enter a valid email address.</p>
+                </div>
+                <p class="form-err" id="resetError" role="alert" style="margin:0 0 16px"></p>
+                <button class="btn btn-red" type="submit" style="width:100%;justify-content:center">Send Reset Link</button>
+              </form>
+              <div class="reg-success" id="resetSuccess" aria-live="polite" tabindex="-1">
+                <div class="rs-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg></div>
+                <h3>Check Your Email</h3>
+                <p>A password reset link is on its way to <b id="resetSuccessEmail">your email address</b>. Open it to choose a new password.</p>
+                <p style="margin-top:14px"><a href="#setpassword" data-nav="setpassword" style="color:#ff97a1;font-weight:600">Preview: open the reset link →</a></p>
+              </div>
+              <p class="auth-alt">Remembered it after all? <a href="#login" data-nav="login">Back to Log in</a></p>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- ==================== VIEW: SET NEW PASSWORD ==================== -->
+      <div class="view" id="view-setpassword">
+        <section>
+          <div class="wrap">
+            <div class="sec-head center reveal">
+              <p class="kicker">Members</p>
+              <h2>Choose a New Password</h2>
+              <p>Set a new password for your Knight Warriors account.</p>
+            </div>
+            <div class="auth-card glass reveal">
+              <form id="setPassForm" novalidate>
+                <h3>Set New Password</h3>
+                <p class="auth-sub">Pick a password you have not used on this account before.</p>
+                <div class="field" data-field="newPassword">
+                  <label for="npPassword">New password *</label>
+                  <input id="npPassword" name="newPassword" type="password" required placeholder="Create a new password" autocomplete="new-password" />
+                  <p class="err" role="alert">Please create a new password.</p>
+                </div>
+                <div class="field" data-field="newConfirm">
+                  <label for="npConfirm">Confirm new password *</label>
+                  <input id="npConfirm" name="newConfirm" type="password" required placeholder="Type the new password again" autocomplete="new-password" />
+                  <p class="err" role="alert">Passwords do not match — please type the same password again.</p>
+                </div>
+                <p class="form-err" id="setPassError" role="alert" style="margin:0 0 16px"></p>
+                <button class="btn btn-red" type="submit" style="width:100%;justify-content:center">Set New Password</button>
+              </form>
+              <div class="reg-success" id="setPassSuccess" aria-live="polite" tabindex="-1">
+                <div class="rs-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></div>
+                <h3>Password Updated</h3>
+                <p>Your new password is set. Log in with it to enter the club.</p>
+                <a class="btn btn-red" href="#login" data-nav="login">Back to Log In</a>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- ==================== VIEW: PROFILE ==================== -->
+      <div class="view" id="view-profile">
+        <section>
+          <div class="wrap">
+            <div class="profile-card glass reveal">
+              <div class="profile-cover"><img id="profileCoverImg" src="assets/banner-red-charge.jpg" alt="Bijoy Rahman's cover photo — the Warriors charging into battle" /></div>
+              <div class="profile-main">
+                <img class="profile-avatar" id="profileAvatarImg" src="assets/champion-demo-photo.webp" alt="Bijoy Rahman — profile photo" />
+                <div class="profile-id">
+                  <h2 id="profileName">Bijoy Rahman</h2>
+                  <p class="profile-handle" id="profileHandle">@bijoy.kw</p>
+                  <p class="profile-role" id="profileRole">Member · eFootball</p>
+                  <p class="profile-bio" id="profileBio">eFootball striker for the Warriors. Demo Cup champion — now chasing the next trophy.</p>
+                  <p class="profile-since" id="profileSince">Member since January 2024</p>
+                </div>
+                <div class="profile-socials">
+                  <a class="soc-btn" id="profileFbLink" href="https://www.facebook.com/bijoy.rahman" target="_blank" rel="noopener" aria-label="Open Bijoy Rahman's Facebook profile"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M24 12.07C24 5.4 18.63 0 12 0S0 5.4 0 12.07C0 18.1 4.39 23.09 10.13 24v-8.44H7.08v-3.49h3.05V9.41c0-3.02 1.79-4.7 4.53-4.7 1.31 0 2.68.24 2.68.24v2.97h-1.51c-1.49 0-1.96.93-1.96 1.89v2.26h3.33l-.53 3.49h-2.8V24C19.61 23.09 24 18.1 24 12.07z"/></svg></a>
+                  <button class="soc-btn" type="button" id="discordBtn" aria-label="Copy Bijoy Rahman's Discord ID"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.317 4.37a19.79 19.79 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.865-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.058a.082.082 0 0 0 .031.056 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.1 13.1 0 0 1-1.872-.892.077.077 0 0 1-.008-.128c.126-.094.252-.192.372-.291a.074.074 0 0 1 .078-.01c3.928 1.793 8.18 1.793 12.061 0a.074.074 0 0 1 .079.009c.12.099.246.198.373.292a.077.077 0 0 1-.006.128 12.3 12.3 0 0 1-1.873.891.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.029 19.84 19.84 0 0 0 6.002-3.03.077.077 0 0 0 .032-.055c.5-5.177-.838-9.674-3.549-13.66a.06.06 0 0 0-.031-.03ZM8.02 15.331c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418Zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418Z"/></svg></button>
+                  <span class="discord-note" id="discordNote" hidden></span>
+                </div>
+              </div>
+            </div>
+
+            <div class="profile-grid">
+              <!-- My Games -->
+              <div class="pf-panel glass reveal" id="profileGames">
+                <h3 class="pf-title">My Games</h3>
+                <p class="pf-sub">Your games and in-game IDs — keep them updated so captains can find you on match day.</p>
+                <div id="myGamesList">
+                  <div class="game-row">
+                    <h4>eFootball</h4>
+                    <div class="form-row">
+                      <div class="field"><label>UID</label><input type="text" value="810022345" inputmode="numeric" /></div>
+                      <div class="field"><label>Team Strength</label><input type="number" value="3050" inputmode="numeric" /></div>
+                    </div>
+                  </div>
+                  <div class="game-row">
+                    <h4>PUBG</h4>
+                    <div class="field"><label>UID</label><input type="text" value="5123456789" inputmode="numeric" /></div>
+                  </div>
+                </div>
+                <div class="add-game">
+                  <h4>Add a game</h4>
+                  <div class="form-row">
+                    <div class="field" style="margin-bottom:0"><label for="addGameSelect">Game</label>
+                      <select id="addGameSelect">
+                        <option value="">Select a game…</option>
+                        <option>Clash of Clans</option>
+                        <option>Call of Duty</option>
+                      </select>
+                    </div>
+                    <div class="field" style="margin-bottom:0"><label for="addGameUid">UID</label><input id="addGameUid" type="text" placeholder="Your in-game UID" /></div>
+                  </div>
+                  <button class="btn btn-glass btn-sm" type="button" id="addGameBtn" style="margin-top:14px">+ Add Game</button>
+                </div>
+                <p class="form-err" id="gamesError" role="alert"></p>
+                <button class="btn btn-red" type="button" id="saveGamesBtn">Save Games</button>
+                <p class="form-ok" id="gamesOk">Your games have been saved.</p>
+              </div>
+
+              <!-- Tournament Honours -->
+              <div class="pf-panel glass reveal" id="profileHonours">
+                <h3 class="pf-title">Tournament Honours</h3>
+                <p class="pf-sub">Your record in official club tournaments.</p>
+                <div id="honoursList"></div>
+                <p class="pf-note">Honours are added automatically from official tournament results — they can't be edited.</p>
+              </div>
+
+              <!-- Squads -->
+              <div class="pf-panel glass reveal" id="profileSquads">
+                <h3 class="pf-title">Squads</h3>
+                <p class="pf-sub">The squads you fight with. Tap a squad to open its page and group chat.</p>
+                <div id="profileSquadsList"></div>
+                <a class="btn btn-red" href="#createsquad" data-nav="createsquad">+ Create Squad</a>
+                <p class="pf-note">Squad creation is switched on for your account by the President.</p>
+              </div>
+
+              <!-- Inbox: notifications, broadcasts, friend requests -->
+              <div class="pf-panel glass reveal" id="profileInbox">
+                <h3 class="pf-title">Inbox</h3>
+                <p class="pf-sub">Notifications, club broadcasts and friend requests — all in one place.</p>
+
+                <p class="inbox-group">Notifications</p>
+                <div class="notif grant">
+                  <span class="notif-icon"><svg viewBox="0 0 24 24"><path d="M12 3l2.1 4.9 5.3.5-4 3.6 1.2 5.2L12 14.5l-4.6 2.7L8.6 12l-4-3.6 5.3-.5z"/></svg></span>
+                  <div class="notif-body">
+                    <p><b>You can now open a squad.</b> The President has given you permission to create squads — pick a name and a game, and start recruiting up to 10 members.</p>
+                    <p class="notif-time">From the President · 2 hours ago</p>
+                    <a class="btn btn-red btn-sm" href="#createsquad" data-nav="createsquad">Create a Squad</a>
+                  </div>
+                </div>
+                <div class="notif">
+                  <span class="notif-icon plain"><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></span>
+                  <div class="notif-body">
+                    <p><b>Welcome to Knight Warriors Club.</b> Your account is ready — add your game UIDs above so your captains can find you.</p>
+                    <p class="notif-time">Club system · January 2024</p>
+                  </div>
+                </div>
+
+                <p class="inbox-group">Club Broadcasts</p>
+                <div class="notif">
+                  <span class="notif-icon plain"><svg viewBox="0 0 24 24"><path d="M3 11l14-5v12L3 13v-2zM7 13v5a2 2 0 0 0 4 0v-4M17 8a4 4 0 0 1 0 8"/></svg></span>
+                  <div class="notif-body">
+                    <p><b>eFootball Tournament Legacy is coming</b> — our first full 24-player league. Fixtures and the table will live on the Events page; make sure your eFootball UID is on your profile.</p>
+                    <p class="notif-time">President · Broadcast to all members · Yesterday</p>
+                  </div>
+                </div>
+                <div class="notif">
+                  <span class="notif-icon plain"><svg viewBox="0 0 24 24"><path d="M3 11l14-5v12L3 13v-2zM7 13v5a2 2 0 0 0 4 0v-4M17 8a4 4 0 0 1 0 8"/></svg></span>
+                  <div class="notif-body">
+                    <p><b>Practice session this Friday, 8 PM.</b> All squads report to the club Discord — bring your best formation.</p>
+                    <p class="notif-time">President · Broadcast to all members · 3 days ago</p>
+                  </div>
+                </div>
+
+                <p class="inbox-group">Friend Requests</p>
+                <div class="fr-row">
+                  <span class="mini-avatar">FM</span>
+                  <p class="fr-name">Farhan Mahee <span>eFootball · Demo Cup finalist</span></p>
+                  <div class="fr-actions">
+                    <button class="fr-btn fr-accept" type="button">Accept</button>
+                    <button class="fr-btn fr-decline" type="button">Decline</button>
+                  </div>
+                </div>
+                <div class="fr-row">
+                  <span class="mini-avatar">AM</span>
+                  <p class="fr-name">Ahmed Mizan <span>eFootball · Knight Strikers</span></p>
+                  <div class="fr-actions">
+                    <button class="fr-btn fr-accept" type="button">Accept</button>
+                    <button class="fr-btn fr-decline" type="button">Decline</button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Settings -->
+              <div class="pf-panel glass reveal wide" id="profileSettings">
+                <h3 class="pf-title">Settings</h3>
+                <p class="pf-sub">Your account details. Phone, email, date of birth and gender are only ever visible to the committee.</p>
+                <form id="settingsForm" novalidate>
+                  <div class="form-row">
+                    <div class="field"><label for="sName">Full name</label><input id="sName" type="text" value="Bijoy Rahman" autocomplete="name" /></div>
+                    <div class="field"><label for="sPhone">Phone / WhatsApp</label><input id="sPhone" type="tel" placeholder="+880…" autocomplete="tel" /></div>
+                  </div>
+                  <div class="field">
+                    <label for="sUsername">Username <span style="color:var(--faint);font-weight:500">(optional — you choose it here, after joining)</span></label>
+                    <input id="sUsername" type="text" value="bijoy.kw" placeholder="e.g. bijoy.kw" autocomplete="username" />
+                    <p class="pf-note" style="margin-top:7px">Shown on your profile as @username, under your name. Leave it empty and your profile shows just your name.</p>
+                  </div>
+                  <div class="form-row">
+                    <div class="field"><label for="sFacebook">Facebook ID link</label><input id="sFacebook" type="url" value="https://www.facebook.com/bijoy.rahman" placeholder="https://www.facebook.com/your.profile" /></div>
+                    <div class="field"><label for="sDiscord">Discord ID</label><input id="sDiscord" type="text" value="bijoy.kw" placeholder="your Discord username" /></div>
+                  </div>
+                  <div class="form-row">
+                    <div class="field"><label for="sDob">Date of birth</label><input id="sDob" type="date" /></div>
+                    <div class="field"><label for="sGender">Gender</label>
+                      <select id="sGender">
+                        <option value="">Select gender…</option>
+                        <option selected>Male</option>
+                        <option>Female</option>
+                        <option>Other</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="field"><label for="sBio">Bio</label><textarea id="sBio">eFootball striker for the Warriors. Demo Cup champion — now chasing the next trophy.</textarea></div>
+                  <fieldset class="field">
+                    <legend>Profile privacy</legend>
+                    <div class="privacy-opts">
+                      <label class="game-opt"><input type="radio" name="privacy" value="public" checked /><span>Public — everyone can see my profile</span></label>
+                      <label class="game-opt"><input type="radio" name="privacy" value="friends" /><span>Friends only — only my friends can see it</span></label>
+                    </div>
+                  </fieldset>
+                  <p class="form-err" id="settingsError" role="alert"></p>
+                  <button class="btn btn-red" type="submit">Save Settings</button>
+                  <p class="form-ok" id="settingsOk">Your settings have been saved.</p>
+                </form>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- ==================== VIEW: SQUAD ==================== -->
+      <div class="view" id="view-squad">
+        <section>
+          <div class="wrap">
+            <div class="sec-head reveal">
+              <p class="kicker">Squad</p>
+              <h2>Knight Strikers</h2>
+              <p>eFootball squad · 10 of 10 seats filled · Captained by Bijoy Rahman</p>
+            </div>
+            <div class="squad-grid">
+              <div class="pf-panel glass reveal">
+                <h3 class="pf-title">Roster</h3>
+                <p class="pf-sub">Every Warrior in the squad, with the role their captain gave them.</p>
+                <div class="roster">
+                  <div class="roster-member"><span class="mini-avatar">BR</span><span class="rm-name">Bijoy Rahman <span class="role-sm">· Captain</span></span></div>
+                  <div class="roster-member"><span class="mini-avatar">FM</span><span class="rm-name">Farhan Mahee <span class="role-sm">· Vice-Captain</span></span></div>
+                  <div class="roster-member"><span class="mini-avatar">AAM</span><span class="rm-name">Abdullah Al Mahmud <span class="role-sm">· Striker</span></span></div>
+                  <div class="roster-member"><span class="mini-avatar">AM</span><span class="rm-name">Ahmed Mizan <span class="role-sm">· Playmaker</span></span></div>
+                  <div class="roster-member"><span class="mini-avatar">FIM</span><span class="rm-name">Foysal Islam Muaz <span class="role-sm">· Midfielder</span></span></div>
+                  <div class="roster-member"><span class="mini-avatar">FR</span><span class="rm-name">Fozle Rabbie <span class="role-sm">· Defender</span></span></div>
+                  <div class="roster-member"><span class="mini-avatar">GS</span><span class="rm-name">Gowrob Saha <span class="role-sm">· Goalkeeper</span></span></div>
+                  <div class="roster-member"><span class="mini-avatar">HT</span><span class="rm-name">Hasib Al Hasan Talukder <span class="role-sm">· Winger</span></span></div>
+                  <div class="roster-member"><span class="mini-avatar">JH</span><span class="rm-name">Jahid Hasan <span class="role-sm">· Defender</span></span></div>
+                  <div class="roster-member"><span class="mini-avatar">KZ</span><span class="rm-name">Kamrul Islam Ziad <span class="role-sm">· Support</span></span></div>
+                </div>
+              </div>
+              <div class="pf-panel glass reveal">
+                <h3 class="pf-title">Group Chat</h3>
+                <p class="pf-sub">Knight Strikers only — every member can send messages.</p>
+                <div class="chat-log" id="chatLog">
+                  <div class="chat-msg"><span class="mini-avatar">BR</span><div class="chat-bubble"><p class="chat-sender">Bijoy Rahman <span class="role-sm">· Captain</span></p><p class="chat-text">Practice is Friday 8 PM, everyone. Strikers lobby opens 15 minutes early.</p><p class="chat-time">7:42 PM</p></div></div>
+                  <div class="chat-msg"><span class="mini-avatar">FM</span><div class="chat-bubble"><p class="chat-sender">Farhan Mahee <span class="role-sm">· Vice-Captain</span></p><p class="chat-text">I'll run the defensive drills first, then we do the 3v3 rotations.</p><p class="chat-time">7:45 PM</p></div></div>
+                  <div class="chat-msg"><span class="mini-avatar">AM</span><div class="chat-bubble"><p class="chat-sender">Ahmed Mizan <span class="role-sm">· Playmaker</span></p><p class="chat-text">Updated my team strength to 3,050 — the new formation is ready.</p><p class="chat-time">7:51 PM</p></div></div>
+                  <div class="chat-msg"><span class="mini-avatar">GS</span><div class="chat-bubble"><p class="chat-sender">Gowrob Saha <span class="role-sm">· Goalkeeper</span></p><p class="chat-text">Clean sheet again last night. Bring your best strikers on Friday.</p><p class="chat-time">8:03 PM</p></div></div>
+                </div>
+                <form class="chat-form" id="chatForm">
+                  <input id="chatInput" type="text" placeholder="Message Knight Strikers…" autocomplete="off" aria-label="Message Knight Strikers" />
+                  <button class="btn btn-red" type="submit">Send</button>
+                </form>
+              </div>
+            </div>
+            <p style="margin-top:22px"><a class="btn btn-glass" href="#profile" data-nav="profile" data-scrollto="profileSquads">← Back to My Profile</a></p>
+          </div>
+        </section>
+      </div>
+
+      <!-- ==================== VIEW: CREATE SQUAD ==================== -->
+      <div class="view" id="view-createsquad">
+        <section>
+          <div class="wrap">
+            <div class="sec-head center reveal">
+              <p class="kicker">Squads</p>
+              <h2>Create a Squad</h2>
+              <p>The President has given you permission to open a squad. Name it, pick its game — then invite up to 10 members and lead them as captain.</p>
+            </div>
+            <div class="auth-card glass reveal">
+              <form id="createSquadForm" novalidate>
+                <h3>New Squad</h3>
+                <p class="auth-sub">You will be the captain of this squad.</p>
+                <div class="field" data-field="squadName">
+                  <label for="csName">Squad name *</label>
+                  <input id="csName" name="squadName" type="text" required placeholder="e.g. Knight Strikers" />
+                  <p class="err" role="alert">Please give your squad a name.</p>
+                </div>
+                <div class="field" data-field="squadGame">
+                  <label for="csGame">Game *</label>
+                  <select id="csGame" name="squadGame" required>
+                    <option value="">Select a game…</option>
+                    <option>eFootball</option>
+                    <option>PUBG</option>
+                    <option>Clash of Clans</option>
+                    <option>Call of Duty</option>
+                  </select>
+                  <p class="err" role="alert">Please pick the squad's game.</p>
+                </div>
+                <button class="btn btn-red" type="submit" style="width:100%;justify-content:center">Create Squad</button>
+              </form>
+              <div class="reg-success" id="csSuccess" aria-live="polite" tabindex="-1">
+                <div class="rs-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></div>
+                <h3>Squad Created!</h3>
+                <p><b id="csSuccessName">Your squad</b> (<span id="csSuccessGame">eFootball</span>) is ready — you are its captain. It now appears in the Squads section of your profile.</p>
+                <a class="btn btn-red" href="#profile" data-nav="profile" data-scrollto="profileSquads">View in My Profile</a>
+              </div>
             </div>
           </div>
         </section>
@@ -1854,7 +2537,7 @@
               <li><a href="#rules" data-nav="rules">Rules &amp; Code of Conduct</a></li>
               <li><a href="#gallery" data-nav="gallery">Gallery</a></li>
               <li><a href="#sponsors" data-nav="sponsors">Become a Sponsor</a></li>
-              <li><a href="#join" data-nav="join">Join Us</a></li>
+              <li><a href="#register" data-nav="register">Register</a></li>
             </ul>
           </div>
         </div>
@@ -1890,11 +2573,11 @@
 
     <script>
       /* ---------- View router ---------- */
-      var VIEWS = ['home', 'about', 'community', 'games', 'news', 'article', 'events', 'tournament', 'leaderboard', 'rules', 'gallery', 'sponsors', 'join'];
+      var VIEWS = ['home', 'about', 'community', 'games', 'news', 'article', 'events', 'tournament', 'leaderboard', 'rules', 'gallery', 'sponsors', 'register', 'login', 'profile', 'squad', 'createsquad', 'resetpassword', 'setpassword'];
       var HASH_ALIAS = {
         top: 'home', committee: 'community', members: 'community',
         provide: 'about', membership: 'about', practice: 'about',
-        announcements: 'news'
+        announcements: 'news', join: 'register'
       };
       function resolveView(name) {
         if (!name) return 'home';
@@ -1940,6 +2623,15 @@
         if (!el) return;
         e.preventDefault();
         showView(el.getAttribute('data-nav'), true);
+        /* Optional: land on a section inside the target view (e.g. the
+           profile's Settings or Inbox from the header account menu). */
+        var st = el.getAttribute('data-scrollto');
+        if (st) {
+          setTimeout(function () {
+            var t = document.getElementById(st);
+            if (t) t.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }, 70);
+        }
       });
       showView(window.location.hash || 'home', false);
 
@@ -2094,65 +2786,89 @@
       lightbox.addEventListener('click', function (e) { if (e.target === lightbox) closeLb(); });
       document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeLb(); });
 
-      /* ---------- Join form ---------- */
-      var form = document.getElementById('joinForm');
-      var appOutput = document.getElementById('appOutput');
-      var appText = document.getElementById('appText');
-      var copyMsg = document.getElementById('copyMsg');
-      function netlifySubmit() {
-        if (!window.fetch || !form.getAttribute('data-netlify')) return;
-        try {
-          var fd = new FormData(form);
-          fd.set('form-name', 'join-application');
-          fetch('/', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: new URLSearchParams(fd).toString()
-          }).catch(function () { /* Not on Netlify — the copyable summary still works. */ });
-        } catch (err) { /* FormData unavailable — summary still works. */ }
+      /* ---------- Registration form (design preview: front-end validation only) ---------- */
+      var regForm = document.getElementById('registerForm');
+      function regField(name) { return regForm.querySelector('[data-field="' + name + '"]'); }
+      function setRegInvalid(name, invalid) {
+        var f = regField(name);
+        if (!f) return;
+        f.classList.toggle('invalid', !!invalid);
+        var input = f.querySelector('input, select');
+        if (input) input.setAttribute('aria-invalid', invalid ? 'true' : 'false');
       }
-      form.addEventListener('submit', function (e) {
-        e.preventDefault();
-        var name = document.getElementById('fName').value.trim();
-        var phone = document.getElementById('fPhone').value.trim();
-        var game = document.getElementById('fGame').value;
-        var tier = document.getElementById('fTier').value;
-        var msg = document.getElementById('fMsg').value.trim();
-        var facebook = document.getElementById('fFacebook').value.trim();
-        var email = document.getElementById('fEmail').value.trim();
-        if (!name || !phone || !game || !tier) {
-          appText.textContent = 'Please fill in your name, WhatsApp/phone, main game and preferred tier first — then tap "Prepare My Application" again.';
-          appOutput.classList.add('show');
-          return;
-        }
-        var lines = [
-          'KNIGHT WARRIORS CLUB — MEMBERSHIP APPLICATION',
-          '----------------------------------------------',
-          'Name: ' + name,
-          'WhatsApp / Phone: ' + phone,
-          'Main Game: ' + game,
-          'Preferred Tier: ' + tier
+      function validateRegistration(focusFirst) {
+        var name = document.getElementById('rName').value.trim();
+        var phone = document.getElementById('rPhone').value.trim();
+        var email = document.getElementById('rEmail').value.trim();
+        var facebook = document.getElementById('rFacebook').value.trim();
+        var games = regForm.querySelectorAll('input[name="games"]:checked');
+        var dob = document.getElementById('rDob').value;
+        var gender = document.getElementById('rGender').value;
+        var password = document.getElementById('rPassword').value;
+        var confirm = document.getElementById('rConfirm').value;
+        var checks = [
+          ['name', !name],
+          ['phone', !phone],
+          ['email', !email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)],
+          ['facebook', !facebook],
+          ['games', games.length === 0],
+          ['dob', !dob],
+          ['gender', !gender],
+          ['password', !password],
+          ['confirm', !confirm || confirm !== password]
         ];
-        if (facebook) lines.push('Facebook: ' + facebook);
-        if (email) lines.push('Email: ' + email);
-        if (msg) lines.push('Message: ' + msg);
-        netlifySubmit();
-        appText.textContent = lines.join('\n');
-        appOutput.classList.add('show');
-        appOutput.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-      });
-      document.getElementById('copyBtn').addEventListener('click', function () {
-        var text = appText.textContent;
-        function done() { copyMsg.textContent = 'Copied — now send it to the club committee.'; }
-        if (navigator.clipboard && navigator.clipboard.writeText) {
-          navigator.clipboard.writeText(text).then(done, function () { fallbackCopy(); });
-        } else { fallbackCopy(); }
-        function fallbackCopy() {
-          var ta = document.createElement('textarea');
-          ta.value = text; document.body.appendChild(ta); ta.select();
-          try { document.execCommand('copy'); done(); } catch (err) { copyMsg.textContent = 'Copy the text above manually.'; }
-          document.body.removeChild(ta);
+        var firstBad = null;
+        checks.forEach(function (c) {
+          setRegInvalid(c[0], c[1]);
+          if (c[1] && !firstBad) firstBad = c[0];
+        });
+        if (firstBad && focusFirst) {
+          var target = regField(firstBad).querySelector('input, select');
+          if (target) target.focus();
         }
+        return firstBad ? null : { name: name, email: email };
+      }
+      regForm.addEventListener('submit', function (e) {
+        e.preventDefault();
+        var result = validateRegistration(true);
+        if (!result) return;
+        document.getElementById('regSuccessName').textContent = result.name;
+        document.getElementById('regSuccessEmail').textContent = result.email;
+        regForm.style.display = 'none';
+        var success = document.getElementById('regSuccess');
+        success.classList.add('show');
+        success.focus();
+      });
+      /* Clear a field's error as soon as the visitor starts fixing it */
+      regForm.addEventListener('input', function (e) {
+        var wrap = e.target.closest ? e.target.closest('[data-field]') : null;
+        if (wrap) wrap.classList.remove('invalid');
+      });
+      regForm.addEventListener('change', function (e) {
+        var wrap = e.target.closest ? e.target.closest('[data-field]') : null;
+        if (wrap) wrap.classList.remove('invalid');
+      });
+
+      /* ---------- Log in form (placeholder view: validation only) ---------- */
+      var loginForm = document.getElementById('loginForm');
+      loginForm.addEventListener('submit', function (e) {
+        e.preventDefault();
+        var email = document.getElementById('lEmail').value.trim();
+        var password = document.getElementById('lPassword').value;
+        var emailBad = !email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+        var passBad = !password;
+        loginForm.querySelector('[data-field="loginEmail"]').classList.toggle('invalid', emailBad);
+        loginForm.querySelector('[data-field="loginPassword"]').classList.toggle('invalid', passBad);
+        var ok = document.getElementById('loginOk');
+        if (emailBad || passBad) { ok.classList.remove('show'); return; }
+        /* Preview: a valid form signs the member in and opens their profile. */
+        ok.classList.remove('show');
+        setLoggedIn(true);
+        showView('profile', true);
+      });
+      loginForm.addEventListener('input', function (e) {
+        var wrap = e.target.closest ? e.target.closest('[data-field]') : null;
+        if (wrap) wrap.classList.remove('invalid');
       });
 
       /* ---------- Club data: tournaments, matches & news posts ----------
@@ -2940,6 +3656,303 @@
       /* Deep link: #news/<story-id> opens that story's article directly. */
       var bootHash = String(window.location.hash || '').replace(/^#/, '');
       if (bootHash.indexOf('news/') === 0) openArticle(bootHash.slice(5));
+      /* Deep link: #tournament/<id> opens that tournament's page directly. */
+      else if (bootHash.indexOf('tournament/') === 0) openTournament(bootHash.slice('tournament/'.length));
+
+      /* ---------- Member experience (front-end preview) ----------
+         The preview is signed in as the demo profile (Bijoy Rahman, the
+         Demo Cup champion) so the logged-in header, profile, squads and
+         inbox can be reviewed. State lives only in this page session. */
+      var PREVIEW_MEMBER = 'Bijoy Rahman';
+      function setLoggedIn(on) {
+        var acc = document.getElementById('headAccount');
+        if (acc) acc.hidden = !on;
+        document.querySelectorAll('#headNav .nav-auth').forEach(function (a) {
+          a.style.display = on ? 'none' : '';
+        });
+        if (!on) closeAccountMenu();
+      }
+      function closeAccountMenu() {
+        var menu = document.getElementById('accountMenu');
+        var btn = document.getElementById('avatarBtn');
+        if (menu) menu.hidden = true;
+        if (btn) btn.setAttribute('aria-expanded', 'false');
+      }
+      var avatarBtn = document.getElementById('avatarBtn');
+      if (avatarBtn) {
+        avatarBtn.addEventListener('click', function (e) {
+          e.stopPropagation();
+          var menu = document.getElementById('accountMenu');
+          var open = menu.hidden;
+          menu.hidden = !open;
+          avatarBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+        });
+      }
+      document.addEventListener('click', function (e) {
+        var acc = document.getElementById('headAccount');
+        if (!acc || acc.hidden) return;
+        if (e.target.closest && e.target.closest('#accountMenu')) { closeAccountMenu(); return; }
+        if (!(e.target.closest && e.target.closest('#headAccount'))) closeAccountMenu();
+      });
+      var logoutBtn = document.getElementById('logoutBtn');
+      if (logoutBtn) {
+        logoutBtn.addEventListener('click', function () {
+          setLoggedIn(false);
+          showView('home', true);
+        });
+      }
+      var inboxMenuLink = document.getElementById('inboxMenuLink');
+      if (inboxMenuLink) {
+        inboxMenuLink.addEventListener('click', function () {
+          ['inboxBadge', 'inboxBadge2'].forEach(function (id) {
+            var b = document.getElementById(id);
+            if (b) b.hidden = true;
+          });
+        });
+      }
+
+      /* ---------- Tournament honours: written by the results, never by hand ---------- */
+      function posLabel(n) {
+        if (n === 1) return '1st'; if (n === 2) return '2nd'; if (n === 3) return '3rd';
+        return n + 'th';
+      }
+      var TROPHY_SVG = '<svg viewBox="0 0 24 24"><path d="M7 4h10v5a5 5 0 0 1-10 0V4z"/><path d="M7 5.5H4.5a2.5 2.5 0 0 0 2.6 3.5M17 5.5h2.5a2.5 2.5 0 0 1-2.6 3.5"/><path d="M12 14v2.5M8.5 20.5h7M12 16.5c-1.3.9-2 2.2-2.1 4h4.2c-.1-1.8-.8-3.1-2.1-4z"/></svg>';
+      function renderHonours() {
+        var el = document.getElementById('honoursList');
+        if (!el) return;
+        var html = '';
+        TOURNAMENTS.forEach(function (t) {
+          if (!t.participants || t.participants.indexOf(PREVIEW_MEMBER) === -1) return;
+          var table = computeTable(t.results || []);
+          var pos = 0, pts = 0;
+          table.forEach(function (r, i) { if (r.name === PREVIEW_MEMBER) { pos = i + 1; pts = r.pts; } });
+          var isChamp = t.status === 'finished' && t.champion === PREVIEW_MEMBER;
+          if (isChamp) {
+            html += '<div class="honour win"><span class="honour-icon">' + TROPHY_SVG + '</span><div>' +
+              '<h4><span class="h-pos">Champion</span> — ' + esc(t.name) + '</h4>' +
+              '<p>' + esc(t.game) + ' · Finished ' + posLabel(pos) + ' of ' + table.length + ' · ' + pts + ' pts</p></div></div>';
+          } else if (pos) {
+            html += '<div class="honour"><span class="honour-icon">' + TROPHY_SVG + '</span><div>' +
+              '<h4>Finished <span class="h-pos">' + posLabel(pos) + '</span> — ' + esc(t.name) + '</h4>' +
+              '<p>' + esc(t.game) + ' · ' + pts + ' pts</p></div></div>';
+          }
+        });
+        el.innerHTML = html || '<p class="pf-note">No tournament honours yet — your record appears here after your first tournament.</p>';
+      }
+
+      /* ---------- Profile: squads list ---------- */
+      var MY_SQUADS = [
+        { name: 'Knight Strikers', game: 'eFootball', role: 'Captain', members: 10 },
+        { name: 'Night Owls', game: 'PUBG', role: 'Vice-Captain', members: 8 }
+      ];
+      function squadInitials(name) {
+        return name.split(/\s+/).map(function (w) { return w.charAt(0); }).join('').slice(0, 2).toUpperCase();
+      }
+      function renderProfileSquads() {
+        var el = document.getElementById('profileSquadsList');
+        if (!el) return;
+        el.innerHTML = MY_SQUADS.map(function (s) {
+          var inner = '<span class="squad-crest">' + esc(squadInitials(s.name)) + '</span>' +
+            '<span class="sq-main"><span class="sq-name">' + esc(s.name) + '</span>' +
+            '<span class="sq-meta">' + esc(s.game) + ' · ' + esc(PREVIEW_MEMBER) + ' <span class="role-sm">· ' + esc(s.role) + '</span></span></span>' +
+            '<span class="sq-count">' + s.members + '/10</span>';
+          return s.name === 'Knight Strikers'
+            ? '<a class="squad-row" href="#squad" data-nav="squad">' + inner + '</a>'
+            : '<div class="squad-row">' + inner + '</div>';
+        }).join('');
+      }
+
+      /* ---------- Profile: My Games (add + save, in-page only) ---------- */
+      var addGameBtn = document.getElementById('addGameBtn');
+      if (addGameBtn) {
+        addGameBtn.addEventListener('click', function () {
+          var sel = document.getElementById('addGameSelect');
+          var uid = document.getElementById('addGameUid');
+          if (!sel.value) { sel.focus(); return; }
+          var row = document.createElement('div');
+          row.className = 'game-row';
+          row.innerHTML = '<h4>' + esc(sel.value) + '</h4><div class="field"><label>UID</label><input type="text" inputmode="numeric" /></div>';
+          row.querySelector('input').value = uid.value.trim();
+          document.getElementById('myGamesList').appendChild(row);
+          sel.querySelector('option[value="' + sel.value + '"]').remove();
+          sel.value = ''; uid.value = '';
+        });
+      }
+      var saveGamesBtn = document.getElementById('saveGamesBtn');
+      if (saveGamesBtn) {
+        saveGamesBtn.addEventListener('click', function () {
+          document.getElementById('gamesOk').classList.add('show');
+        });
+      }
+      document.getElementById('myGamesList').addEventListener('input', function () {
+        document.getElementById('gamesOk').classList.remove('show');
+      });
+
+      /* ---------- Profile: settings save reflects onto the profile header ---------- */
+      var settingsForm = document.getElementById('settingsForm');
+      if (settingsForm) {
+        settingsForm.addEventListener('submit', function (e) {
+          e.preventDefault();
+          var name = document.getElementById('sName').value.trim();
+          var bio = document.getElementById('sBio').value.trim();
+          if (name) document.getElementById('profileName').textContent = name;
+          if (bio) document.getElementById('profileBio').textContent = bio;
+          var uname = document.getElementById('sUsername').value.trim().replace(/^@+/, '');
+          var handle = document.getElementById('profileHandle');
+          if (uname) { handle.textContent = '@' + uname; handle.hidden = false; }
+          else { handle.hidden = true; }
+          var fb = document.getElementById('sFacebook').value.trim();
+          if (fb) document.getElementById('profileFbLink').href = /^https?:\/\//i.test(fb) ? fb : 'https://' + fb;
+          document.getElementById('settingsOk').classList.add('show');
+        });
+        settingsForm.addEventListener('input', function () {
+          document.getElementById('settingsOk').classList.remove('show');
+        });
+      }
+
+      /* ---------- Profile inbox: friend requests ---------- */
+      var profileInbox = document.getElementById('profileInbox');
+      if (profileInbox) {
+        profileInbox.addEventListener('click', function (e) {
+          var btn = e.target.closest ? e.target.closest('.fr-btn') : null;
+          if (!btn) return;
+          var row = btn.closest('.fr-row');
+          var actions = row.querySelector('.fr-actions');
+          if (btn.classList.contains('fr-accept')) {
+            actions.innerHTML = '<span class="fr-done">✓ Friends</span>';
+          } else {
+            actions.innerHTML = '<span class="fr-gone">Declined</span>';
+          }
+        });
+      }
+
+      /* ---------- Squad group chat: every member can send ---------- */
+      var chatForm = document.getElementById('chatForm');
+      if (chatForm) {
+        chatForm.addEventListener('submit', function (e) {
+          e.preventDefault();
+          var input = document.getElementById('chatInput');
+          var text = input.value.trim();
+          if (!text) return;
+          var log = document.getElementById('chatLog');
+          var msg = document.createElement('div');
+          msg.className = 'chat-msg mine';
+          msg.innerHTML = '<span class="mini-avatar">BR</span><div class="chat-bubble">' +
+            '<p class="chat-sender">' + esc(PREVIEW_MEMBER) + ' <span class="role-sm">· Captain</span></p>' +
+            '<p class="chat-text"></p><p class="chat-time">Now</p></div>';
+          msg.querySelector('.chat-text').textContent = text;
+          log.appendChild(msg);
+          log.scrollTop = log.scrollHeight;
+          input.value = '';
+          input.focus();
+        });
+      }
+
+      /* ---------- Create Squad form ---------- */
+      var csForm = document.getElementById('createSquadForm');
+      if (csForm) {
+        csForm.addEventListener('submit', function (e) {
+          e.preventDefault();
+          var name = document.getElementById('csName').value.trim();
+          var game = document.getElementById('csGame').value;
+          csForm.querySelector('[data-field="squadName"]').classList.toggle('invalid', !name);
+          csForm.querySelector('[data-field="squadGame"]').classList.toggle('invalid', !game);
+          if (!name || !game) return;
+          MY_SQUADS.push({ name: name, game: game, role: 'Captain', members: 1 });
+          renderProfileSquads();
+          document.getElementById('csSuccessName').textContent = name;
+          document.getElementById('csSuccessGame').textContent = game;
+          csForm.style.display = 'none';
+          var success = document.getElementById('csSuccess');
+          success.classList.add('show');
+          success.focus();
+        });
+        csForm.addEventListener('input', function (e) {
+          var wrap = e.target.closest ? e.target.closest('[data-field]') : null;
+          if (wrap) wrap.classList.remove('invalid');
+        });
+        csForm.addEventListener('change', function (e) {
+          var wrap = e.target.closest ? e.target.closest('[data-field]') : null;
+          if (wrap) wrap.classList.remove('invalid');
+        });
+      }
+
+      /* ---------- Profile: Discord icon copies the member's Discord ID ---------- */
+      var discordBtn = document.getElementById('discordBtn');
+      if (discordBtn) {
+        discordBtn.addEventListener('click', function () {
+          var id = (document.getElementById('sDiscord').value || '').trim() || 'bijoy.kw';
+          var note = document.getElementById('discordNote');
+          note.textContent = 'Discord ID: ' + id + ' — copied. Add him in Discord to connect.';
+          note.hidden = false;
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(id).catch(function () { /* clipboard unavailable */ });
+          }
+        });
+      }
+
+      /* ---------- Reset password: email first, then "check your email" ---------- */
+      var resetForm = document.getElementById('resetForm');
+      if (resetForm) {
+        resetForm.addEventListener('submit', function (e) {
+          e.preventDefault();
+          var email = document.getElementById('rpEmail').value.trim();
+          var emailBad = !email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+          resetForm.querySelector('[data-field="resetEmail"]').classList.toggle('invalid', emailBad);
+          if (emailBad) return;
+          document.getElementById('resetSuccessEmail').textContent = email;
+          resetForm.style.display = 'none';
+          var success = document.getElementById('resetSuccess');
+          success.classList.add('show');
+          success.focus();
+        });
+        resetForm.addEventListener('input', function (e) {
+          var wrap = e.target.closest ? e.target.closest('[data-field]') : null;
+          if (wrap) wrap.classList.remove('invalid');
+        });
+      }
+
+      /* ---------- Set new password: same validation style as registration ---------- */
+      var setPassForm = document.getElementById('setPassForm');
+      if (setPassForm) {
+        setPassForm.addEventListener('submit', function (e) {
+          e.preventDefault();
+          var pw = document.getElementById('npPassword').value;
+          var confirm = document.getElementById('npConfirm').value;
+          var pwBad = !pw;
+          var confirmBad = !confirm || confirm !== pw;
+          setPassForm.querySelector('[data-field="newPassword"]').classList.toggle('invalid', pwBad);
+          setPassForm.querySelector('[data-field="newConfirm"]').classList.toggle('invalid', confirmBad);
+          if (pwBad || confirmBad) return;
+          setPassForm.style.display = 'none';
+          var success = document.getElementById('setPassSuccess');
+          success.classList.add('show');
+          success.focus();
+        });
+        setPassForm.addEventListener('input', function (e) {
+          var wrap = e.target.closest ? e.target.closest('[data-field]') : null;
+          if (wrap) wrap.classList.remove('invalid');
+        });
+      }
+
+      /* Re-entering the reset / set-password views always starts at the form. */
+      document.addEventListener('click', function (e) {
+        var el = e.target.closest ? e.target.closest('[data-nav]') : null;
+        if (!el) return;
+        var target = el.getAttribute('data-nav');
+        if (target === 'resetpassword' && resetForm) {
+          resetForm.style.display = '';
+          document.getElementById('resetSuccess').classList.remove('show');
+        }
+        if (target === 'setpassword' && setPassForm) {
+          setPassForm.style.display = '';
+          document.getElementById('setPassSuccess').classList.remove('show');
+        }
+      });
+
+      renderHonours();
+      renderProfileSquads();
+      setLoggedIn(true);
 
       /* ---------- Reveal on scroll ---------- */
       var revealIO = null;
@@ -2966,19 +3979,622 @@
       }
       refreshReveals();
     </script>
+
+    <!-- Live accounts: supabase-js v2 (public client library) -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-      /* ---------- Live data (hosting package) ----------
-         Served over HTTP, this site is driven by data/*.json, edited via
-         the Decap admin (/admin):
-           data/tournaments.json — { tournaments: [ {id, name, game, status, startDate, endDate, intro, participants[], champion, championPhoto, championCutout, championCutoutAnim} ] }
-           data/matches.json     — { matches: [ {tournamentId, date, player1, player2, goals1, goals2, played} ] }
-           data/announcements.json — manual news cards (root { announcements: [...] })
-           data/members.json     — member names (array of strings)
-         Fetched data is converted into the shapes the renderers above use
-         and they simply run again. If a fetch fails (e.g. a file://
-         preview), the baked-in copies stay — the page still works.
-         Tournament pages stay linkable as #tournament/<id>. */
+      /* ---------- Live accounts: Supabase wiring ----------
+         Connects the account pages (register, log in, profile, settings,
+         My Games, password reset) to the club's Supabase project using the
+         public publishable key. One shared client serves every view.
+
+         The handlers below are registered in the capture phase so they run
+         BEFORE the design-preview handlers in the main script: when a real
+         account action is possible they stop the event and do the real
+         thing; when nobody is signed in (or the service can't be reached)
+         the designed sample state stays exactly as built. If the library
+         or the service is unreachable, the account forms show a clear
+         notice instead of ever faking a result — and the rest of the site
+         (tournaments, news, community) never depends on any of this. */
       (function () {
+        var SUPABASE_URL = 'https://jpurbipmekomqdjvquo.supabase.co';
+        var SUPABASE_KEY = 'sb_publishable_htkGQfItE4eW5WLngiShdw_30wHl4xF';
+        var OFFLINE_MSG = 'Account features need the live site — the club\u2019s account service can\u2019t be reached from here. Everything else on the site works as normal.';
+        var ALL_GAMES = ['eFootball', 'PUBG', 'Clash of Clans', 'Call of Duty'];
+        var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+        function el(id) { return document.getElementById(id); }
+        function showErr(id, msg) { var n = el(id); if (n) { n.textContent = msg; n.classList.add('show'); } }
+        function hideErr(id) { var n = el(id); if (n) { n.classList.remove('show'); n.textContent = ''; } }
+        function isNetworkError(err) {
+          if (!err) return false;
+          if (err.name === 'TypeError') return true;
+          return /failed to fetch|network|load failed|timed out|timeout/i.test(String(err.message || err));
+        }
+        function setBusy(btn, busy) {
+          if (!btn) return;
+          if (busy) { btn.setAttribute('data-label', btn.textContent); btn.disabled = true; btn.textContent = 'Please wait\u2026'; }
+          else { btn.disabled = false; if (btn.getAttribute('data-label')) btn.textContent = btn.getAttribute('data-label'); }
+        }
+        function normalizeUrl(u) { return /^https?:\/\//i.test(u) ? u : 'https://' + u; }
+        function monthYear(iso) {
+          var d = new Date(iso);
+          if (!iso || isNaN(d.getTime())) return '';
+          var months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+          return months[d.getMonth()] + ' ' + d.getFullYear();
+        }
+        function initialAvatar(name) {
+          var letter = (String(name || 'W').trim().charAt(0) || 'W').toUpperCase();
+          var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256"><rect width="256" height="256" fill="#1d1d28"/><text x="50%" y="55%" font-family="Arial, sans-serif" font-size="118" font-weight="700" fill="#ff97a1" text-anchor="middle" dominant-baseline="middle">' + letter + '</text></svg>';
+          return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
+        }
+
+        var sb = null;
+        try {
+          if (window.supabase && window.supabase.createClient) {
+            sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+          }
+        } catch (e) { sb = null; }
+
+        var kwc = { user: null, member: null, priv: null, games: [], loadedFor: null };
+
+        /* Snapshot of the designed sample profile — restored on log out so
+           the logged-out placeholder state is byte-for-byte the design. */
+        var privacyChecked = document.querySelector('#settingsForm input[name="privacy"]:checked');
+        var SAMPLE = {
+          name: el('profileName').textContent,
+          handle: el('profileHandle').textContent,
+          role: el('profileRole').textContent,
+          bio: el('profileBio').textContent,
+          since: el('profileSince').textContent,
+          avatar: el('profileAvatarImg').getAttribute('src'),
+          cover: el('profileCoverImg').getAttribute('src'),
+          fb: el('profileFbLink').getAttribute('href'),
+          amName: el('amName').textContent,
+          amSub: el('amSub').textContent,
+          avatarImg: el('avatarImg').getAttribute('src'),
+          gamesHTML: el('myGamesList').innerHTML,
+          addOptionsHTML: el('addGameSelect').innerHTML,
+          sName: el('sName').value, sPhone: el('sPhone').value,
+          sUsername: el('sUsername').value, sFacebook: el('sFacebook').value,
+          sDiscord: el('sDiscord').value, sDob: el('sDob').value,
+          sGender: el('sGender').value, sBio: el('sBio').value,
+          privacy: privacyChecked ? privacyChecked.value : 'public'
+        };
+
+        function restoreSample() {
+          el('profileName').textContent = SAMPLE.name;
+          var handle = el('profileHandle');
+          handle.textContent = SAMPLE.handle; handle.hidden = false;
+          el('profileRole').textContent = SAMPLE.role;
+          el('profileBio').textContent = SAMPLE.bio;
+          el('profileSince').textContent = SAMPLE.since;
+          el('profileAvatarImg').src = SAMPLE.avatar;
+          el('profileAvatarImg').alt = SAMPLE.name + ' — profile photo';
+          el('profileCoverImg').src = SAMPLE.cover;
+          var fb = el('profileFbLink');
+          fb.href = SAMPLE.fb; fb.style.display = '';
+          el('discordBtn').style.display = '';
+          el('amName').textContent = SAMPLE.amName;
+          el('amSub').textContent = SAMPLE.amSub;
+          el('allMembersLink').hidden = true;
+          var img = el('avatarImg');
+          img.src = SAMPLE.avatarImg; img.alt = SAMPLE.amName; img.style.display = '';
+          el('avatarInitial').hidden = true;
+          el('avatarBtn').setAttribute('aria-label', 'Your account menu — ' + SAMPLE.amName);
+          el('myGamesList').innerHTML = SAMPLE.gamesHTML;
+          el('addGameSelect').innerHTML = SAMPLE.addOptionsHTML;
+          el('sName').value = SAMPLE.sName; el('sPhone').value = SAMPLE.sPhone;
+          el('sUsername').value = SAMPLE.sUsername; el('sFacebook').value = SAMPLE.sFacebook;
+          el('sDiscord').value = SAMPLE.sDiscord; el('sDob').value = SAMPLE.sDob;
+          el('sGender').value = SAMPLE.sGender; el('sBio').value = SAMPLE.sBio;
+          document.querySelectorAll('#settingsForm input[name="privacy"]').forEach(function (r) {
+            r.checked = r.value === SAMPLE.privacy;
+          });
+          PREVIEW_MEMBER = 'Bijoy Rahman';
+          if (typeof renderHonours === 'function') renderHonours();
+        }
+
+        /* ---------- Header + profile rendering from real rows ---------- */
+        function renderHeader() {
+          var m = kwc.member;
+          var name = m ? (m.full_name || '') : (kwc.user ? kwc.user.email : '');
+          el('amName').textContent = name;
+          var firstGame = kwc.games.length ? kwc.games[0].game : '';
+          el('amSub').textContent = m ? ((m.role || 'Member') + (firstGame ? ' · ' + firstGame : '')) : '';
+          el('allMembersLink').hidden = !(m && m.role === 'President');
+          el('avatarBtn').setAttribute('aria-label', 'Your account menu — ' + name);
+          var img = el('avatarImg'), ini = el('avatarInitial');
+          if (m && m.avatar_url) {
+            img.src = m.avatar_url; img.alt = name; img.style.display = ''; ini.hidden = true;
+          } else {
+            img.style.display = 'none';
+            ini.textContent = (name || 'W').charAt(0).toUpperCase();
+            ini.hidden = false;
+          }
+        }
+
+        function renderMyGames() {
+          var list = el('myGamesList');
+          if (!list) return;
+          list.innerHTML = '';
+          kwc.games.forEach(function (g) { list.appendChild(gameRowEl(g)); });
+          rebuildGameOptions();
+        }
+        function gameRowEl(g) {
+          var row = document.createElement('div');
+          row.className = 'game-row';
+          row.setAttribute('data-game', g.game);
+          var html = '<h4>' + esc(g.game) + '</h4>';
+          if (g.game === 'eFootball') {
+            html += '<div class="form-row">' +
+              '<div class="field"><label>UID</label><input type="text" class="game-uid" inputmode="numeric" /></div>' +
+              '<div class="field"><label>Team Strength</label><input type="number" class="game-strength" inputmode="numeric" /></div>' +
+              '</div>';
+          } else {
+            html += '<div class="field"><label>UID</label><input type="text" class="game-uid" inputmode="numeric" /></div>';
+          }
+          html += '<button class="btn btn-glass btn-sm game-remove" type="button" style="margin-top:10px">Remove game</button>';
+          row.innerHTML = html;
+          row.querySelector('.game-uid').value = g.uid || '';
+          var st = row.querySelector('.game-strength');
+          if (st) st.value = g.team_strength == null ? '' : g.team_strength;
+          return row;
+        }
+        function rebuildGameOptions() {
+          var sel = el('addGameSelect');
+          if (!sel) return;
+          var owned = {};
+          kwc.games.forEach(function (g) { owned[g.game] = true; });
+          sel.innerHTML = '<option value="">Select a game\u2026</option>';
+          ALL_GAMES.forEach(function (name) {
+            if (owned[name]) return;
+            var o = document.createElement('option');
+            o.textContent = name;
+            sel.appendChild(o);
+          });
+        }
+
+        function applyMemberToPage() {
+          var m = kwc.member;
+          if (!m) { renderHeader(); return; }
+          renderHeader();
+          el('profileName').textContent = m.full_name || '';
+          var handle = el('profileHandle');
+          if (m.username) { handle.textContent = '@' + m.username; handle.hidden = false; }
+          else { handle.hidden = true; }
+          var firstGame = kwc.games.length ? kwc.games[0].game : '';
+          el('profileRole').textContent = (m.role || 'Member') + (firstGame ? ' · ' + firstGame : '');
+          el('profileBio').textContent = m.bio || '';
+          var since = monthYear(m.created_at);
+          el('profileSince').textContent = since ? 'Member since ' + since : '';
+          var pImg = el('profileAvatarImg');
+          pImg.src = m.avatar_url || initialAvatar(m.full_name);
+          pImg.alt = (m.full_name || 'Member') + ' — profile photo';
+          if (m.cover_url) el('profileCoverImg').src = m.cover_url;
+          var fb = el('profileFbLink');
+          if (m.facebook_id) { fb.href = normalizeUrl(m.facebook_id); fb.style.display = ''; }
+          else { fb.style.display = 'none'; }
+          el('discordBtn').style.display = m.discord_id ? '' : 'none';
+          el('sName').value = m.full_name || '';
+          el('sUsername').value = m.username || '';
+          el('sFacebook').value = m.facebook_id || '';
+          el('sDiscord').value = m.discord_id || '';
+          el('sBio').value = m.bio || '';
+          var vis = m.profile_visibility === 'friends' ? 'friends' : 'public';
+          document.querySelectorAll('#settingsForm input[name="privacy"]').forEach(function (r) {
+            r.checked = r.value === vis;
+          });
+          if (kwc.priv) {
+            el('sPhone').value = kwc.priv.phone || '';
+            el('sDob').value = kwc.priv.date_of_birth || '';
+            el('sGender').value = kwc.priv.gender || '';
+          }
+          renderMyGames();
+          PREVIEW_MEMBER = m.full_name;
+          if (typeof renderHonours === 'function') renderHonours();
+        }
+
+        function loadMember(user) {
+          if (!sb || !user) return Promise.resolve();
+          if (kwc.loadedFor === user.id && kwc.member) return Promise.resolve();
+          kwc.user = user;
+          return sb.from('members').select('*').eq('auth_user_id', user.id).maybeSingle()
+            .then(function (res) {
+              if (res.error) throw res.error;
+              kwc.member = res.data || null;
+              kwc.loadedFor = user.id;
+              if (!kwc.member) { renderHeader(); setLoggedIn(true); return null; }
+              return Promise.all([
+                sb.from('member_private').select('*').eq('member_id', kwc.member.id).maybeSingle(),
+                sb.from('member_games').select('*').eq('member_id', kwc.member.id)
+              ]).then(function (rs) {
+                kwc.priv = rs[0].data || null;
+                kwc.games = rs[1].data || [];
+                applyMemberToPage();
+                setLoggedIn(true);
+              });
+            })
+            .catch(function () {
+              /* Profile rows unreachable right now: keep the signed-in
+                 header (from the auth user) and leave the page intact. */
+              renderHeader();
+              setLoggedIn(true);
+            });
+        }
+
+        /* ---------- Session: restore on load, follow auth changes ---------- */
+        if (sb) {
+          /* Until a real session is confirmed, the header is the visitor's. */
+          try { setLoggedIn(false); } catch (e) { /* header helper unavailable */ }
+          try {
+          sb.auth.getSession().then(function (res) {
+            var session = res && res.data ? res.data.session : null;
+            if (session && session.user) loadMember(session.user);
+          }).catch(function () { /* no reachable session — visitor state */ });
+          sb.auth.onAuthStateChange(function (event, session) {
+            if (event === 'PASSWORD_RECOVERY') {
+              if (session && session.user) {
+                loadMember(session.user).then(function () { showView('setpassword', true); });
+              } else {
+                showView('setpassword', true);
+              }
+              return;
+            }
+            if (session && session.user) {
+              if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION') loadMember(session.user);
+            } else if (event === 'SIGNED_OUT') {
+              kwc.user = null; kwc.member = null; kwc.priv = null; kwc.games = []; kwc.loadedFor = null;
+              restoreSample();
+              setLoggedIn(false);
+            }
+          });
+          } catch (e) { /* session restore unavailable — visitor state stands */ }
+        }
+
+        /* ---------- Register ---------- */
+        function handleRegister() {
+          hideErr('regError');
+          var result = (typeof validateRegistration === 'function') ? validateRegistration(true) : null;
+          if (!result) return;
+          if (!sb) { showErr('regError', OFFLINE_MSG); return; }
+          var email = el('rEmail').value.trim();
+          var password = el('rPassword').value;
+          var btn = document.querySelector('#registerForm button[type="submit"]');
+          setBusy(btn, true);
+          sb.auth.signUp({ email: email, password: password }).then(function (res) {
+            if (res.error) throw res.error;
+            var user = res.data ? res.data.user : null;
+            if (user && user.identities && user.identities.length === 0) {
+              showErr('regError', 'This email already has an account — try logging in.');
+              return null;
+            }
+            if (!user) {
+              showErr('regError', 'Something went wrong creating your account — please try again.');
+              return null;
+            }
+            return sb.from('members').insert({
+              auth_user_id: user.id,
+              full_name: el('rName').value.trim(),
+              facebook_id: el('rFacebook').value.trim()
+            }).select().single().then(function (mres) {
+              if (mres.error) throw mres.error;
+              var mid = mres.data.id;
+              var games = [];
+              document.querySelectorAll('#registerForm input[name="games"]:checked').forEach(function (c) { games.push(c.value); });
+              var jobs = [sb.from('member_private').insert({
+                member_id: mid,
+                phone: el('rPhone').value.trim(),
+                email: email,
+                date_of_birth: el('rDob').value || null,
+                gender: el('rGender').value || null
+              })];
+              if (games.length) {
+                jobs.push(sb.from('member_games').insert(games.map(function (g) {
+                  return { member_id: mid, game: g, uid: null, team_strength: null };
+                })));
+              }
+              return Promise.all(jobs).then(function () { return user; });
+            });
+          }).then(function (user) {
+            if (!user) return;
+            el('regSuccessName').textContent = el('rName').value.trim();
+            el('regSuccessEmail').textContent = email;
+            el('registerForm').style.display = 'none';
+            var success = el('regSuccess');
+            success.classList.add('show');
+            success.focus();
+            loadMember(user);
+          }).catch(function (err) {
+            if (isNetworkError(err)) { showErr('regError', OFFLINE_MSG); return; }
+            var msg = err && err.message ? String(err.message) : '';
+            if (/already|registered|exists/i.test(msg)) showErr('regError', 'This email already has an account — try logging in.');
+            else if (/password/i.test(msg)) showErr('regError', 'That password is too weak — use at least 6 characters and try again.');
+            else showErr('regError', 'Something went wrong creating your account — please try again.');
+          }).then(function () { setBusy(btn, false); });
+        }
+
+        /* ---------- Log in ---------- */
+        function handleLogin() {
+          hideErr('loginError');
+          el('loginOk').classList.remove('show');
+          var form = el('loginForm');
+          var email = el('lEmail').value.trim();
+          var password = el('lPassword').value;
+          var emailBad = !email || !EMAIL_RE.test(email);
+          var passBad = !password;
+          form.querySelector('[data-field="loginEmail"]').classList.toggle('invalid', emailBad);
+          form.querySelector('[data-field="loginPassword"]').classList.toggle('invalid', passBad);
+          if (emailBad || passBad) return;
+          if (!sb) { showErr('loginError', OFFLINE_MSG); return; }
+          var btn = document.querySelector('#loginForm button[type="submit"]');
+          setBusy(btn, true);
+          sb.auth.signInWithPassword({ email: email, password: password }).then(function (res) {
+            if (res.error) throw res.error;
+            return loadMember(res.data.user);
+          }).then(function () {
+            setBusy(btn, false);
+            showView('profile', true);
+          }).catch(function (err) {
+            setBusy(btn, false);
+            if (isNetworkError(err)) showErr('loginError', OFFLINE_MSG);
+            else showErr('loginError', 'That email and password don\u2019t match — check them and try again.');
+          });
+        }
+
+        /* ---------- Forgot password ---------- */
+        function handleReset() {
+          hideErr('resetError');
+          var form = el('resetForm');
+          var email = el('rpEmail').value.trim();
+          var emailBad = !email || !EMAIL_RE.test(email);
+          form.querySelector('[data-field="resetEmail"]').classList.toggle('invalid', emailBad);
+          if (emailBad) return;
+          if (!sb) { showErr('resetError', OFFLINE_MSG); return; }
+          var btn = document.querySelector('#resetForm button[type="submit"]');
+          setBusy(btn, true);
+          /* Reset links land on the club's canonical domain (the Site URL
+             configured in Supabase); whichever mirror a member arrived by,
+             the recovery session is picked up there and the auth handler
+             opens the set-new-password view. */
+          var redirectTo = 'https://knightwarriorsclub.com/';
+          sb.auth.resetPasswordForEmail(email, { redirectTo: redirectTo }).then(function (res) {
+            if (res.error) throw res.error;
+            el('resetSuccessEmail').textContent = email;
+            form.style.display = 'none';
+            var success = el('resetSuccess');
+            success.classList.add('show');
+            success.focus();
+          }).catch(function (err) {
+            showErr('resetError', isNetworkError(err) ? OFFLINE_MSG : 'We couldn\u2019t send the reset email just now — please try again.');
+          }).then(function () { setBusy(btn, false); });
+        }
+
+        /* ---------- Set new password (from the reset email's session) ---------- */
+        function handleSetPassword() {
+          hideErr('setPassError');
+          var form = el('setPassForm');
+          var pw = el('npPassword').value;
+          var confirm = el('npConfirm').value;
+          var pwBad = !pw;
+          var confirmBad = !confirm || confirm !== pw;
+          form.querySelector('[data-field="newPassword"]').classList.toggle('invalid', pwBad);
+          form.querySelector('[data-field="newConfirm"]').classList.toggle('invalid', confirmBad);
+          if (pwBad || confirmBad) return;
+          if (!sb) { showErr('setPassError', OFFLINE_MSG); return; }
+          var btn = document.querySelector('#setPassForm button[type="submit"]');
+          setBusy(btn, true);
+          sb.auth.getSession().then(function (res) {
+            var session = res && res.data ? res.data.session : null;
+            if (!session) {
+              showErr('setPassError', 'Open this page from the reset link in your email, so we know it\u2019s really you.');
+              return null;
+            }
+            return sb.auth.updateUser({ password: pw }).then(function (ures) {
+              if (ures.error) throw ures.error;
+              form.style.display = 'none';
+              var success = el('setPassSuccess');
+              success.classList.add('show');
+              success.focus();
+            });
+          }).catch(function (err) {
+            showErr('setPassError', isNetworkError(err) ? OFFLINE_MSG : 'That password couldn\u2019t be set just now — please try again.');
+          }).then(function () { setBusy(btn, false); });
+        }
+
+        /* ---------- Settings save ---------- */
+        function handleSettings() {
+          hideErr('settingsError');
+          el('settingsOk').classList.remove('show');
+          if (!sb || !kwc.member) { showErr('settingsError', OFFLINE_MSG); return; }
+          var name = el('sName').value.trim();
+          var uname = el('sUsername').value.trim().replace(/^@+/, '');
+          var fb = el('sFacebook').value.trim();
+          var discord = el('sDiscord').value.trim();
+          var bio = el('sBio').value.trim();
+          var visEl = document.querySelector('#settingsForm input[name="privacy"]:checked');
+          var vis = visEl ? visEl.value : 'public';
+          var btn = document.querySelector('#settingsForm button[type="submit"]');
+          setBusy(btn, true);
+          sb.from('members').update({
+            full_name: name || kwc.member.full_name,
+            username: uname ? uname : null,
+            facebook_id: fb ? fb : null,
+            discord_id: discord ? discord : null,
+            bio: bio ? bio : null,
+            profile_visibility: vis
+          }).eq('id', kwc.member.id).then(function (res) {
+            if (res.error) throw res.error;
+            return sb.from('member_private').upsert({
+              member_id: kwc.member.id,
+              phone: el('sPhone').value.trim() || null,
+              date_of_birth: el('sDob').value || null,
+              gender: el('sGender').value || null
+            }, { onConflict: 'member_id' });
+          }).then(function (res) {
+            if (res && res.error) throw res.error;
+            kwc.member.full_name = name || kwc.member.full_name;
+            kwc.member.username = uname || null;
+            kwc.member.facebook_id = fb || null;
+            kwc.member.discord_id = discord || null;
+            kwc.member.bio = bio || null;
+            kwc.member.profile_visibility = vis;
+            if (!kwc.priv) kwc.priv = { member_id: kwc.member.id };
+            kwc.priv.phone = el('sPhone').value.trim() || null;
+            kwc.priv.date_of_birth = el('sDob').value || null;
+            kwc.priv.gender = el('sGender').value || null;
+            applyMemberToPage();
+            el('settingsOk').classList.add('show');
+          }).catch(function (err) {
+            if (isNetworkError(err)) showErr('settingsError', OFFLINE_MSG);
+            else if (err && (err.code === '23505' || /duplicate|unique/i.test(String(err.message || '')))) {
+              showErr('settingsError', 'That username is taken — please pick another one.');
+            } else showErr('settingsError', 'Your settings couldn\u2019t be saved just now — please try again.');
+          }).then(function () { setBusy(btn, false); });
+        }
+
+        /* ---------- My Games: add / remove / save against member_games ---------- */
+        function handleAddGame() {
+          hideErr('gamesError');
+          var sel = el('addGameSelect');
+          var game = sel.value;
+          if (!game) { sel.focus(); return; }
+          var uid = el('addGameUid').value.trim();
+          sb.from('member_games').insert({ member_id: kwc.member.id, game: game, uid: uid || null, team_strength: null })
+            .then(function (res) {
+              if (res.error) throw res.error;
+              var g = { member_id: kwc.member.id, game: game, uid: uid || null, team_strength: null };
+              kwc.games.push(g);
+              el('myGamesList').appendChild(gameRowEl(g));
+              rebuildGameOptions();
+              el('addGameUid').value = '';
+              el('gamesOk').classList.remove('show');
+            }).catch(function (err) {
+              showErr('gamesError', isNetworkError(err) ? OFFLINE_MSG : 'That game couldn\u2019t be added — please try again.');
+            });
+        }
+        function handleRemoveGame(btn) {
+          hideErr('gamesError');
+          var row = btn.closest('.game-row');
+          var game = row ? row.getAttribute('data-game') : null;
+          if (!game) return;
+          sb.from('member_games').delete().eq('member_id', kwc.member.id).eq('game', game)
+            .then(function (res) {
+              if (res.error) throw res.error;
+              kwc.games = kwc.games.filter(function (g) { return g.game !== game; });
+              row.remove();
+              rebuildGameOptions();
+              el('gamesOk').classList.remove('show');
+            }).catch(function (err) {
+              showErr('gamesError', isNetworkError(err) ? OFFLINE_MSG : 'That game couldn\u2019t be removed — please try again.');
+            });
+        }
+        function handleSaveGames() {
+          hideErr('gamesError');
+          var rows = el('myGamesList').querySelectorAll('.game-row');
+          var updates = [];
+          rows.forEach(function (row) {
+            var game = row.getAttribute('data-game');
+            if (!game) return;
+            var uidIn = row.querySelector('.game-uid');
+            var stIn = row.querySelector('.game-strength');
+            var uid = uidIn ? uidIn.value.trim() : '';
+            var strength = null;
+            if (stIn && stIn.value !== '') {
+              var n = parseInt(stIn.value, 10);
+              strength = isNaN(n) ? null : n;
+            }
+            updates.push({ game: game, uid: uid || null, team_strength: strength });
+          });
+          var btn = el('saveGamesBtn');
+          setBusy(btn, true);
+          Promise.all(updates.map(function (u) {
+            return sb.from('member_games').update({ uid: u.uid, team_strength: u.team_strength })
+              .eq('member_id', kwc.member.id).eq('game', u.game);
+          })).then(function (results) {
+            for (var i = 0; i < results.length; i++) if (results[i].error) throw results[i].error;
+            updates.forEach(function (u) {
+              kwc.games.forEach(function (g) {
+                if (g.game === u.game) { g.uid = u.uid; g.team_strength = u.team_strength; }
+              });
+            });
+            el('gamesOk').classList.add('show');
+          }).catch(function (err) {
+            showErr('gamesError', isNetworkError(err) ? OFFLINE_MSG : 'Your games couldn\u2019t be saved — please try again.');
+          }).then(function () { setBusy(btn, false); });
+        }
+
+        /* ---------- Interception (capture phase, before preview handlers) ---------- */
+        document.addEventListener('submit', function (e) {
+          var form = e.target;
+          if (!form || !form.id) return;
+          if (form.id === 'registerForm') { e.preventDefault(); e.stopPropagation(); handleRegister(); }
+          else if (form.id === 'loginForm') { e.preventDefault(); e.stopPropagation(); handleLogin(); }
+          else if (form.id === 'resetForm') { e.preventDefault(); e.stopPropagation(); handleReset(); }
+          else if (form.id === 'setPassForm') { e.preventDefault(); e.stopPropagation(); handleSetPassword(); }
+          else if (form.id === 'settingsForm' && (!sb || kwc.user)) { e.preventDefault(); e.stopPropagation(); handleSettings(); }
+        }, true);
+
+        document.addEventListener('click', function (e) {
+          var t = e.target;
+          if (!t || !t.closest) return;
+          if (t.closest('#logoutBtn')) {
+            if (sb && kwc.user) {
+              e.preventDefault();
+              e.stopPropagation();
+              sb.auth.signOut().then(function () { showView('home', true); })
+                .catch(function () { showView('home', true); });
+            }
+            return;
+          }
+          var addBtn = t.closest('#addGameBtn');
+          var saveBtn = t.closest('#saveGamesBtn');
+          var removeBtn = t.closest('.game-remove');
+          if (!addBtn && !saveBtn && !removeBtn) return;
+          if (!sb) {
+            e.preventDefault(); e.stopPropagation();
+            showErr('gamesError', OFFLINE_MSG);
+            return;
+          }
+          if (!kwc.member) return; /* sample state: designed preview behaviour */
+          e.preventDefault(); e.stopPropagation();
+          if (addBtn) handleAddGame();
+          else if (saveBtn) handleSaveGames();
+          else if (removeBtn) handleRemoveGame(removeBtn);
+        }, true);
+      })();
+    </script>
+
+    <script>
+      /* ---------- Club data layer: live JSON files, embedded fallback ----------
+         On the live site the club's data lives in four JSON files, edited
+         through the admin panel and the owner's update workflow:
+           data/tournaments.json   — { tournaments: [ {id, name, game, status,
+                                       startDate, endDate, intro, participants[],
+                                       champion, championPhoto, championCutout,
+                                       championCutoutAnim} ] }
+           data/matches.json       — { matches: [ {tournamentId, date, player1,
+                                       player2, goals1, goals2, played} ] }
+           data/members.json       — member names (array of strings)
+           data/announcements.json — { announcements: [ {date, title, body,
+                                       link, linkText} ] } (the written news posts)
+         On load each file is fetched (cache: 'no-cache') and, when it loads
+         and parses, it becomes authoritative for its dataset: the fetched
+         data is converted into the exact shapes the renderers above already
+         use, swapped in, and every data-driven view is rendered again —
+         tournaments and their tabbed pages, standings/records, the
+         leaderboard, the news portal, the community members list and the
+         profile's tournament honours. If a fetch fails or a file is missing
+         (as in preview environments with no data/ folder), that dataset
+         silently keeps the embedded snapshot above — no error is ever shown
+         to visitors. This layer is independent of the Supabase account
+         wiring: accounts and club data never touch each other. */
+      (function () {
+        /* Embedded snapshot captured before any fetch resolves, so each
+           dataset can fall back to it independently — notably matches:
+           if data/matches.json fails, its fixtures/results come from here
+           (per tournament id) instead of being emptied. */
+        var embeddedTournaments = (typeof TOURNAMENTS !== 'undefined' && Array.isArray(TOURNAMENTS)) ? TOURNAMENTS : [];
         function getJSON(url) {
           if (typeof fetch !== 'function') return Promise.resolve(null);
           return fetch(url, { cache: 'no-cache' }).then(function (r) {
@@ -2986,40 +4602,101 @@
             return r.json();
           }).catch(function () { return null; });
         }
+        function rootList(data, key) {
+          if (Array.isArray(data)) return data;
+          if (data && Array.isArray(data[key])) return data[key];
+          return null;
+        }
         var MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
         function fmtDate(iso) {
           var m = String(iso || '').match(/^(\d{4})-(\d{2})-(\d{2})/);
           if (!m) return iso || '';
           return (+m[3]) + ' ' + MONTHS[(+m[2]) - 1] + ' ' + m[1];
         }
-        function convertTournaments(tList, mList) {
+        /* Matches arrive separately from their tournaments: played matches
+           become results, unplayed ones become fixtures — the same split
+           the embedded snapshot carries inside each tournament.
+           Matches are their own dataset with their own fallback:
+           - mList is an array (data/matches.json loaded, even if empty):
+             fetched matches are authoritative.
+           - mList is null (fetch failed / file missing / unparsable):
+             fixtures/results fall back to the embedded snapshot's data
+             for the matching tournament id, while the fetched tournament
+             metadata above stays authoritative. Tournaments with no
+             snapshot match get empty fixtures/results. */
+        function convertTournaments(tList, mList, fallbackList) {
+          var matchesLoaded = Array.isArray(mList);
           var byT = {};
-          (mList || []).forEach(function (m) {
-            (byT[m.tournamentId] = byT[m.tournamentId] || []).push(m);
+          if (matchesLoaded) {
+            mList.forEach(function (m) {
+              if (!m || m.tournamentId == null) return;
+              (byT[m.tournamentId] = byT[m.tournamentId] || []).push(m);
+            });
+          }
+          var fallbackById = {};
+          (fallbackList || []).forEach(function (ft) {
+            if (!ft || ft.id == null) return;
+            fallbackById[ft.id] = ft;
           });
+          function cloneList(list) {
+            return (list || []).map(function (item) {
+              return item && typeof item === 'object' ? Object.assign({}, item) : item;
+            });
+          }
           return (tList || []).map(function (t) {
-            var ms = (byT[t.id] || []).slice().sort(function (a, b) {
-              var x = String(a.date || ''), y = String(b.date || '');
-              return x < y ? -1 : x > y ? 1 : 0;
-            });
-            var fixtures = [], results = [];
-            ms.forEach(function (m) {
-              if (m.played) results.push({ home: m.player1, away: m.player2, homeGoals: +m.goals1 || 0, awayGoals: +m.goals2 || 0, when: fmtDate(m.date) });
-              else fixtures.push({ home: m.player1, away: m.player2, when: fmtDate(m.date) });
-            });
+            var fixtures = Array.isArray(t.fixtures) ? t.fixtures : null;
+            var results = Array.isArray(t.results) ? t.results : null;
+            if (fixtures === null || results === null) {
+              if (matchesLoaded) {
+                var ms = (byT[t.id] || []).slice().sort(function (a, b) {
+                  var x = String(a.date || ''), y = String(b.date || '');
+                  return x < y ? -1 : x > y ? 1 : 0;
+                });
+                var f2 = [], r2 = [];
+                ms.forEach(function (m) {
+                  if (m.played) r2.push({ home: m.player1, away: m.player2, homeGoals: +m.goals1 || 0, awayGoals: +m.goals2 || 0, when: fmtDate(m.date) });
+                  else f2.push({ home: m.player1, away: m.player2, when: fmtDate(m.date) });
+                });
+                if (fixtures === null) fixtures = f2;
+                if (results === null) results = r2;
+              } else {
+                var snap = fallbackById[t.id];
+                if (fixtures === null) fixtures = snap && Array.isArray(snap.fixtures) ? cloneList(snap.fixtures) : [];
+                if (results === null) results = snap && Array.isArray(snap.results) ? cloneList(snap.results) : [];
+              }
+            }
             return {
               id: t.id, name: t.name, game: t.game, status: t.status,
               startDate: t.startDate, endDate: t.endDate,
               intro: t.intro, participants: t.participants || [],
-              champion: t.champion, championPhoto: t.championPhoto, championCutout: t.championCutout, championCutoutAnim: t.championCutoutAnim,
+              champion: t.champion, championPhoto: t.championPhoto,
+              championCutout: t.championCutout, championCutoutAnim: t.championCutoutAnim,
               fixtures: fixtures, results: results
             };
           });
         }
-        function rerender() {
+        function convertAnnouncements(aList) {
+          return (aList || []).map(function (a) {
+            return {
+              tag: a.tag || a.date || '', title: a.title || '', body: a.body || '',
+              linkView: a.linkView || a.link || '', linkLabel: a.linkLabel || a.linkText || '',
+              tourneyId: a.tourneyId || null
+            };
+          });
+        }
+        function rerenderClubData() {
           var search = document.getElementById('memberSearch');
           var q = search ? search.value.trim().toLowerCase() : '';
           renderMembers(q ? MEMBERS.filter(function (n) { return n.toLowerCase().indexOf(q) !== -1; }) : MEMBERS);
+          var mc = document.querySelector('.members-count');
+          if (mc) {
+            for (var i = 0; i < mc.childNodes.length; i++) {
+              var node = mc.childNodes[i];
+              if (node.nodeType === 3 && node.textContent.indexOf('of') !== -1) {
+                node.textContent = ' of ' + MEMBERS.length + ' members';
+              }
+            }
+          }
           renderNews();
           homeRunning = null;
           renderHomeTourney();
@@ -3031,74 +4708,40 @@
             currentTournament = fresh;
             renderTournament();
           }
+          if (typeof renderHonours === 'function') renderHonours();
+          /* A tournament deep link (#tournament/<id>) that the embedded
+             snapshot could not resolve at boot may exist in the fetched
+             data — open it now that the real list is in. */
+          var hash = String(window.location.hash || '');
+          if (hash.indexOf('#tournament/') === 0) {
+            var wantId = hash.slice('#tournament/'.length);
+            try { wantId = decodeURIComponent(wantId); } catch (e) { /* keep raw id */ }
+            if (!currentTournament || currentTournament.id !== wantId) openTournament(wantId);
+          }
         }
-        /* Linkable tournament pages: #tournament/<id> */
-        var baseOpenTournament = openTournament;
-        openTournament = function (id) {
-          baseOpenTournament(id);
-          if (id && currentTournament) {
-            try { history.replaceState(null, '', '#tournament/' + id); } catch (e) { /* sandboxed iframe */ }
-          }
-        };
-        var hashOpenedId = null;
-        function openFromHash() {
-          var mm = String(window.location.hash || '').match(/^#tournament\/(.+)$/);
-          if (mm) {
-            var id = decodeURIComponent(mm[1]);
-            /* Already showing this tournament (the boot open, then the data
-               fetch resolving): do not open it again — a second open would
-               restart the champion celebration splash. */
-            if (id === hashOpenedId && currentTournament && currentTournament.id === id &&
-                document.body.getAttribute('data-view') === 'tournament') return true;
-            hashOpenedId = id;
-            openTournament(id);
-            return true;
-          }
-          return false;
-        }
-        window.addEventListener('hashchange', function () {
-          if (openFromHash()) return;
-          if (document.body.getAttribute('data-view') === 'tournament') {
-            showView(window.location.hash || 'home', false);
-          }
-        });
-        /* ================= Load ================= */
-        getJSON('data/members.json').then(function (names) {
-          if (names && !Array.isArray(names) && Array.isArray(names.members)) names = names.members;
-          if (!Array.isArray(names) || !names.length) return;
-          MEMBERS = names.map(function (n) { return typeof n === 'string' ? n : (n && n.name) || ''; }).filter(function (n) { return !!n; });
-          var mc = document.querySelector('.members-count');
-          if (mc) {
-            for (var i = 0; i < mc.childNodes.length; i++) {
-              var node = mc.childNodes[i];
-              if (node.nodeType === 3 && node.textContent.indexOf('of') !== -1) {
-                node.textContent = ' of ' + MEMBERS.length + ' members';
-              }
-            }
-          }
-          rerender();
+        /* ================= Load the four club data files ================= */
+        getJSON('data/members.json').then(function (data) {
+          var names = rootList(data, 'members');
+          if (!names || !names.length) return;
+          var clean = names.map(function (n) { return typeof n === 'string' ? n : (n && n.name) || ''; })
+            .filter(function (n) { return !!n; });
+          if (!clean.length) return;
+          MEMBERS = clean;
+          rerenderClubData();
         });
         Promise.all([
           getJSON('data/tournaments.json'),
           getJSON('data/matches.json'),
           getJSON('data/announcements.json')
         ]).then(function (res) {
-          var tData = res[0], mData = res[1], aData = res[2];
+          var tList = rootList(res[0], 'tournaments');
+          var mList = rootList(res[1], 'matches');
+          var aList = rootList(res[2], 'announcements');
           var changed = false;
-          if (tData && Array.isArray(tData.tournaments)) {
-            TOURNAMENTS = convertTournaments(tData.tournaments, mData && Array.isArray(mData.matches) ? mData.matches : []);
-            changed = true;
-          }
-          if (aData && Array.isArray(aData.announcements)) {
-            NEWS_POSTS = aData.announcements.map(function (a) {
-              return { tag: a.date || '', title: a.title || '', body: a.body || '', linkView: a.link || '', linkLabel: a.linkText || '', tourneyId: a.tourneyId || null };
-            });
-            changed = true;
-          }
-          if (changed) rerender();
-          openFromHash();
+          if (tList) { TOURNAMENTS = convertTournaments(tList, mList, embeddedTournaments); changed = true; }
+          if (aList) { NEWS_POSTS = convertAnnouncements(aList); changed = true; }
+          if (changed) rerenderClubData();
         });
-        openFromHash();
       })();
     </script>
   </body>
