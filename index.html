@@ -2608,8 +2608,11 @@
         document.querySelectorAll('#headNav a').forEach(function (a) {
           a.classList.toggle('active', a.getAttribute('data-nav') === navView);
         });
-        if (pushHash) {
-          try { history.replaceState(null, '', '#' + (hashName || view)); } catch (e) { /* sandboxed iframe */ }
+        if (pushHash && !window.__fromPop) {
+          try {
+            var targetHash = '#' + (hashName || view);
+            if (window.location.hash !== targetHash) history.pushState(null, '', targetHash);
+          } catch (e) { /* sandboxed iframe */ }
         }
         window.scrollTo(0, 0);
         refreshReveals();
@@ -2634,6 +2637,22 @@
         }
       });
       showView(window.location.hash || 'home', false);
+
+      /* Browser/phone Back & Forward: in-site navigation pushes a history
+         entry per view, so replay the entry's hash here — without pushing
+         a new one. Sub-pages carry their id in the hash (news/<id>,
+         tournament/<id>) and reopen through their builders. */
+      function routeFromHash() {
+        var h = (window.location.hash || '').replace(/^#/, '');
+        var m;
+        if ((m = h.match(/^news\/(.+)$/))) { openArticle(m[1]); return; }
+        if ((m = h.match(/^tournament\/(.+)$/))) { openTournament(m[1]); return; }
+        showView(h || 'home', false);
+      }
+      window.addEventListener('popstate', function () {
+        window.__fromPop = true;
+        try { routeFromHash(); } finally { window.__fromPop = false; }
+      });
 
       /* ---------- Members ---------- */
       var MEMBERS = [
@@ -3551,7 +3570,7 @@
         renderTournament();
         selectTournamentTab('tOverview');
         showView('tournament', true, currentTournament ? 'tournament/' + currentTournament.id : 'tournament');
-        if (currentTournament && currentTournament.status === 'finished' && currentTournament.champion) {
+        if (currentTournament && currentTournament.status === 'finished' && currentTournament.champion && !window.__fromPop) {
           showChampionSplash(currentTournament);
         }
       }
