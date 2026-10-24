@@ -2140,6 +2140,13 @@
                   <p>A welcome email is on its way to <b id="regSuccessEmail">your email address</b>.</p>
                   <a class="btn btn-red" href="#login" data-nav="login">Log In to Your Account</a>
                 </div>
+                <div class="reg-success" id="regCheckEmail" aria-live="polite" tabindex="-1">
+                  <div class="rs-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg></div>
+                  <h3>One More Step — Confirm Your Email</h3>
+                  <p>We have sent a confirmation email to <b id="regCheckEmailAddr">your email address</b>.</p>
+                  <p>Tap the link in that email, then log in — your member profile is created automatically at your first login.</p>
+                  <a class="btn btn-red" href="#login" data-nav="login">Go to Log In</a>
+                </div>
               </div>
             </div>
           </div>
@@ -4259,6 +4266,37 @@
           if (typeof renderHonours === 'function') renderHonours();
         }
 
+        var ensuredFor = null;
+        function ensureProfile(user) {
+          var meta = (user && user.user_metadata) || {};
+          var p = meta.kwc_profile;
+          if (!p || !p.full_name) return Promise.resolve(false);
+          if (ensuredFor === user.id) return Promise.resolve(false);
+          ensuredFor = user.id;
+          return sb.from('members').insert({
+            auth_user_id: user.id,
+            full_name: p.full_name,
+            facebook_id: p.facebook_id || ''
+          }).select().single().then(function (mres) {
+            if (mres.error) throw mres.error;
+            var mid = mres.data.id;
+            var jobs = [sb.from('member_private').insert({
+              member_id: mid,
+              phone: p.phone || '',
+              email: user.email,
+              date_of_birth: p.dob || null,
+              gender: p.gender || null
+            })];
+            var gs = p.games || [];
+            if (gs.length) {
+              jobs.push(sb.from('member_games').insert(gs.map(function (g) {
+                return { member_id: mid, game: g, uid: null, team_strength: null };
+              })));
+            }
+            return Promise.all(jobs).then(function () { return true; });
+          }).catch(function () { return false; });
+        }
+
         function loadMember(user) {
           if (!sb || !user) return Promise.resolve();
           if (kwc.loadedFor === user.id && kwc.member) return Promise.resolve();
@@ -4268,7 +4306,13 @@
               if (res.error) throw res.error;
               kwc.member = res.data || null;
               kwc.loadedFor = user.id;
-              if (!kwc.member) { renderHeader(); setLoggedIn(true); return null; }
+              if (!kwc.member) {
+                return ensureProfile(user).then(function (created) {
+                  if (!created) { renderHeader(); setLoggedIn(true); return null; }
+                  kwc.loadedFor = null;
+                  return loadMember(user);
+                });
+              }
               return Promise.all([
                 sb.from('member_private').select('*').eq('member_id', kwc.member.id).maybeSingle(),
                 sb.from('member_games').select('*').eq('member_id', kwc.member.id)
@@ -4326,7 +4370,16 @@
           var password = el('rPassword').value;
           var btn = document.querySelector('#registerForm button[type="submit"]');
           setBusy(btn, true);
-          sb.auth.signUp({ email: email, password: password }).then(function (res) {
+          var profileData = {
+            full_name: el('rName').value.trim(),
+            phone: el('rPhone').value.trim(),
+            facebook_id: el('rFacebook').value.trim(),
+            dob: el('rDob').value || null,
+            gender: el('rGender').value || null,
+            games: []
+          };
+          document.querySelectorAll('#registerForm input[name="games"]:checked').forEach(function (c) { profileData.games.push(c.value); });
+          sb.auth.signUp({ email: email, password: password, options: { data: { kwc_profile: profileData } } }).then(function (res) {
             if (res.error) throw res.error;
             var user = res.data ? res.data.user : null;
             if (user && user.identities && user.identities.length === 0) {
@@ -4335,6 +4388,18 @@
             }
             if (!user) {
               showErr('regError', 'Something went wrong creating your account — please try again.');
+              return null;
+            }
+            if (!res.data.session) {
+              /* Email confirmation is ON: the account exists but has no
+                 session yet, so profile rows cannot be written now. They
+                 ride in the auth metadata and ensureProfile() creates them
+                 at the member's first login. */
+              el('regCheckEmailAddr').textContent = email;
+              el('registerForm').style.display = 'none';
+              var chk = el('regCheckEmail');
+              chk.classList.add('show');
+              chk.focus();
               return null;
             }
             return sb.from('members').insert({
