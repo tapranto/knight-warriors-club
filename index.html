@@ -5379,7 +5379,7 @@
         return arr;
       }
       if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('/sw.js').catch(function () {});
+        try { navigator.serviceWorker.register('/sw.js').catch(function () {}); } catch (e) { /* sandboxed frame — push opt-in simply unavailable */ }
       }
       function refreshPushBtn() {
         var btn = $('pushBtn'), note = $('pushNote');
@@ -5488,6 +5488,13 @@
       var m0 = h0.match(/^profile\/(.+)$/);
       if (m0) window.__routeProfile(m0[1]);
       if (h0 === 'console') loadConsole();
+      /* Safety net: if anything above was interrupted, still honour a
+         member-profile deep link once the page has fully loaded. */
+      window.addEventListener('load', function () {
+        var h = (window.location.hash || '').replace(/^#/, '');
+        var mm = h.match(/^profile\/(.+)$/);
+        if (mm && document.body.getAttribute('data-view') !== 'profile') window.__routeProfile(mm[1]);
+      });
     })();
   </script>
 
