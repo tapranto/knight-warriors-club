@@ -147,6 +147,17 @@
       .notif-prompt { position: fixed; left: 16px; bottom: 16px; z-index: 1200; max-width: 342px; padding: 16px 18px; border-radius: 16px; }
       .notif-prompt p { margin: 0 0 10px; line-height: 1.5; }
       .notif-prompt .np-btns { display: flex; gap: 8px; }
+      .head-search-btn { position: absolute; top: 11px; right: 4%; z-index: 121; width: 42px; height: 42px; border-radius: 50%; border: 2px solid rgba(255,255,255,.22); background: #13131a; color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+      .head-search-btn:hover { border-color: var(--red, #e01d2e); }
+      .head-search-btn svg { width: 19px; height: 19px; stroke: #fff; }
+      body.kwc-logged-in .head-search-btn { right: calc(4% + 52px); }
+      #playerSearchPanel { position: fixed; top: 104px; left: 0; right: 0; z-index: 99; padding: 0 4%; }
+      .psp-inner { max-width: 720px; margin: 0 auto; background: rgba(13,13,20,.97); border: 1px solid rgba(255,255,255,.13); border-radius: 16px; padding: 14px 16px; box-shadow: 0 24px 60px rgba(0,0,0,.55); }
+      .psp-top { display: flex; gap: 10px; align-items: center; }
+      .psp-top .search-box { flex: 1; }
+      .psp-close { background: rgba(255,255,255,.08); border: 0; color: #fff; width: 36px; height: 36px; border-radius: 10px; cursor: pointer; font-size: 16px; flex: 0 0 auto; }
+      #playerResults { max-height: 320px; overflow-y: auto; margin-top: 10px; }
+      #playerResults:empty { display: none; }
       body[data-view="profile"] .bg-layer { background-image: url("assets/profile-background.webp"); }
       body[data-view="squad"] .bg-layer { background-image: url("assets/background-tournament-arena.webp"); }
       body[data-view="createsquad"] .bg-layer { background-image: url("assets/sections/section-games-arena.webp"); }
@@ -1402,7 +1413,9 @@
 
       @media (max-width: 760px) {
         .profile-grid, .squad-grid { grid-template-columns: 1fr; }
-        .profile-main { flex-wrap: wrap; padding: 0 20px 22px; gap: 14px; }
+        .profile-main { flex-direction: column; align-items: center; text-align: center; padding: 0 20px 22px; gap: 10px; }
+        .profile-id { width: 100%; padding-top: 2px; }
+        .profile-socials { justify-content: center; padding-top: 6px; }
         .profile-avatar { width: 104px; height: 104px; margin-top: -44px; }
         .profile-cover { height: 150px; }
         .profile-socials { padding-top: 4px; }
@@ -1443,6 +1456,7 @@
         <a href="#login" data-nav="login" class="nav-auth">Log in</a>
         <a href="#register" data-nav="register" class="nav-join nav-auth">Register</a>
       </nav>
+      <button type="button" class="head-search-btn" id="playerSearchBtn" aria-label="Search registered players"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></button>
       <!-- Logged-in state: the member's round avatar replaces Log in / Register -->
       <div class="head-account" id="headAccount" hidden>
         <button class="avatar-btn" id="avatarBtn" type="button" aria-haspopup="true" aria-expanded="false" aria-label="Your account menu — Bijoy Rahman">
@@ -1460,6 +1474,18 @@
         </div>
       </div>
     </header>
+    <div id="playerSearchPanel" hidden>
+      <div class="psp-inner">
+        <div class="psp-top">
+          <label class="search-box glass">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+            <input type="search" id="playerSearch" placeholder="Search registered players by name or username…" aria-label="Search registered players" />
+          </label>
+          <button type="button" class="psp-close" id="playerSearchClose" aria-label="Close search">&#10005;</button>
+        </div>
+        <div id="playerResults"><p class="pf-note">Type at least 2 letters to search registered players.</p></div>
+      </div>
+    </div>
 
     <main id="top">
 
@@ -1787,23 +1813,6 @@
                 <div class="mc-body"><h3>Efty Ahmed Titu</h3><span>Sponsorship Head</span></div>
               </article>
             </div>
-          </div>
-        </section>
-
-        <section>
-          <div class="wrap">
-            <div class="sec-head reveal">
-              <p class="kicker">Registered Players</p>
-              <h2>Find a Player</h2>
-              <p>Search members who have registered an account on this website — tap a name to open their profile.</p>
-            </div>
-            <div class="members-tools reveal">
-              <label class="search-box glass">
-                <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-                <input type="search" id="playerSearch" placeholder="Search registered players by name or username…" aria-label="Search registered players" />
-              </label>
-            </div>
-            <div id="playerResults"><p class="pf-note">Type at least 2 letters to search.</p></div>
           </div>
         </section>
 
@@ -6729,5 +6738,31 @@
     })();
   </script>
 
+
+  <script>
+    /* ===== Layer 3c: header player-search toggle ===== */
+    (function () {
+      function $(id) { return document.getElementById(id); }
+      var btn = $('playerSearchBtn'), panel = $('playerSearchPanel');
+      if (btn && panel) {
+        btn.addEventListener('click', function () {
+          var opening = panel.hidden;
+          panel.hidden = !opening;
+          if (opening) { var inp = $('playerSearch'); if (inp) setTimeout(function () { inp.focus(); }, 30); }
+        });
+        var close = $('playerSearchClose');
+        if (close) close.addEventListener('click', function () { panel.hidden = true; });
+        panel.addEventListener('click', function (e) {
+          if (e.target.closest && e.target.closest('a')) setTimeout(function () { panel.hidden = true; }, 60);
+        });
+        window.addEventListener('hashchange', function () { panel.hidden = true; });
+        document.addEventListener('keydown', function (e) { if (e.key === 'Escape') panel.hidden = true; });
+      }
+      setInterval(function () {
+        var logged = (typeof kwc !== 'undefined' && !!kwc.user) || (document.getElementById('headAccount') && !document.getElementById('headAccount').hidden);
+        document.body.classList.toggle('kwc-logged-in', !!logged);
+      }, 1200);
+    })();
+  </script>
 </body>
 </html>
