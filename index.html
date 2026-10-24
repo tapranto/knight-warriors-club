@@ -144,6 +144,9 @@
       .kebab-menu button { display: block; width: 100%; text-align: left; background: none; border: 0; color: #fff; padding: 8px 10px; border-radius: 7px; cursor: pointer; font-size: 14px; }
       .kebab-menu button:hover { background: rgba(255,255,255,.09); }
       .kebab-menu button.danger { color: #ff8089; }
+      .notif-prompt { position: fixed; left: 16px; bottom: 16px; z-index: 1200; max-width: 342px; padding: 16px 18px; border-radius: 16px; }
+      .notif-prompt p { margin: 0 0 10px; line-height: 1.5; }
+      .notif-prompt .np-btns { display: flex; gap: 8px; }
       body[data-view="profile"] .bg-layer { background-image: url("assets/profile-background.webp"); }
       body[data-view="squad"] .bg-layer { background-image: url("assets/background-tournament-arena.webp"); }
       body[data-view="createsquad"] .bg-layer { background-image: url("assets/sections/section-games-arena.webp"); }
@@ -1790,6 +1793,23 @@
         <section>
           <div class="wrap">
             <div class="sec-head reveal">
+              <p class="kicker">Registered Players</p>
+              <h2>Find a Player</h2>
+              <p>Search members who have registered an account on this website — tap a name to open their profile.</p>
+            </div>
+            <div class="members-tools reveal">
+              <label class="search-box glass">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+                <input type="search" id="playerSearch" placeholder="Search registered players by name or username…" aria-label="Search registered players" />
+              </label>
+            </div>
+            <div id="playerResults"><p class="pf-note">Type at least 2 letters to search.</p></div>
+          </div>
+        </section>
+
+        <section>
+          <div class="wrap">
+            <div class="sec-head reveal">
               <p class="kicker">The Ranks</p>
               <h2>Our Members</h2>
               <p>The warriors of Knight Warriors Club — 68 general members strong, and growing.</p>
@@ -2503,6 +2523,42 @@
         </section>
       </div>
 
+      <!-- ==================== VIEW: COMPLETE PROFILE ==================== -->
+      <div class="view" id="view-completeprofile">
+        <section>
+          <div class="wrap">
+            <div class="sec-head center reveal">
+              <p class="kicker">One Last Step</p>
+              <h2>Complete Your Profile</h2>
+              <p>Your login is ready — we just need your member details to finish your profile.</p>
+            </div>
+            <div class="auth-card glass reveal">
+              <form id="completeForm" novalidate>
+                <div class="field"><label for="cpName">Full name *</label><input id="cpName" type="text" placeholder="Your full name" autocomplete="name" /></div>
+                <div class="field"><label for="cpPhone">Phone / WhatsApp *</label><input id="cpPhone" type="tel" placeholder="01…" autocomplete="tel" /></div>
+                <div class="field"><label for="cpFacebook">Facebook ID link</label><input id="cpFacebook" type="url" placeholder="https://www.facebook.com/your.profile" /></div>
+                <div class="field"><label>Your games * <span style="color:var(--faint);font-weight:500">(pick at least one)</span></label>
+                  <div class="games-grid">
+                    <label class="game-opt"><input type="checkbox" name="cpGames" value="eFootball" /><span>eFootball</span></label>
+                    <label class="game-opt"><input type="checkbox" name="cpGames" value="PUBG" /><span>PUBG</span></label>
+                    <label class="game-opt"><input type="checkbox" name="cpGames" value="Clash of Clans" /><span>Clash of Clans</span></label>
+                    <label class="game-opt"><input type="checkbox" name="cpGames" value="Call of Duty" /><span>Call of Duty</span></label>
+                  </div>
+                </div>
+                <div class="form-row">
+                  <div class="field"><label for="cpDob">Date of birth *</label><input id="cpDob" type="date" /></div>
+                  <div class="field"><label for="cpGender">Gender *</label>
+                    <select id="cpGender"><option value="">Select gender…</option><option>Male</option><option>Female</option><option>Other</option></select>
+                  </div>
+                </div>
+                <p class="form-err" id="cpError" role="alert"></p>
+                <button class="btn btn-red" type="submit" style="width:100%;justify-content:center">Finish My Profile</button>
+              </form>
+            </div>
+          </div>
+        </section>
+      </div>
+
       <!-- ==================== VIEW: INBOX ==================== -->
       <div class="view" id="view-inbox">
         <section>
@@ -2671,6 +2727,10 @@
     </div>
 
     <!-- Live notification toast -->
+  <div class="notif-prompt glass" id="notifPrompt" hidden>
+    <p><b>Get club alerts on this device?</b><br />Match news, President's broadcasts and new messages — as pop-up notifications.</p>
+    <div class="np-btns"><button class="btn btn-red btn-sm" type="button" id="npAllow">Allow</button><button class="btn btn-glass btn-sm" type="button" id="npLater">Not now</button></div>
+  </div>
     <div id="kwcToast" hidden role="status">
       <b id="kwcToastTitle"></b>
       <span id="kwcToastBody"></span>
@@ -2692,7 +2752,7 @@
 
     <script>
       /* ---------- View router ---------- */
-      var VIEWS = ['home', 'about', 'community', 'games', 'news', 'article', 'events', 'tournament', 'leaderboard', 'rules', 'sponsors', 'register', 'login', 'checkemail', 'profile', 'squad', 'createsquad', 'console', 'inbox', 'resetpassword', 'setpassword'];
+      var VIEWS = ['home', 'about', 'community', 'games', 'news', 'article', 'events', 'tournament', 'leaderboard', 'rules', 'sponsors', 'register', 'login', 'checkemail', 'profile', 'squad', 'createsquad', 'console', 'inbox', 'completeprofile', 'resetpassword', 'setpassword'];
       var HASH_ALIAS = {
         top: 'home', committee: 'community', members: 'community',
         provide: 'about', membership: 'about', practice: 'about',
@@ -4391,7 +4451,7 @@
               kwc.loadedFor = user.id;
               if (!kwc.member) {
                 return ensureProfile(user).then(function (created) {
-                  if (!created) { renderHeader(); setLoggedIn(true); return null; }
+                  if (!created) { window.__kwcNeedsProfile = true; renderHeader(); setLoggedIn(true); return null; }
                   kwc.loadedFor = null;
                   return loadMember(user);
                 });
@@ -5996,7 +6056,17 @@
           return '<div class="roster-member">' +
             (p.avatar_url ? '<img class="mini-avatar" src="' + esc(p.avatar_url) + '" alt="" style="object-fit:cover" />' : '<span class="mini-avatar">' + esc(initials(p.full_name)) + '</span>') +
             '<span class="rm-name">' + nameHtml + ' <span class="role-sm">· ' + esc(r.role || 'Member') + '</span></span>' + kebab + '</div>';
-        }).join('') || '<p class="pf-note">No members yet.</p>';
+        }).join('');
+        if (canManage && squadCtx.rows.length < 10) {
+          box.innerHTML += '<button type="button" class="roster-member" id="sqAddRow" style="width:100%;background:none;border:0;cursor:pointer;text-align:left;color:#fff">' +
+            '<span class="mini-avatar" style="background:#c8102e;font-size:19px">+</span><span class="rm-name">Add player</span></button>';
+          var ar = $('sqAddRow');
+          if (ar) ar.addEventListener('click', function () {
+            renderSquadInvite();
+            var ibx = $('squadInviteBox'); if (ibx) ibx.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          });
+        }
+        if (!squadCtx.rows.length && !canManage) box.innerHTML = '<p class="pf-note">No members yet.</p>';
       }
       document.addEventListener('click', function (e) {
         var kb = e.target.closest ? e.target.closest('[data-kebab]') : null;
@@ -6459,6 +6529,197 @@
             })
             .subscribe();
         } catch (e) { /* realtime unavailable — panes still load on open */ }
+      }
+    })();
+  </script>
+
+<script>
+    /* ===== Layer 3b: profile completion for accounts without member
+       rows, registered-player search, first-visit notification
+       prompt, push subscribe helper ===== */
+    (function () {
+      var VAPID_PUBLIC = 'BE8UId7vYp0sbeIEEWTTKFDBBs8oHsV-_1iHHcvxNE0myt_TMjRfetKHWsHraqm9XAXmYAM_Jv4SzsuqT7nAdcc';
+      function $(id) { return document.getElementById(id); }
+      function me() { return (typeof kwc !== 'undefined' && kwc.member) ? kwc.member : null; }
+      function toast(title, body, link) { if (window.kwcToast) window.kwcToast(title, body, link); }
+      function initials(name) { return String(name || '?').split(/\s+/).map(function (w) { return w.charAt(0); }).join('').slice(0, 2).toUpperCase(); }
+      function urlB64ToUint8Array(base64String) {
+        var padding = '='.repeat((4 - base64String.length % 4) % 4);
+        var base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+        var raw = atob(base64);
+        var arr = new Uint8Array(raw.length);
+        for (var i = 0; i < raw.length; i++) arr[i] = raw.charCodeAt(i);
+        return arr;
+      }
+
+      /* ---------- Push subscribe (member, permission granted) ---------- */
+      var subscribing = false;
+      function subscribePush3() {
+        var m = me();
+        if (!m || !sb || subscribing) return;
+        if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
+        if (!('Notification' in window) || Notification.permission !== 'granted') return;
+        subscribing = true;
+        navigator.serviceWorker.ready.then(function (reg) {
+          return reg.pushManager.getSubscription().then(function (existing) {
+            if (existing) return existing;
+            return reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: urlB64ToUint8Array(VAPID_PUBLIC) });
+          });
+        }).then(function (sub) {
+          var j = sub.toJSON();
+          return sb.from('push_subscriptions').upsert({
+            member_id: m.id, endpoint: j.endpoint,
+            p256dh: j.keys ? j.keys.p256dh : null, auth: j.keys ? j.keys.auth : null
+          }, { onConflict: 'endpoint' });
+        }).then(function () { subscribing = false; syncPushNote(); })
+          .catch(function () { subscribing = false; });
+      }
+      function syncPushNote() {
+        var pn = $('pushNote');
+        if (pn && me() && /log in/i.test(pn.textContent || '')) pn.textContent = '';
+      }
+
+      /* ---------- First-visit notification prompt ---------- */
+      function maybeShowPrompt() {
+        if (!('Notification' in window)) return;
+        if (Notification.permission !== 'default') return;
+        try { if (localStorage.getItem('kwcNotifPrompt') === 'done') return; } catch (e) {}
+        var box = $('notifPrompt'); if (!box) return;
+        box.hidden = false;
+        $('npAllow').addEventListener('click', function () {
+          try { localStorage.setItem('kwcNotifPrompt', 'done'); } catch (e) {}
+          box.hidden = true;
+          Notification.requestPermission().then(function (perm) {
+            if (perm === 'granted') {
+              subscribePush3();
+              toast('Notifications on', 'Club alerts will pop up on this device.');
+            }
+          }).catch(function () {});
+        });
+        $('npLater').addEventListener('click', function () {
+          try { localStorage.setItem('kwcNotifPrompt', 'done'); } catch (e) {}
+          box.hidden = true;
+        });
+      }
+      setTimeout(maybeShowPrompt, 1500);
+
+      /* ---------- Member-ready extras ---------- */
+      var prevReady = window.__onMemberReady;
+      window.__onMemberReady = function () {
+        if (typeof prevReady === 'function') prevReady();
+        subscribePush3();
+        syncPushNote();
+      };
+
+      /* ---------- Orphan accounts: route to the completion form ---------- */
+      setInterval(function () {
+        syncPushNote();
+        if (window.__kwcNeedsProfile && typeof kwc !== 'undefined' && kwc.user && !kwc.member) {
+          var v = document.body.getAttribute('data-view');
+          if (v !== 'completeprofile' && v !== 'login' && v !== 'register') {
+            try {
+              if (!sessionStorage.getItem('kwcCpShown')) {
+                sessionStorage.setItem('kwcCpShown', '1');
+                window.location.hash = '#completeprofile';
+              }
+            } catch (e) { window.location.hash = '#completeprofile'; }
+          }
+        }
+      }, 1600);
+
+      /* ---------- Completion form ---------- */
+      var cpForm = $('completeForm');
+      if (cpForm) cpForm.addEventListener('submit', function (e) {
+        e.preventDefault();
+        var err = $('cpError');
+        var user = (typeof kwc !== 'undefined' && kwc.user) || null;
+        if (!sb || !user) { err.textContent = 'Log in first, then complete your profile.'; return; }
+        var name = $('cpName').value.trim();
+        var phone = $('cpPhone').value.trim().replace(/[\s-]/g, '');
+        if (phone.indexOf('+880') === 0) phone = '0' + phone.slice(4);
+        else if (phone.indexOf('880') === 0 && phone.length === 13) phone = '0' + phone.slice(3);
+        $('cpPhone').value = phone;
+        var fb = $('cpFacebook').value.trim();
+        var games = [];
+        cpForm.querySelectorAll('input[name="cpGames"]:checked').forEach(function (c) { games.push(c.value); });
+        var dob = $('cpDob').value;
+        var gender = $('cpGender').value;
+        if (!name) { err.textContent = 'Please enter your full name.'; return; }
+        if (!/^01\d{9}$/.test(phone)) { err.textContent = 'Phone must be a Bangladeshi number in 01… format.'; return; }
+        if (!games.length) { err.textContent = 'Pick at least one game.'; return; }
+        if (!dob) { err.textContent = 'Please enter your date of birth.'; return; }
+        if (!gender) { err.textContent = 'Please select your gender.'; return; }
+        err.textContent = '';
+        var btn = cpForm.querySelector('button[type="submit"]');
+        btn.disabled = true; btn.textContent = 'Please wait…';
+        sb.from('members').insert({ auth_user_id: user.id, full_name: name, facebook_id: fb || '' })
+          .select().single()
+          .then(function (mres) {
+            if (mres.error) throw mres.error;
+            var mid = mres.data.id;
+            var jobs = [sb.from('member_private').insert({
+              member_id: mid, phone: phone, email: user.email,
+              date_of_birth: dob || null, gender: gender || null
+            })];
+            jobs.push(sb.from('member_games').insert(games.map(function (g) {
+              return { member_id: mid, game: g, uid: null, team_strength: null };
+            })));
+            return Promise.all(jobs);
+          })
+          .then(function () {
+            try { sessionStorage.removeItem('kwcCpShown'); } catch (e) {}
+            window.__kwcNeedsProfile = false;
+            toast('Profile complete', 'Welcome to Knight Warriors Club, ' + name + '.');
+            window.location.hash = '#profile';
+            window.location.reload();
+          })
+          .catch(function (e2) {
+            btn.disabled = false; btn.textContent = 'Finish My Profile';
+            err.textContent = /duplicate|unique/i.test((e2 && e2.message) || '')
+              ? 'Your profile already exists — reloading the site…'
+              : 'Something went wrong saving your profile — please try again.';
+            if (/duplicate|unique/i.test((e2 && e2.message) || '')) setTimeout(function () { window.location.reload(); }, 1200);
+          });
+      });
+
+      /* ---------- Registered-player search (Community) ---------- */
+      var pInput = $('playerSearch'), pBox = $('playerResults');
+      if (pInput && pBox) {
+        var pTimer = null;
+        pInput.addEventListener('input', function () {
+          clearTimeout(pTimer);
+          var q = pInput.value.trim();
+          if (q.length < 2) { pBox.innerHTML = '<p class="pf-note">Type at least 2 letters to search.</p>'; return; }
+          pTimer = setTimeout(function () { runPlayerSearch(q); }, 260);
+        });
+      }
+      function runPlayerSearch(q) {
+        if (!sb) { pBox.innerHTML = '<p class="pf-note">Search is unavailable right now.</p>'; return; }
+        var like = '%' + q.replace(/[%_]/g, '') + '%';
+        sb.from('members').select('id, full_name, username, role, avatar_url')
+          .or('full_name.ilike.' + like + ',username.ilike.' + like)
+          .order('full_name').limit(12)
+          .then(function (res) {
+            if (res.error) throw res.error;
+            var list = res.data || [];
+            if (!list.length) { pBox.innerHTML = '<p class="pf-note">No registered player matches “' + esc(q) + '” yet.</p>'; return; }
+            pBox.innerHTML = '<div class="roster" style="grid-template-columns:1fr">' + list.map(function (p) {
+              var nameHtml = p.username
+                ? '<a class="member-link" href="#profile/' + esc(p.username) + '">' + esc(p.full_name) + '</a>'
+                : esc(p.full_name);
+              var msgBtn = (me() && me().id !== p.id)
+                ? ' <button class="btn btn-glass btn-sm" type="button" data-msgpid="' + p.id + '" data-msgname="' + esc(p.full_name) + '">Message</button>' : '';
+              return '<div class="roster-member">' +
+                (p.avatar_url ? '<img class="mini-avatar" src="' + esc(p.avatar_url) + '" alt="" style="object-fit:cover" />' : '<span class="mini-avatar">' + esc(initials(p.full_name)) + '</span>') +
+                '<span class="rm-name">' + nameHtml + ' <span class="role-sm">· ' + esc(p.role || 'Member') + (p.username ? ' · @' + esc(p.username) : '') + '</span></span>' + msgBtn + '</div>';
+            }).join('') + '</div>';
+            pBox.querySelectorAll('[data-msgpid]').forEach(function (b) {
+              b.addEventListener('click', function () {
+                if (window.__openDM) window.__openDM(parseInt(b.getAttribute('data-msgpid'), 10), b.getAttribute('data-msgname'));
+              });
+            });
+          })
+          .catch(function () { pBox.innerHTML = '<p class="pf-note">Search could not run right now.</p>'; });
       }
     })();
   </script>
