@@ -6695,11 +6695,16 @@
       }
       function runPlayerSearch(q) {
         if (!sb) { pBox.innerHTML = '<p class="pf-note">Search is unavailable right now.</p>'; return; }
+        var settled = false;
+        setTimeout(function () {
+          if (!settled) pBox.innerHTML = '<p class="pf-note">Search is taking too long — check your connection and try again.</p>';
+        }, 7000);
         var like = '%' + q.replace(/[%_]/g, '') + '%';
         sb.from('members').select('id, full_name, username, role, avatar_url')
           .or('full_name.ilike.' + like + ',username.ilike.' + like)
           .order('full_name').limit(12)
           .then(function (res) {
+            settled = true;
             if (res.error) throw res.error;
             var list = res.data || [];
             if (!list.length) { pBox.innerHTML = '<p class="pf-note">No registered player matches “' + esc(q) + '” yet.</p>'; return; }
@@ -6719,7 +6724,7 @@
               });
             });
           })
-          .catch(function () { pBox.innerHTML = '<p class="pf-note">Search could not run right now.</p>'; });
+          .catch(function () { settled = true; pBox.innerHTML = '<p class="pf-note">Search could not run right now.</p>'; });
       }
     })();
   </script>
