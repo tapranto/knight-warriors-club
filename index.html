@@ -1273,6 +1273,24 @@
       .chat-form input:focus { border-color: var(--red); }
       .chat-form .btn { flex-shrink: 0; padding: 12px 22px; }
 
+      /* Profile sub-page tabs */
+      .pf-tabs { display: flex; flex-wrap: wrap; gap: 8px; margin: 18px 0 20px; }
+      .pf-tab { font-family: var(--font-body); font-weight: 700; font-size: 13.5px; letter-spacing: 0.08em; text-transform: uppercase; color: #fff; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.14); border-radius: 999px; padding: 9px 16px; cursor: pointer; }
+      .pf-tab.active { background: #c8102e; border-color: #c8102e; color: #fff; }
+      #view-profile.guest-mode .add-game, #view-profile.guest-mode #saveGamesBtn, #view-profile.guest-mode .game-remove, #view-profile.guest-mode #gamesOk, #view-profile.guest-mode #gamesError { display: none !important; }
+      .about-row { display: flex; justify-content: space-between; gap: 14px; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.07); font-size: 15px; }
+      .about-row b { font-weight: 700; white-space: nowrap; }
+      .about-row span { opacity: 0.88; text-align: right; word-break: break-word; }
+      /* Live notification toast */
+      #kwcToast { position: fixed; left: 50%; transform: translateX(-50%); bottom: 22px; z-index: 9999; width: max-content; max-width: 92vw; background: #17171f; color: #fff; border: 1px solid rgba(255,255,255,0.16); border-left: 4px solid #c8102e; border-radius: 14px; padding: 13px 16px; box-shadow: 0 18px 50px rgba(0,0,0,0.5); cursor: pointer; }
+      #kwcToast b { display: block; font-size: 15px; margin-bottom: 2px; }
+      #kwcToast span { font-size: 13.5px; opacity: 0.85; }
+      /* President Console */
+      .console-controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 10px; }
+      .console-controls select { max-width: 220px; }
+      .rm-sub { display: block; font-size: 12.5px; opacity: 0.78; font-weight: 500; margin-top: 2px; }
+      .grant-on { font-weight: 700; color: #7ee2a0; font-size: 13px; }
+
       /* Inbox (inside Profile) */
       .inbox-group { font-family: var(--font-body); font-size: 13.5px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: #ff97a1; margin: 20px 0 10px; }
       .inbox-group:first-of-type { margin-top: 4px; }
@@ -1350,14 +1368,14 @@
         <button class="avatar-btn" id="avatarBtn" type="button" aria-haspopup="true" aria-expanded="false" aria-label="Your account menu — Bijoy Rahman">
           <img id="avatarImg" src="assets/champion-demo-photo.webp" alt="Bijoy Rahman" />
           <span class="avatar-initial" id="avatarInitial" hidden>B</span>
-          <span class="avatar-badge" id="inboxBadge">4</span>
+          <span class="avatar-badge" id="inboxBadge" hidden></span>
         </button>
         <div class="account-menu" id="accountMenu" hidden>
           <div class="am-head"><b id="amName">Bijoy Rahman</b><span id="amSub">Member · eFootball</span></div>
-          <a href="#profile" data-nav="profile">Profile</a>
-          <a href="#profile" data-nav="profile" data-scrollto="profileSettings">Settings</a>
-          <a href="#profile" data-nav="profile" data-scrollto="profileInbox" id="inboxMenuLink">Inbox <span class="am-badge" id="inboxBadge2">4</span></a>
-          <a href="#community" data-nav="community" id="allMembersLink" hidden>All Members</a>
+          <a href="#profile" data-nav="profile" data-pftab="about">Profile</a>
+          <a href="#profile" data-nav="profile" data-pftab="settings">Settings</a>
+          <a href="#profile" data-nav="profile" data-pftab="inbox" id="inboxMenuLink">Inbox <span class="am-badge" id="inboxBadge2" hidden></span></a>
+          <a href="#console" data-nav="console" id="allMembersLink" hidden>All Members</a>
           <button class="am-item" type="button" id="logoutBtn">Log out</button>
         </div>
       </div>
@@ -2255,7 +2273,28 @@
               </div>
             </div>
 
+            <p class="pf-note" id="guestNote" hidden style="margin-top:16px"></p>
+            <div class="pf-tabs" id="pfTabs" role="tablist">
+              <button type="button" class="pf-tab" data-pftab="about">About</button>
+              <button type="button" class="pf-tab" data-pftab="games">My Games</button>
+              <button type="button" class="pf-tab" data-pftab="trophy">My Trophy</button>
+              <button type="button" class="pf-tab" data-pftab="squads">Squads</button>
+              <button type="button" class="pf-tab" data-pftab="inbox">Inbox <span class="am-badge" id="pfInboxBadge" hidden></span></button>
+              <button type="button" class="pf-tab" data-pftab="settings">Settings</button>
+            </div>
+
             <div class="profile-grid">
+              <!-- About -->
+              <div class="pf-panel glass reveal" id="profileAbout">
+                <h3 class="pf-title">About</h3>
+                <div id="aboutDetails"><p class="pf-note">Loading…</p></div>
+                <div id="aboutFriend" style="margin-top:14px"></div>
+                <div id="aboutPrivate" hidden>
+                  <p class="inbox-group">Your details — visible only to you &amp; the committee</p>
+                  <div id="aboutPrivateDetails"></div>
+                </div>
+              </div>
+
               <!-- My Games -->
               <div class="pf-panel glass reveal" id="profileGames">
                 <h3 class="pf-title">My Games</h3>
@@ -2314,56 +2353,13 @@
                 <h3 class="pf-title">Inbox</h3>
                 <p class="pf-sub">Notifications, club broadcasts and friend requests — all in one place.</p>
 
+                <div id="inboxSetupNote" class="pf-note" hidden>Club messages are being switched on — the President is running the final setup step. Check back soon.</div>
                 <p class="inbox-group">Notifications</p>
-                <div class="notif grant">
-                  <span class="notif-icon"><svg viewBox="0 0 24 24"><path d="M12 3l2.1 4.9 5.3.5-4 3.6 1.2 5.2L12 14.5l-4.6 2.7L8.6 12l-4-3.6 5.3-.5z"/></svg></span>
-                  <div class="notif-body">
-                    <p><b>You can now open a squad.</b> The President has given you permission to create squads — pick a name and a game, and start recruiting up to 10 members.</p>
-                    <p class="notif-time">From the President · 2 hours ago</p>
-                    <a class="btn btn-red btn-sm" href="#createsquad" data-nav="createsquad">Create a Squad</a>
-                  </div>
-                </div>
-                <div class="notif">
-                  <span class="notif-icon plain"><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></span>
-                  <div class="notif-body">
-                    <p><b>Welcome to Knight Warriors Club.</b> Your account is ready — add your game UIDs above so your captains can find you.</p>
-                    <p class="notif-time">Club system · January 2024</p>
-                  </div>
-                </div>
-
+                <div id="inboxNotifs"><p class="pf-note">Loading…</p></div>
                 <p class="inbox-group">Club Broadcasts</p>
-                <div class="notif">
-                  <span class="notif-icon plain"><svg viewBox="0 0 24 24"><path d="M3 11l14-5v12L3 13v-2zM7 13v5a2 2 0 0 0 4 0v-4M17 8a4 4 0 0 1 0 8"/></svg></span>
-                  <div class="notif-body">
-                    <p><b>eFootball Tournament Legacy is coming</b> — our first full 24-player league. Fixtures and the table will live on the Events page; make sure your eFootball UID is on your profile.</p>
-                    <p class="notif-time">President · Broadcast to all members · Yesterday</p>
-                  </div>
-                </div>
-                <div class="notif">
-                  <span class="notif-icon plain"><svg viewBox="0 0 24 24"><path d="M3 11l14-5v12L3 13v-2zM7 13v5a2 2 0 0 0 4 0v-4M17 8a4 4 0 0 1 0 8"/></svg></span>
-                  <div class="notif-body">
-                    <p><b>Practice session this Friday, 8 PM.</b> All squads report to the club Discord — bring your best formation.</p>
-                    <p class="notif-time">President · Broadcast to all members · 3 days ago</p>
-                  </div>
-                </div>
-
+                <div id="inboxBroadcasts"><p class="pf-note">Loading…</p></div>
                 <p class="inbox-group">Friend Requests</p>
-                <div class="fr-row">
-                  <span class="mini-avatar">FM</span>
-                  <p class="fr-name">Farhan Mahee <span>eFootball · Demo Cup finalist</span></p>
-                  <div class="fr-actions">
-                    <button class="fr-btn fr-accept" type="button">Accept</button>
-                    <button class="fr-btn fr-decline" type="button">Decline</button>
-                  </div>
-                </div>
-                <div class="fr-row">
-                  <span class="mini-avatar">AM</span>
-                  <p class="fr-name">Ahmed Mizan <span>eFootball · Knight Strikers</span></p>
-                  <div class="fr-actions">
-                    <button class="fr-btn fr-accept" type="button">Accept</button>
-                    <button class="fr-btn fr-decline" type="button">Decline</button>
-                  </div>
-                </div>
+                <div id="inboxFriends"><p class="pf-note">No pending requests.</p></div>
               </div>
 
               <!-- Settings -->
@@ -2397,6 +2393,12 @@
                   </div>
                   <div class="field"><label for="sBio">Bio</label><textarea id="sBio">eFootball striker for the Warriors. Demo Cup champion — now chasing the next trophy.</textarea></div>
                   <fieldset class="field">
+                    <legend>Notifications</legend>
+                    <p class="pf-note" style="margin-bottom:10px">Get the President's broadcasts as a pop-up on this device — even when the site is closed. Your choice: allow it or not.</p>
+                    <button class="btn btn-glass btn-sm" type="button" id="pushBtn">Enable notifications on this device</button>
+                    <p class="pf-note" id="pushNote" style="margin-top:8px"></p>
+                  </fieldset>
+                  <fieldset class="field">
                     <legend>Profile privacy</legend>
                     <div class="privacy-opts">
                       <label class="game-opt"><input type="radio" name="privacy" value="public" checked /><span>Public — everyone can see my profile</span></label>
@@ -2408,6 +2410,34 @@
                   <p class="form-ok" id="settingsOk">Your settings have been saved.</p>
                 </form>
               </div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- ==================== VIEW: CONSOLE (All Members) ==================== -->
+      <div class="view" id="view-console">
+        <section>
+          <div class="wrap">
+            <div class="sec-head reveal">
+              <p class="kicker">Members Only</p>
+              <h2>All Members</h2>
+              <p id="consoleSub">The club roster. The committee can view every member's details; the President manages roles, squad invites and broadcasts.</p>
+            </div>
+            <div class="pf-panel glass reveal" id="consoleBroadcastPanel" hidden>
+              <h3 class="pf-title">Broadcast to All Members</h3>
+              <p class="pf-sub">Lands in every member's Inbox, pops up live on their screens, and — for members who allowed notifications — reaches their phones even with the site closed.</p>
+              <div class="field"><label for="bcTitle">Title</label><input id="bcTitle" type="text" placeholder="e.g. Practice this Friday, 8 PM" /></div>
+              <div class="field"><label for="bcBody">Message</label><textarea id="bcBody" rows="3" placeholder="Write your message to the whole club…"></textarea></div>
+              <p class="form-err" id="bcErr" role="alert"></p>
+              <button class="btn btn-red" type="button" id="bcSend">Send to Everyone</button>
+              <p class="form-ok" id="bcOk">Broadcast sent.</p>
+            </div>
+            <div class="pf-panel glass reveal">
+              <h3 class="pf-title">Roster</h3>
+              <div id="consoleRoster"><p class="pf-note">Loading the roster…</p></div>
+              <p class="form-err" id="consoleErr" role="alert"></p>
+              <p class="pf-note" id="consoleSetupNote" hidden>Invites and broadcasts switch on once the President runs the Part 2 database setup (one paste in the Supabase SQL Editor).</p>
             </div>
           </div>
         </section>
@@ -2454,7 +2484,7 @@
                 </form>
               </div>
             </div>
-            <p style="margin-top:22px"><a class="btn btn-glass" href="#profile" data-nav="profile" data-scrollto="profileSquads">← Back to My Profile</a></p>
+            <p style="margin-top:22px"><a class="btn btn-glass" href="#profile" data-pftab="squads">← Back to My Profile</a></p>
           </div>
         </section>
       </div>
@@ -2494,7 +2524,7 @@
                 <div class="rs-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></div>
                 <h3>Squad Created!</h3>
                 <p><b id="csSuccessName">Your squad</b> (<span id="csSuccessGame">eFootball</span>) is ready — you are its captain. It now appears in the Squads section of your profile.</p>
-                <a class="btn btn-red" href="#profile" data-nav="profile" data-scrollto="profileSquads">View in My Profile</a>
+                <a class="btn btn-red" href="#profile" data-pftab="squads">View in My Profile</a>
               </div>
             </div>
           </div>
@@ -2557,6 +2587,12 @@
       </figure>
     </div>
 
+    <!-- Live notification toast -->
+    <div id="kwcToast" hidden role="status">
+      <b id="kwcToastTitle"></b>
+      <span id="kwcToastBody"></span>
+    </div>
+
     <!-- Champion celebration splash: shown once when a finished tournament page opens -->
     <div class="champ-splash" id="champSplash" role="dialog" aria-modal="true" aria-label="Champion celebration" aria-hidden="true">
       <canvas class="champ-splash-canvas" id="champSplashCanvas" aria-hidden="true"></canvas>
@@ -2573,7 +2609,7 @@
 
     <script>
       /* ---------- View router ---------- */
-      var VIEWS = ['home', 'about', 'community', 'games', 'news', 'article', 'events', 'tournament', 'leaderboard', 'rules', 'gallery', 'sponsors', 'register', 'login', 'profile', 'squad', 'createsquad', 'resetpassword', 'setpassword'];
+      var VIEWS = ['home', 'about', 'community', 'games', 'news', 'article', 'events', 'tournament', 'leaderboard', 'rules', 'gallery', 'sponsors', 'register', 'login', 'profile', 'squad', 'createsquad', 'console', 'resetpassword', 'setpassword'];
       var HASH_ALIAS = {
         top: 'home', committee: 'community', members: 'community',
         provide: 'about', membership: 'about', practice: 'about',
@@ -2647,12 +2683,21 @@
         var m;
         if ((m = h.match(/^news\/(.+)$/))) { openArticle(m[1]); return; }
         if ((m = h.match(/^tournament\/(.+)$/))) { openTournament(m[1]); return; }
+        if ((m = h.match(/^profile\/(.+)$/))) { if (window.__routeProfile) { window.__routeProfile(m[1]); return; } }
+        if (h === 'profile' && window.__routeProfile) { window.__routeProfile(''); return; }
         showView(h || 'home', false);
       }
-      window.addEventListener('popstate', function () {
+      var __lastRoute = '', __lastRouteAt = 0;
+      function runRoute() {
+        var h = window.location.hash || '';
+        var now = Date.now();
+        if (h === __lastRoute && now - __lastRouteAt < 400) return;
+        __lastRoute = h; __lastRouteAt = now;
         window.__fromPop = true;
         try { routeFromHash(); } finally { window.__fromPop = false; }
-      });
+      }
+      window.addEventListener('popstate', runRoute);
+      window.addEventListener('hashchange', runRoute);
 
       /* ---------- Members ---------- */
       var MEMBERS = [
@@ -4121,7 +4166,7 @@
           el('amName').textContent = name;
           var firstGame = kwc.games.length ? kwc.games[0].game : '';
           el('amSub').textContent = m ? ((m.role || 'Member') + (firstGame ? ' · ' + firstGame : '')) : '';
-          el('allMembersLink').hidden = !(m && m.role === 'President');
+          el('allMembersLink').hidden = !(m && (m.role === 'President' || m.is_committee));
           el('avatarBtn').setAttribute('aria-label', 'Your account menu — ' + name);
           var img = el('avatarImg'), ini = el('avatarInitial');
           if (m && m.avatar_url) {
@@ -4763,5 +4808,688 @@
         });
       })();
     </script>
-  </body>
+  <script>
+    /* ===== Layer 2: profile sub-pages, member profiles, President
+       Console, live Inbox, squad invites, push opt-ins ===== */
+    (function () {
+      var VAPID_PUBLIC = 'BE8UId7vYp0sbeIEEWTTKFDBBs8oHsV-_1iHHcvxNE0myt_TMjRfetKHWsHraqm9XAXmYAM_Jv4SzsuqT7nAdcc';
+      var TABS = ['about', 'games', 'trophy', 'squads', 'inbox', 'settings'];
+      var PANELS = { about: 'profileAbout', games: 'profileGames', trophy: 'profileHonours', squads: 'profileSquads', inbox: 'profileInbox', settings: 'profileSettings' };
+      var ROLES = ['Member', 'Vice President', 'Secretary', 'Treasurer', 'Sponsorship Head', 'Events Coordinator', 'Public Relations Officer', 'Disciplinary Officer', 'Media & Promotion Head', 'Community Manager', 'President'];
+      var guest = null;
+      var guestGames = [];
+      var guestLimited = false;
+      var featuresReady = false;
+
+      function $(id) { return document.getElementById(id); }
+      function me() { return (typeof kwc !== 'undefined' && kwc.member) ? kwc.member : null; }
+      function isPres() { var m = me(); return !!(m && m.role === 'President'); }
+      function isComm() { var m = me(); return !!(m && (m.is_committee || m.role === 'President')); }
+      function tableMissing(err) { return !!(err && (err.code === '42P01' || /does not exist/i.test(err.message || ''))); }
+      function timeAgo(iso) {
+        var t = new Date(iso).getTime(); if (!t) return '';
+        var s = Math.floor((Date.now() - t) / 1000);
+        if (s < 60) return 'just now';
+        if (s < 3600) return Math.floor(s / 60) + ' min ago';
+        if (s < 86400) return Math.floor(s / 3600) + ' h ago';
+        if (s < 86400 * 30) return Math.floor(s / 86400) + ' d ago';
+        return new Date(iso).toLocaleDateString();
+      }
+      function initialsOf(name) {
+        return String(name || '?').split(/\s+/).map(function (w) { return w.charAt(0); }).join('').slice(0, 2).toUpperCase();
+      }
+
+      /* ---------- Toast ---------- */
+      var toastTimer = null;
+      window.kwcToast = function (title, body, link) {
+        var t = $('kwcToast'); if (!t) return;
+        $('kwcToastTitle').textContent = title || 'Knight Warriors Club';
+        $('kwcToastBody').textContent = body || '';
+        t.hidden = false;
+        t.onclick = function () {
+          t.hidden = true;
+          if (link) window.location.hash = '#' + link;
+        };
+        if (toastTimer) clearTimeout(toastTimer);
+        toastTimer = setTimeout(function () { t.hidden = true; }, 9000);
+      };
+
+      /* ---------- Badges ---------- */
+      function updateBadges(count) {
+        ['inboxBadge', 'inboxBadge2', 'pfInboxBadge'].forEach(function (id) {
+          var b = $(id); if (!b) return;
+          b.textContent = count > 0 ? String(count) : '';
+          b.hidden = !(count > 0);
+        });
+      }
+      function refreshBadge() {
+        var m = me(); if (!m || !sb) return;
+        sb.from('notifications').select('id', { count: 'exact', head: true })
+          .eq('member_id', m.id).eq('is_read', false)
+          .then(function (res) { if (!res.error) updateBadges(res.count || 0); })
+          .catch(function () {});
+      }
+
+      /* ---------- Profile tabs ---------- */
+      window.setProfileTab = function (tab) {
+        if (TABS.indexOf(tab) === -1) tab = 'about';
+        TABS.forEach(function (tb) {
+          var p = $(PANELS[tb]); if (p) p.style.display = (tb === tab) ? '' : 'none';
+        });
+        document.querySelectorAll('#pfTabs .pf-tab').forEach(function (b) {
+          b.classList.toggle('active', b.getAttribute('data-pftab') === tab);
+        });
+        if (tab === 'about') fillAbout();
+        if (tab === 'inbox' && !guest) loadInbox();
+      };
+      function gotoTab(tab) {
+        exitGuest();
+        if (tab === 'about') showView('profile', true, 'profile');
+        else showView('profile', true, 'profile/' + tab);
+        window.setProfileTab(tab);
+      }
+      document.addEventListener('click', function (e) {
+        var el = e.target.closest ? e.target.closest('[data-pftab]') : null;
+        if (!el) return;
+        e.preventDefault();
+        e.stopPropagation();
+        var am = $('accountMenu'); if (am) am.hidden = true;
+        var ab = $('avatarBtn'); if (ab) ab.setAttribute('aria-expanded', 'false');
+        gotoTab(el.getAttribute('data-pftab'));
+      }, true);
+
+      /* ---------- Routing for #profile/... ---------- */
+      window.__routeProfile = function (seg) {
+        seg = String(seg || '').toLowerCase();
+        if (!seg) { exitGuest(); showView('profile', false); window.setProfileTab('about'); return; }
+        if (TABS.indexOf(seg) !== -1) { exitGuest(); showView('profile', false); window.setProfileTab(seg); return; }
+        openMemberProfile(seg);
+      };
+
+      function exitGuest() {
+        if (!guest) return;
+        guest = null; guestGames = []; guestLimited = false;
+        $('view-profile').classList.remove('guest-mode');
+        var gn = $('guestNote'); if (gn) gn.hidden = true;
+        document.querySelectorAll('#pfTabs .pf-tab').forEach(function (b) { b.style.display = ''; });
+        var af = $('aboutFriend'); if (af) af.innerHTML = '';
+        if (me()) applyMemberToPage();
+        else if (typeof restoreSample === 'function') restoreSample();
+      }
+
+      /* ---------- About tab ---------- */
+      function arow(k, v) {
+        return '<div class="about-row"><b>' + esc(k) + '</b><span>' + esc(v || '—') + '</span></div>';
+      }
+      function fillAbout() {
+        var box = $('aboutDetails'); if (!box) return;
+        var priv = $('aboutPrivate'), pd = $('aboutPrivateDetails'), af = $('aboutFriend');
+        if (guest) {
+          var names = guestGames.map(function (g) { return g.game; }).join(', ');
+          var html = arow('Role', guest.role || 'Member') +
+            arow('Member since', monthYear(guest.created_at)) +
+            arow('Games', names);
+          if (guestLimited) html += '<p class="pf-note" style="margin-top:10px">This profile is friends-only — only the member\'s friends, the committee and the President can see the full profile.</p>';
+          box.innerHTML = html;
+          if (priv) priv.hidden = true;
+          if (af) {
+            if (me() && !guestLimited) {
+              af.innerHTML = '<button class="btn btn-glass btn-sm" type="button" id="addFriendBtn">Add Friend</button>';
+              var btn = $('addFriendBtn');
+              if (btn) btn.addEventListener('click', sendFriendRequest);
+            } else af.innerHTML = '';
+          }
+          return;
+        }
+        var m = me();
+        if (!m) {
+          box.innerHTML = '<p class="pf-note">This is a sample profile. Log in or register to see your own.</p>';
+          if (priv) priv.hidden = true;
+          if (af) af.innerHTML = '';
+          return;
+        }
+        box.innerHTML =
+          arow('Role', m.role || 'Member') +
+          arow('Username', m.username ? '@' + m.username : 'Not set yet') +
+          arow('Member since', monthYear(m.created_at)) +
+          arow('Your profile link', m.username ? 'knightwarriorsclub.com/#profile/' + m.username : 'Pick a username in Settings to get your link');
+        if (af) af.innerHTML = '';
+        if (priv && pd && typeof kwc !== 'undefined' && kwc.priv) {
+          priv.hidden = false;
+          pd.innerHTML =
+            arow('Phone', kwc.priv.phone) +
+            arow('Email', kwc.priv.email) +
+            arow('Date of birth', kwc.priv.date_of_birth) +
+            arow('Gender', kwc.priv.gender);
+        } else if (priv) priv.hidden = true;
+      }
+      function sendFriendRequest() {
+        var m = me(); if (!m || !guest || !sb) return;
+        var btn = $('addFriendBtn'); if (btn) { btn.disabled = true; btn.textContent = 'Sending…'; }
+        sb.from('friendships').insert({ requester_id: m.id, addressee_id: guest.id, status: 'pending' })
+          .then(function (res) {
+            if (res.error) {
+              if (tableMissing(res.error)) window.kwcToast('Not switched on yet', 'Friend requests arrive with the Part 2 database setup.');
+              else window.kwcToast('Request failed', 'You may already have a request with this member.');
+              if (btn) { btn.disabled = false; btn.textContent = 'Add Friend'; }
+              return;
+            }
+            window.kwcToast('Friend request sent', 'It is waiting in ' + (guest.full_name || 'their') + '\'s Inbox.');
+            if (btn) btn.textContent = 'Request Sent';
+          });
+      }
+
+      /* ---------- Member (guest) profiles: #profile/<username> ---------- */
+      function openMemberProfile(username) {
+        if (!sb) { showView('community', false); return; }
+        var m = me();
+        if (m && m.username && username === String(m.username).toLowerCase()) {
+          exitGuest(); showView('profile', false); window.setProfileTab('about'); return;
+        }
+        sb.from('members').select('*').eq('username', username).maybeSingle()
+          .then(function (res) {
+            var g = res.data;
+            if (!g) {
+              window.kwcToast('No such profile', 'No member uses @' + username + ' yet.');
+              showView('community', false);
+              return;
+            }
+            if (m && g.id === m.id) { exitGuest(); showView('profile', false); window.setProfileTab('about'); return; }
+            var limitedP;
+            if (g.profile_visibility === 'friends' && !isComm()) {
+              if (!m) limitedP = Promise.resolve(true);
+              else limitedP = sb.from('friendships').select('status')
+                .or('and(requester_id.eq.' + m.id + ',addressee_id.eq.' + g.id + '),and(requester_id.eq.' + g.id + ',addressee_id.eq.' + m.id + ')')
+                .eq('status', 'accepted')
+                .then(function (r) { return !(r.data && r.data.length); })
+                .catch(function () { return true; });
+            } else limitedP = Promise.resolve(false);
+            var gamesP = sb.from('member_games').select('*').eq('member_id', g.id)
+              .then(function (r) { return r.data || []; })
+              .catch(function () { return []; });
+            Promise.all([gamesP, limitedP]).then(function (rs) {
+              guest = g; guestGames = rs[0]; guestLimited = rs[1];
+              renderGuest();
+            });
+          })
+          .catch(function () { showView('community', false); });
+      }
+      function renderGuest() {
+        var g = guest; if (!g) return;
+        showView('profile', false);
+        $('view-profile').classList.add('guest-mode');
+        var firstGame = guestGames.length ? guestGames[0].game : '';
+        $('profileName').textContent = g.full_name || '';
+        var handle = $('profileHandle');
+        if (g.username) { handle.textContent = '@' + g.username; handle.hidden = false; } else handle.hidden = true;
+        $('profileRole').textContent = (g.role || 'Member') + (firstGame ? ' · ' + firstGame : '');
+        $('profileBio').textContent = guestLimited ? '' : (g.bio || '');
+        $('profileSince').textContent = 'Member since ' + monthYear(g.created_at);
+        var pImg = $('profileAvatarImg');
+        pImg.src = g.avatar_url || initialAvatar(g.full_name);
+        pImg.alt = (g.full_name || 'Member') + ' — profile photo';
+        if (g.cover_url) $('profileCoverImg').src = g.cover_url;
+        var fb = $('profileFbLink');
+        if (g.facebook_id && !guestLimited) { fb.href = normalizeUrl(g.facebook_id); fb.style.display = ''; }
+        else fb.style.display = 'none';
+        $('discordBtn').style.display = (g.discord_id && !guestLimited) ? '' : 'none';
+        var gn = $('guestNote');
+        gn.textContent = 'You are viewing ' + (g.full_name || 'this member') + '\'s profile.';
+        gn.hidden = false;
+        document.querySelectorAll('#pfTabs .pf-tab').forEach(function (b) {
+          var t = b.getAttribute('data-pftab');
+          b.style.display = (t === 'inbox' || t === 'settings') ? 'none' : '';
+        });
+        /* Games, read-only */
+        var list = $('myGamesList');
+        if (list) {
+          list.innerHTML = '';
+          if (guestLimited) list.innerHTML = '<p class="pf-note">Friends only.</p>';
+          else guestGames.forEach(function (gm) {
+            var rowEl = gameRowEl(gm);
+            rowEl.querySelectorAll('input').forEach(function (inp) { inp.disabled = true; });
+            list.appendChild(rowEl);
+          });
+          if (!guestLimited && !guestGames.length) list.innerHTML = '<p class="pf-note">No games added yet.</p>';
+        }
+        /* Honours by name */
+        PREVIEW_MEMBER = g.full_name;
+        if (typeof renderHonours === 'function') renderHonours();
+        loadSquadsInto(g.id, true);
+        window.setProfileTab('about');
+      }
+
+      /* ---------- Squads list (profile tab) ---------- */
+      function loadSquadsInto(memberId, isGuestView) {
+        if (!sb) return;
+        sb.from('squad_members')
+          .select('role, squad_id, squads(name, game)')
+          .eq('member_id', memberId)
+          .then(function (res) {
+            if (res.error) return; /* pre-Part 2: leave current content */
+            var rows = res.data || [];
+            var box = $('profileSquadsList'); if (!box) return;
+            if (!rows.length) {
+              box.innerHTML = '<p class="pf-note">No squads yet.' + (isGuestView ? '' : ' When the President invites you — or if you already have permission — create the first one below.') + '</p>';
+            } else {
+              box.innerHTML = rows.map(function (r) {
+                var sq = r.squads || {};
+                return '<div class="squad-row"><span class="squad-crest">' + esc(initialsOf(sq.name || 'S')) + '</span>' +
+                  '<span class="sq-main"><span class="sq-name">' + esc(sq.name || 'Squad') + '</span>' +
+                  '<span class="sq-meta">' + esc(sq.game || '') + '</span></span>' +
+                  '<span class="sq-count">' + esc(r.role || 'Member') + '</span></div>';
+              }).join('');
+            }
+            var btn = document.querySelector('#profileSquads a[data-nav="createsquad"]');
+            if (btn) {
+              if (isGuestView) btn.style.display = 'none';
+              else {
+                var m = me();
+                btn.style.display = (m && (m.can_create_squad || m.role === 'President')) ? '' : 'none';
+              }
+            }
+          })
+          .catch(function () {});
+      }
+
+      /* ---------- Create Squad: real insert when logged in ---------- */
+      var csForm = $('createSquadForm');
+      if (csForm) {
+        csForm.addEventListener('submit', function (e) {
+          var m = me();
+          if (!m || !sb) return; /* sample mode: the designed demo handler runs */
+          e.preventDefault();
+          e.stopImmediatePropagation();
+          var name = $('csName').value.trim();
+          var game = $('csGame').value;
+          csForm.querySelector('[data-field="squadName"]').classList.toggle('invalid', !name);
+          csForm.querySelector('[data-field="squadGame"]').classList.toggle('invalid', !game);
+          if (!name || !game) return;
+          if (!(m.can_create_squad || m.role === 'President')) {
+            window.kwcToast('Permission needed', 'Squad creation is switched on by the President. Ask for an invite.');
+            return;
+          }
+          sb.from('squads').insert({ name: name, game: game, captain_member_id: m.id }).select().single()
+            .then(function (res) {
+              if (res.error) {
+                if (tableMissing(res.error)) window.kwcToast('Not switched on yet', 'Squads arrive with the Part 2 database setup.');
+                else window.kwcToast('Could not create the squad', 'Please try again.');
+                return;
+              }
+              var sq = res.data;
+              sb.from('squad_members').insert({ squad_id: sq.id, member_id: m.id, role: 'Captain' })
+                .then(function () {
+                  $('csSuccessName').textContent = name;
+                  $('csSuccessGame').textContent = game;
+                  csForm.style.display = 'none';
+                  var success = $('csSuccess');
+                  success.classList.add('show');
+                  success.focus();
+                  loadSquadsInto(m.id, false);
+                });
+            });
+        }, true);
+      }
+
+      /* ---------- Inbox (real data) ---------- */
+      var ICONS = {
+        broadcast: 'M3 11l14-5v12L3 13v-2zM7 13v5a2 2 0 0 0 4 0v-4M17 8a4 4 0 0 1 0 8',
+        squad_invite: 'M12 3l2.1 4.9 5.3.5-4 3.6 1.2 5.2L12 14.5l-4.6 2.7L8.6 12l-4-3.6 5.3-.5z',
+        info: 'M20 6 9 17l-5-5'
+      };
+      function notifHTML(n) {
+        var icon = ICONS[n.type] || ICONS.info;
+        var linkBtn = '';
+        if (n.link === 'createsquad') linkBtn = '<a class="btn btn-red btn-sm" href="#createsquad" data-nav="createsquad" style="margin-top:8px">Create a Squad</a>';
+        return '<div class="notif' + (n.type === 'squad_invite' ? ' grant' : '') + '">' +
+          '<span class="notif-icon' + (n.type === 'broadcast' ? ' plain' : '') + '"><svg viewBox="0 0 24 24"><path d="' + icon + '"/></svg></span>' +
+          '<div class="notif-body"><p><b>' + esc(n.title || '') + '</b>' + (n.body ? ' ' + esc(n.body) : '') + '</p>' +
+          '<p class="notif-time">' + (n.type === 'broadcast' ? 'President · Broadcast to all members · ' : '') + timeAgo(n.created_at) + '</p>' +
+          linkBtn + '</div></div>';
+      }
+      function loadInbox() {
+        var m = me(); if (!m || !sb) return;
+        sb.from('notifications').select('*').eq('member_id', m.id)
+          .order('created_at', { ascending: false }).limit(60)
+          .then(function (res) {
+            if (res.error) {
+              if (tableMissing(res.error)) {
+                var sn = $('inboxSetupNote'); if (sn) sn.hidden = false;
+                $('inboxNotifs').innerHTML = '';
+                $('inboxBroadcasts').innerHTML = '';
+              }
+              return;
+            }
+            var list = res.data || [];
+            var others = list.filter(function (n) { return n.type !== 'broadcast'; });
+            var bcs = list.filter(function (n) { return n.type === 'broadcast'; });
+            $('inboxNotifs').innerHTML = others.length ? others.map(notifHTML).join('') : '<p class="pf-note">No notifications yet.</p>';
+            $('inboxBroadcasts').innerHTML = bcs.length ? bcs.map(notifHTML).join('') : '<p class="pf-note">No broadcasts yet.</p>';
+            updateBadges(list.filter(function (n) { return !n.is_read; }).length);
+            sb.from('notifications').update({ is_read: true }).eq('member_id', m.id).eq('is_read', false)
+              .then(function () { updateBadges(0); })
+              .catch(function () {});
+          })
+          .catch(function () {});
+        sb.from('friendships').select('*').eq('addressee_id', m.id).eq('status', 'pending')
+          .then(function (res) {
+            if (res.error) return;
+            renderFriendReqs(res.data || []);
+          })
+          .catch(function () {});
+      }
+      function renderFriendReqs(reqs) {
+        var box = $('inboxFriends'); if (!box) return;
+        if (!reqs.length) { box.innerHTML = '<p class="pf-note">No pending requests.</p>'; return; }
+        var ids = reqs.map(function (r) { return r.requester_id; });
+        sb.from('members').select('id, full_name, username').in('id', ids)
+          .then(function (res) {
+            var byId = {};
+            (res.data || []).forEach(function (x) { byId[x.id] = x; });
+            box.innerHTML = reqs.map(function (r) {
+              var who = byId[r.requester_id] || { full_name: 'A member' };
+              return '<div class="fr-row"><span class="mini-avatar">' + esc(initialsOf(who.full_name)) + '</span>' +
+                '<p class="fr-name">' + esc(who.full_name) + (who.username ? ' <span>@' + esc(who.username) + '</span>' : '') + '</p>' +
+                '<div class="fr-actions">' +
+                '<button class="fr-btn fr-accept" type="button" data-fr="' + r.requester_id + '" data-act="accepted">Accept</button>' +
+                '<button class="fr-btn fr-decline" type="button" data-fr="' + r.requester_id + '" data-act="declined">Decline</button>' +
+                '</div></div>';
+            }).join('');
+          });
+      }
+      var inboxPanel = $('profileInbox');
+      if (inboxPanel) {
+        inboxPanel.addEventListener('click', function (e) {
+          var btn = e.target.closest ? e.target.closest('[data-fr]') : null;
+          if (!btn) return;
+          var m = me(); if (!m) return;
+          var rid = parseInt(btn.getAttribute('data-fr'), 10);
+          var act = btn.getAttribute('data-act');
+          sb.from('friendships').update({ status: act })
+            .eq('requester_id', rid).eq('addressee_id', m.id)
+            .then(function (res) {
+              if (res.error) return;
+              window.kwcToast(act === 'accepted' ? 'Friend added' : 'Request declined', '');
+              loadInbox();
+            });
+        });
+      }
+
+      /* ---------- President Console ---------- */
+      function loadConsole() {
+        var rosterBox = $('consoleRoster'); if (!rosterBox) return;
+        var m = me();
+        if (!m) { rosterBox.innerHTML = '<p class="pf-note">Log in to see the roster.</p>'; return; }
+        if (!isComm()) { rosterBox.innerHTML = '<p class="pf-note">The roster is for the President and the committee.</p>'; return; }
+        $('consoleBroadcastPanel').hidden = !isPres();
+        sb.from('members').select('*').order('id')
+          .then(function (res) {
+            if (res.error) { showErr('consoleErr', 'Could not load the roster.'); return; }
+            var members = res.data || [];
+            var privP = sb.from('member_private').select('*')
+              .then(function (r) { return r.data || []; }).catch(function () { return []; });
+            var gamesP = sb.from('member_games').select('*')
+              .then(function (r) { return r.data || []; }).catch(function () { return []; });
+            Promise.all([privP, gamesP]).then(function (rs) {
+              var privMap = {}, gamesMap = {};
+              rs[0].forEach(function (p) { privMap[p.member_id] = p; });
+              rs[1].forEach(function (g) {
+                if (!gamesMap[g.member_id]) gamesMap[g.member_id] = [];
+                gamesMap[g.member_id].push(g.game);
+              });
+              renderRoster(members, privMap, gamesMap);
+            });
+          })
+          .catch(function () { showErr('consoleErr', 'Could not load the roster.'); });
+      }
+      function renderRoster(members, privMap, gamesMap) {
+        var box = $('consoleRoster'); if (!box) return;
+        var pres = isPres();
+        box.innerHTML = '<div class="roster" style="grid-template-columns:1fr">' + members.map(function (mb) {
+          var pv = privMap[mb.id] || {};
+          var games = (gamesMap[mb.id] || []).join(', ');
+          var sub = (mb.username ? '@' + mb.username + ' · ' : '') + (pv.phone || '') + (pv.email ? ' · ' + pv.email : '');
+          var html = '<div class="roster-member" style="align-items:flex-start">' +
+            '<span class="mini-avatar">' + esc(initialsOf(mb.full_name)) + '</span>' +
+            '<div style="flex:1;min-width:0"><span class="rm-name">' + esc(mb.full_name || '') +
+            ' <span class="role-sm">· ' + esc(mb.role || 'Member') + (mb.is_committee ? ' · Committee' : '') + '</span></span>' +
+            '<span class="rm-sub">' + esc(sub) + '</span>' +
+            '<span class="rm-sub">' + esc(games ? 'Games: ' + games : 'No games yet') + ' · Joined ' + esc(monthYear(mb.created_at) || '') + '</span>';
+          if (pres && mb.id !== me().id) {
+            html += '<div class="console-controls">' +
+              '<select class="role-sel" data-mid="' + mb.id + '">' +
+              ROLES.map(function (r) { return '<option' + (r === mb.role ? ' selected' : '') + '>' + esc(r) + '</option>'; }).join('') +
+              '</select>' +
+              '<label style="font-size:13.5px"><input type="checkbox" class="comm-box" data-mid="' + mb.id + '"' + (mb.is_committee ? ' checked' : '') + ' /> Committee</label>' +
+              (mb.can_create_squad
+                ? '<span class="grant-on">Squad invite ON</span>'
+                : '<button class="btn btn-glass btn-sm grant-btn" type="button" data-mid="' + mb.id + '" data-name="' + esc(mb.full_name || '') + '">Invite to create squad</button>') +
+              '<button class="btn btn-glass btn-sm del-btn" type="button" data-mid="' + mb.id + '" data-name="' + esc(mb.full_name || '') + '">Remove</button>' +
+              '</div>';
+          }
+          if (pres && mb.id === me().id) html += '<span class="rm-sub">That\'s you — the President.</span>';
+          html += '</div></div>';
+          return html;
+        }).join('') + '</div>';
+      }
+      var consoleView = $('view-console');
+      if (consoleView) {
+        consoleView.addEventListener('change', function (e) {
+          var t = e.target;
+          if (t.classList.contains('role-sel')) {
+            var mid = parseInt(t.getAttribute('data-mid'), 10);
+            var upd = { role: t.value };
+            if (t.value === 'President') upd.is_committee = true;
+            sb.from('members').update(upd).eq('id', mid).then(function (res) {
+              if (res.error) { showErr('consoleErr', 'Role change failed.'); return; }
+              hideErr('consoleErr');
+              window.kwcToast('Role updated', 'Now: ' + t.value);
+              loadConsole();
+            });
+          }
+          if (t.classList.contains('comm-box')) {
+            var mid2 = parseInt(t.getAttribute('data-mid'), 10);
+            sb.from('members').update({ is_committee: t.checked }).eq('id', mid2).then(function (res) {
+              if (res.error) { showErr('consoleErr', 'Committee change failed.'); t.checked = !t.checked; return; }
+              loadConsole();
+            });
+          }
+        });
+        consoleView.addEventListener('click', function (e) {
+          var g = e.target.closest ? e.target.closest('.grant-btn') : null;
+          var d = e.target.closest ? e.target.closest('.del-btn') : null;
+          if (g) {
+            var mid = parseInt(g.getAttribute('data-mid'), 10);
+            var nm = g.getAttribute('data-name');
+            g.disabled = true; g.textContent = 'Inviting…';
+            sb.from('members').update({ can_create_squad: true }).eq('id', mid)
+              .then(function (res) {
+                if (res.error) { showErr('consoleErr', 'Could not switch on squad creation.'); g.disabled = false; g.textContent = 'Invite to create squad'; return; }
+                sb.from('notifications').insert({
+                  member_id: mid, type: 'squad_invite',
+                  title: 'You can now open a squad',
+                  body: 'The President has given you permission to create squads — pick a name and a game, and start recruiting up to 10 members.',
+                  link: 'createsquad'
+                }).then(function (nres) {
+                  if (nres.error && tableMissing(nres.error)) {
+                    var sn = $('consoleSetupNote'); if (sn) sn.hidden = false;
+                    window.kwcToast('Permission ON', 'The invite message itself needs the Part 2 setup.');
+                  } else {
+                    window.kwcToast('Invite sent', nm + ' will see it pop up in their Inbox.');
+                  }
+                  loadConsole();
+                });
+              });
+          }
+          if (d) {
+            var mid3 = parseInt(d.getAttribute('data-mid'), 10);
+            var nm3 = d.getAttribute('data-name');
+            if (!window.confirm('Remove ' + nm3 + ' from the club roster? Their profile will be deleted.')) return;
+            sb.from('members').delete().eq('id', mid3).then(function (res) {
+              if (res.error) { showErr('consoleErr', 'Remove failed.'); return; }
+              window.kwcToast('Member removed', nm3 + ' is off the roster.');
+              loadConsole();
+            });
+          }
+        });
+      }
+      var bcSend = $('bcSend');
+      if (bcSend) {
+        bcSend.addEventListener('click', function () {
+          hideErr('bcErr');
+          var m = me(); if (!m || !isPres()) return;
+          var title = $('bcTitle').value.trim();
+          var body = $('bcBody').value.trim();
+          if (!title || !body) { showErr('bcErr', 'Write a title and a message first.'); return; }
+          setBusy(bcSend, true);
+          sb.from('broadcasts').insert({ sender_member_id: m.id, title: title, body: body })
+            .then(function (res) {
+              setBusy(bcSend, false);
+              if (res.error) {
+                if (tableMissing(res.error)) showErr('bcErr', 'Broadcasts need the Part 2 database setup — run the one-paste file first.');
+                else showErr('bcErr', 'Broadcast failed. Please try again.');
+                return;
+              }
+              $('bcTitle').value = ''; $('bcBody').value = '';
+              var ok = $('bcOk'); ok.classList.add('show');
+              setTimeout(function () { ok.classList.remove('show'); }, 4000);
+              window.kwcToast('Broadcast sent', 'Every member will see it in their Inbox — and as a pop-up.');
+            })
+            .catch(function () { setBusy(bcSend, false); showErr('bcErr', 'Broadcast failed. Please try again.'); });
+        });
+      }
+      /* Reload the console each time it becomes the active view */
+      var lastView = '';
+      var mo = new MutationObserver(function () {
+        var v = document.body.getAttribute('data-view');
+        if (v === lastView) return;
+        lastView = v;
+        if (v === 'console') loadConsole();
+        if (v === 'profile' && !guest) fillAbout();
+      });
+      mo.observe(document.body, { attributes: true, attributeFilter: ['data-view'] });
+
+      /* ---------- Push notifications (opt-in) ---------- */
+      function urlB64ToUint8Array(base64String) {
+        var padding = '='.repeat((4 - base64String.length % 4) % 4);
+        var base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+        var raw = window.atob(base64);
+        var arr = new Uint8Array(raw.length);
+        for (var i = 0; i < raw.length; i++) arr[i] = raw.charCodeAt(i);
+        return arr;
+      }
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/sw.js').catch(function () {});
+      }
+      function refreshPushBtn() {
+        var btn = $('pushBtn'), note = $('pushNote');
+        if (!btn) return;
+        if (!('Notification' in window) || !('PushManager' in window) || !('serviceWorker' in navigator)) {
+          btn.disabled = true;
+          btn.textContent = 'Not supported in this browser';
+          if (note) note.textContent = 'Try Chrome on Android for pop-up notifications.';
+          return;
+        }
+        if (Notification.permission === 'denied') {
+          btn.disabled = true;
+          btn.textContent = 'Blocked in browser settings';
+          return;
+        }
+        if (!('ready' in navigator.serviceWorker)) return;
+        navigator.serviceWorker.ready.then(function (reg) {
+          return reg.pushManager.getSubscription();
+        }).then(function (sub) {
+          if (sub) {
+            btn.disabled = true;
+            btn.textContent = 'Notifications ON for this device';
+            if (note) note.textContent = 'Broadcasts will pop up on this device, even with the site closed.';
+          }
+        }).catch(function () {});
+      }
+      var pushBtn = $('pushBtn');
+      if (pushBtn) {
+        pushBtn.addEventListener('click', function () {
+          var note = $('pushNote');
+          var m = me();
+          if (!m) { if (note) note.textContent = 'Log in first, then enable notifications.'; return; }
+          if (!('Notification' in window)) return;
+          Notification.requestPermission().then(function (perm) {
+            if (perm !== 'granted') {
+              if (note) note.textContent = 'No problem — you chose not to allow pop-ups on this device. Broadcasts still reach your Inbox.';
+              return;
+            }
+            navigator.serviceWorker.ready.then(function (reg) {
+              return reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: urlB64ToUint8Array(VAPID_PUBLIC) });
+            }).then(function (sub) {
+              var j = sub.toJSON();
+              return sb.from('push_subscriptions').upsert(
+                { member_id: m.id, endpoint: j.endpoint, p256dh: j.keys.p256dh, auth: j.keys.auth },
+                { onConflict: 'endpoint' }
+              );
+            }).then(function (res) {
+              if (res && res.error) {
+                if (note) note.textContent = tableMissing(res.error)
+                  ? 'One setup step remains on the club side — your choice is saved in this browser and will connect when it lands.'
+                  : 'Could not save the subscription. Please try again.';
+                return;
+              }
+              if (note) note.textContent = 'Done — broadcasts will pop up on this device.';
+              refreshPushBtn();
+              window.kwcToast('Notifications on', 'Club broadcasts will now pop up on this device.');
+            }).catch(function () {
+              if (note) note.textContent = 'Something went wrong while subscribing. Please try again.';
+            });
+          });
+        });
+      }
+
+      /* ---------- Member features: once the member row loads ---------- */
+      function initMemberFeatures() {
+        if (featuresReady) return;
+        featuresReady = true;
+        refreshBadge();
+        loadSquadsInto(me().id, false);
+        fillAbout();
+        refreshPushBtn();
+        sb.from('notifications').select('id', { count: 'exact', head: true })
+          .eq('member_id', me().id).eq('is_read', false)
+          .then(function (res) {
+            if (!res.error && res.count > 0) {
+              var c = res.count;
+              setTimeout(function () {
+                window.kwcToast('You have ' + c + ' unread message' + (c > 1 ? 's' : ''), 'Tap to open your Inbox.', 'profile/inbox');
+              }, 1200);
+            }
+          })
+          .catch(function () {});
+        try {
+          sb.channel('kwc-notifs-' + me().id)
+            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications', filter: 'member_id=eq.' + me().id }, function (payload) {
+              var n = payload.new || {};
+              window.kwcToast(n.title || 'New message', n.body || '', n.link || 'profile/inbox');
+              refreshBadge();
+              var ip = $('profileInbox');
+              if (document.body.getAttribute('data-view') === 'profile' && ip && ip.style.display !== 'none') loadInbox();
+            })
+            .subscribe();
+        } catch (e) { /* realtime unavailable — inbox still works on open */ }
+      }
+      var tries = 0;
+      var iv = setInterval(function () {
+        tries++;
+        if (sb && me()) { clearInterval(iv); initMemberFeatures(); }
+        else if (tries > 40) clearInterval(iv);
+      }, 500);
+
+      /* ---------- First paint ---------- */
+      window.setProfileTab('about');
+      refreshPushBtn();
+      var h0 = (window.location.hash || '').replace(/^#/, '');
+      var m0 = h0.match(/^profile\/(.+)$/);
+      if (m0) window.__routeProfile(m0[1]);
+      if (h0 === 'console') loadConsole();
+    })();
+  </script>
+
+</body>
 </html>
