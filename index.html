@@ -1267,6 +1267,15 @@
         font-family: var(--font-body); font-size: 11.5px; font-weight: 700; line-height: 15px; text-align: center;
       }
       .avatar-badge[hidden] { display: none; }
+      .bell-wrap { position: relative; flex: 0 0 auto; }
+      .bell-wrap[hidden] { display: none; }
+      .bell-btn { position: relative; width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.18); cursor: pointer; }
+      .bell-btn svg { width: 20px; height: 20px; stroke: #ececf2; }
+      .bell-badge { position: absolute; top: -4px; right: -4px; min-width: 20px; height: 20px; padding: 0 5px; border-radius: 999px; background: var(--red); color: #fff; border: 2px solid #0a0a10; font-family: var(--font-body); font-size: 11.5px; font-weight: 700; line-height: 15px; text-align: center; }
+      .bell-badge[hidden] { display: none; }
+      .bell-panel { position: absolute; right: 0; top: 52px; width: min(360px, calc(100vw - 24px)); max-height: 70vh; overflow-y: auto; padding: 12px; background: rgba(10, 10, 17, 0.97); border: 1px solid var(--glass-border); border-radius: 14px; box-shadow: var(--shadow); z-index: 130; }
+      .bell-panel[hidden] { display: none; }
+      .bell-foot { display: block; text-align: center; padding: 10px; margin-top: 6px; border-top: 1px solid rgba(255,255,255,0.09); color: #ececf2; text-decoration: none; font-weight: 700; }
       .account-menu {
         position: absolute; right: 0; top: 54px; width: 236px; padding: 10px;
         background: rgba(10, 10, 17, 0.97); border: 1px solid var(--glass-border); border-radius: 14px;
@@ -1490,6 +1499,10 @@
             <input type="search" id="playerSearch" placeholder="Search players…" aria-label="Search registered players" />
           </label>
       <button type="button" class="head-search-btn" id="playerSearchBtn" aria-label="Search registered players"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></button>
+      <div class="bell-wrap" id="bellWrap" hidden>
+        <button type="button" class="bell-btn" id="bellBtn" aria-label="Notifications" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg><span class="bell-badge" id="bellBadge" hidden></span></button>
+        <div class="bell-panel" id="bellPanel" hidden></div>
+      </div>
       <!-- Logged-in state: the member's round avatar replaces Log in / Register -->
       <div class="head-account" id="headAccount" hidden>
         <button class="avatar-btn" id="avatarBtn" type="button" aria-haspopup="true" aria-expanded="false" aria-label="Your account menu — Bijoy Rahman">
@@ -6563,6 +6576,132 @@
             } else draw();
           });
       }
+
+      /* ---------- Header notification bell ---------- */
+      function bellEls() { return { wrap: $('bellWrap'), btn: $('bellBtn'), badge: $('bellBadge'), panel: $('bellPanel') }; }
+      function refreshBell() {
+        var e = bellEls(); var m = me();
+        if (!e.wrap) return;
+        if (!m || !sb) { e.wrap.hidden = true; return; }
+        e.wrap.hidden = false;
+        var total = 0; var pending = 3;
+        function done() { if (--pending > 0) return; e.badge.textContent = total > 0 ? String(total) : ''; e.badge.hidden = !(total > 0); }
+        sb.from('notifications').select('*', { count: 'exact', head: true }).eq('member_id', m.id).eq('is_read', false).then(function (r) { if (!r.error) total += (r.count || 0); done(); }).catch(done);
+        sb.from('friendships').select('*', { count: 'exact', head: true }).eq('addressee_id', m.id).eq('status', 'pending').then(function (r) { if (!r.error) total += (r.count || 0); done(); }).catch(done);
+        sb.from('squad_invites').select('*', { count: 'exact', head: true }).eq('member_id', m.id).eq('status', 'pending').then(function (r) { if (!r.error) total += (r.count || 0); done(); }).catch(done);
+      }
+      window.refreshBell = refreshBell;
+      function closeBell() { var e = bellEls(); if (e.panel) e.panel.hidden = true; if (e.btn) e.btn.setAttribute('aria-expanded', 'false'); }
+      function renderBellPanel() {
+        var e = bellEls(); var m = me(); if (!e.panel || !m) return;
+        e.panel.innerHTML = '<p class="pf-note">Loading\u2026</p>';
+        Promise.all([
+          sb.from('notifications').select('*').eq('member_id', m.id).order('created_at', { ascending: false }).limit(15).then(function (r) { return r.data || []; }).catch(function () { return []; }),
+          sb.from('friendships').select('*').eq('addressee_id', m.id).eq('status', 'pending').then(function (r) { return r.data || []; }).catch(function () { return []; }),
+          sb.from('squad_invites').select('*, squads(name, game)').eq('member_id', m.id).eq('status', 'pending').then(function (r) { return r.error ? [] : (r.data || []); }).catch(function () { return []; })
+        ]).then(function (rs) {
+          var notifs = rs[0], reqs = rs[1], invites = rs[2];
+          var build = function () {
+            var h = '';
+            if (invites.length) {
+              h += '<p class="inbox-group">Squad Invites</p>' + invites.map(function (iv) {
+                return '<div class="notif-row unread"><span class="mini-avatar">' + esc(initials(iv.squads ? iv.squads.name : 'S')) + '</span><div style="flex:1">' +
+                  '<p style="margin:0"><b>' + esc(iv.squads ? iv.squads.name : 'A squad') + '</b> \u2014 you are invited to join this squad.</p>' +
+                  '<p style="margin:4px 0 0"><button class="btn btn-red btn-sm" type="button" data-binvjoin="' + iv.id + '" data-bsquad="' + iv.squad_id + '">Join Squad</button> ' +
+                  '<button class="btn btn-glass btn-sm" type="button" data-binvdec="' + iv.id + '">Decline</button></p></div></div>';
+              }).join('');
+            }
+            if (reqs.length) {
+              h += '<p class="inbox-group">Friend Requests</p>' + reqs.map(function (r) {
+                var who = nameCache[r.requester_id] || { full_name: 'A member' };
+                return '<div class="notif-row unread"><span class="mini-avatar">' + esc(initials(who.full_name)) + '</span><div style="flex:1">' +
+                  '<p style="margin:0"><b>' + esc(who.full_name) + '</b> wants to be your friend.</p>' +
+                  '<p style="margin:4px 0 0"><button class="btn btn-red btn-sm" type="button" data-bfracc="' + r.requester_id + '">Accept</button> ' +
+                  '<button class="btn btn-glass btn-sm" type="button" data-bfrdec="' + r.requester_id + '">Decline</button></p></div></div>';
+              }).join('');
+            }
+            h += '<p class="inbox-group">Latest</p>';
+            h += notifs.length ? notifs.map(function (n) {
+              return '<div class="notif-row' + (n.is_read ? '' : ' unread') + '"><span class="mini-avatar">KW</span><div style="flex:1">' +
+                '<p style="margin:0"><b>' + esc(n.title || 'Notification') + '</b></p>' +
+                (n.body ? '<p style="margin:2px 0 0">' + esc(n.body) + '</p>' : '') +
+                '<p class="dm-meta">' + esc(fmtTime(n.created_at)) + '</p></div></div>';
+            }).join('') : '<p class="pf-note">No notifications yet.</p>';
+            h += '<a class="bell-foot" href="#inbox">Open Inbox \u2192</a>';
+            e.panel.innerHTML = h;
+            wireBellActions(e.panel);
+            sb.from('notifications').update({ is_read: true }).eq('member_id', m.id).eq('is_read', false)
+              .then(function () { refreshBadges3(); refreshBell(); }).catch(function () {});
+          };
+          var ids = reqs.map(function (r) { return r.requester_id; });
+          if (ids.length) {
+            sb.from('members').select('id, full_name, username, avatar_url').in('id', ids)
+              .then(function (r) { cacheNames(r.data); build(); }).catch(build);
+          } else build();
+        });
+      }
+      function wireBellActions(panel) {
+        panel.querySelectorAll('[data-bfracc]').forEach(function (b) {
+          b.addEventListener('click', function () {
+            sb.from('friendships').update({ status: 'accepted' }).eq('requester_id', parseInt(b.getAttribute('data-bfracc'), 10)).eq('addressee_id', me().id)
+              .then(function () { toast('Friend added', 'You are now friends.'); renderBellPanel(); refreshBell(); });
+          });
+        });
+        panel.querySelectorAll('[data-bfrdec]').forEach(function (b) {
+          b.addEventListener('click', function () {
+            sb.from('friendships').update({ status: 'declined' }).eq('requester_id', parseInt(b.getAttribute('data-bfrdec'), 10)).eq('addressee_id', me().id)
+              .then(function () { renderBellPanel(); refreshBell(); });
+          });
+        });
+        panel.querySelectorAll('[data-binvjoin]').forEach(function (b) {
+          b.addEventListener('click', function () {
+            var invId = parseInt(b.getAttribute('data-binvjoin'), 10);
+            var sid = parseInt(b.getAttribute('data-bsquad'), 10);
+            sb.from('squad_members').select('member_id').eq('squad_id', sid).then(function (cnt) {
+              if ((cnt.data || []).length >= 10) { toast('Squad is full', 'That squad already has 10 members.'); return; }
+              sb.from('squad_members').insert({ squad_id: sid, member_id: me().id, role: 'Member' }).then(function (r) {
+                if (r.error) { toast('Could not join', 'That invite could not be completed.'); return; }
+                sb.from('squad_invites').update({ status: 'accepted' }).eq('id', invId).then(function () {
+                  toast('Welcome to the squad', 'You joined the squad \u2014 its chat is now in your Inbox.');
+                  renderBellPanel(); refreshBell();
+                });
+              });
+            });
+          });
+        });
+        panel.querySelectorAll('[data-binvdec]').forEach(function (b) {
+          b.addEventListener('click', function () {
+            sb.from('squad_invites').update({ status: 'declined' }).eq('id', parseInt(b.getAttribute('data-binvdec'), 10))
+              .then(function () { renderBellPanel(); refreshBell(); });
+          });
+        });
+        var foot = panel.querySelector('.bell-foot');
+        if (foot) foot.addEventListener('click', closeBell);
+      }
+      (function wireBell() {
+        var e = bellEls(); if (!e.btn) return;
+        e.btn.addEventListener('click', function (ev) {
+          ev.stopPropagation();
+          if (e.panel.hidden) { renderBellPanel(); e.panel.hidden = false; e.btn.setAttribute('aria-expanded', 'true'); }
+          else closeBell();
+        });
+        e.panel.addEventListener('click', function (ev) { ev.stopPropagation(); });
+        document.addEventListener('click', function () { closeBell(); });
+      })();
+      var bellRtStarted = false;
+      function bellSubscribe() {
+        if (bellRtStarted || !sb || !me()) return;
+        bellRtStarted = true;
+        try {
+          sb.channel('kwc-bell')
+            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications', filter: 'member_id=eq.' + me().id }, function () { refreshBell(); })
+            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'friendships', filter: 'addressee_id=eq.' + me().id }, function () { refreshBell(); toast('New friend request', 'A member wants to be your friend \u2014 tap the bell to respond.', 'inbox'); })
+            .subscribe();
+        } catch (err) { /* realtime unavailable \u2014 the bell still refreshes on open */ }
+      }
+      var __prevBellReady = window.__onMemberReady;
+      window.__onMemberReady = function () { if (__prevBellReady) __prevBellReady(); refreshBell(); bellSubscribe(); };
+      if (me()) { refreshBell(); bellSubscribe(); }
 
       /* ---------- Realtime: DMs + squad chats ---------- */
       var rtStarted = false;
