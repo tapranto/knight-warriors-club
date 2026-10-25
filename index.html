@@ -307,8 +307,13 @@
         body.search-open #playerSearchPanel { top: 178px; }
         .head-brand { position: static; transform: none; flex: 1 1 auto; min-width: 0; }
         .head-tools { gap: 6px; }
-        .wordmark { font-size: 17px; letter-spacing: 0.02em; -webkit-text-stroke: 1px rgba(225, 29, 46, 0.9); }
+        .wordmark { font-size: 15px; letter-spacing: 0.02em; -webkit-text-stroke: 1px rgba(225, 29, 46, 0.9); }
         .since-tag { font-size: 8px; letter-spacing: 0.3em; margin-top: 3px; }
+      }
+
+      @media (max-width: 400px) {
+        .wordmark { font-size: 13.5px; }
+        .since-tag { letter-spacing: 0.22em; }
       }
 
       /* ---------- Hero ---------- */
@@ -2403,7 +2408,7 @@
         <section>
           <div class="wrap">
             <div class="profile-card glass reveal">
-              <div class="profile-cover"><img id="profileCoverImg" src="assets/banner-red-charge.jpg" alt="Bijoy Rahman's cover photo — the Warriors charging into battle" /><button type="button" class="pencil-btn cover-pencil" id="coverEditBtn" aria-label="Change your cover photo"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.8 2.8 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg></button></div>
+              <div class="profile-cover"><img id="profileCoverImg" src="assets/banner-red-charge.jpg" alt="Knight Warriors Club banner" /></div>
               <div class="profile-main">
                 <span class="avatar-wrap"><img class="profile-avatar" id="profileAvatarImg" src="assets/champion-demo-photo.webp" alt="Bijoy Rahman — profile photo" /><button type="button" class="pencil-btn avatar-pencil" id="avatarEditBtn" aria-label="Change your profile photo"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.8 2.8 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg></button></span>
                 <div class="profile-id">
@@ -4422,7 +4427,7 @@
           if (!m) { renderHeader(); return; }
           renderHeader();
           var vpG = document.getElementById('view-profile');
-          if (vpG && vpG.classList.contains('guest-mode')) return;
+          if (window.__guestSeg || (vpG && vpG.classList.contains('guest-mode'))) return;
           el('profileName').textContent = m.full_name || '';
           var handle = el('profileHandle');
           if (m.username) { handle.textContent = '@' + m.username; handle.hidden = false; }
@@ -4435,7 +4440,7 @@
           var pImg = el('profileAvatarImg');
           pImg.src = m.avatar_url || initialAvatar(m.full_name);
           pImg.alt = (m.full_name || 'Member') + ' — profile photo';
-          el('profileCoverImg').src = m.cover_url || 'assets/banner-red-charge.jpg';
+          el('profileCoverImg').src = 'assets/banner-red-charge.jpg';
           var fb = el('profileFbLink');
           if (m.facebook_id) { fb.href = normalizeUrl(m.facebook_id); fb.style.display = ''; }
           else { fb.style.display = 'none'; }
@@ -5186,8 +5191,8 @@
       };;
 
       function exitGuest() {
-        if (!guest) return;
         guest = null; guestGames = []; guestLimited = false;
+        window.__guestSeg = null;
         $('view-profile').classList.remove('guest-mode');
         var gn = $('guestNote'); if (gn) gn.hidden = true;
         document.querySelectorAll('#pfTabs .pf-tab').forEach(function (b) { b.style.display = ''; if (b.getAttribute('data-pftab') === 'trophy') b.textContent = 'My Trophy'; });
@@ -5406,6 +5411,8 @@
         if (m && m.username && username === String(m.username).toLowerCase()) {
           exitGuest(); showView('profile', false); window.setProfileTab('trophy'); return;
         }
+        $('view-profile').classList.add('guest-mode');
+        window.__guestSeg = username;
         var idMatch = /^id-(\d+)$/.exec(String(username || ''));
         var lookupP = idMatch
           ? sb.from('members').select('*').eq('id', parseInt(idMatch[1], 10)).maybeSingle()
@@ -5414,6 +5421,7 @@
           .then(function (res) {
             var g = res.data;
             if (!g) {
+              exitGuest();
               window.kwcToast('No such profile', 'No member uses @' + username + ' yet.');
               showView('community', false);
               return;
@@ -5452,7 +5460,7 @@
         var pImg = $('profileAvatarImg');
         pImg.src = g.avatar_url || initialAvatar(g.full_name);
         pImg.alt = (g.full_name || 'Member') + ' — profile photo';
-        $('profileCoverImg').src = g.cover_url || 'assets/banner-red-charge.jpg';
+        $('profileCoverImg').src = 'assets/banner-red-charge.jpg';
         var fb = $('profileFbLink');
         if (g.facebook_id && !guestLimited) { fb.href = normalizeUrl(g.facebook_id); fb.style.display = ''; }
         else fb.style.display = 'none';
