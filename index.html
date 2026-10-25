@@ -4421,6 +4421,8 @@
           var m = kwc.member;
           if (!m) { renderHeader(); return; }
           renderHeader();
+          var vpG = document.getElementById('view-profile');
+          if (vpG && vpG.classList.contains('guest-mode')) return;
           el('profileName').textContent = m.full_name || '';
           var handle = el('profileHandle');
           if (m.username) { handle.textContent = '@' + m.username; handle.hidden = false; }
@@ -5911,7 +5913,7 @@
       window.addEventListener('load', function () {
         var h = (window.location.hash || '').replace(/^#/, '');
         var mm = h.match(/^profile\/(.+)$/);
-        if (mm && document.body.getAttribute('data-view') !== 'profile') window.__routeProfile(mm[1]);
+        if (mm && !$('view-profile').classList.contains('guest-mode')) window.__routeProfile(mm[1]);
       });
     })();
   </script>
