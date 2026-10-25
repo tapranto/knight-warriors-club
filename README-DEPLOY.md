@@ -165,3 +165,4 @@ tournament page ≈ 845 KB, the rest less). All imagery is right-sized to
 its display size, so the whole package is ≈ 5.9 MB (the animated champion
 WebP added ≈ 302 KB) — it was ≈ 24 MB when
 every image was inlined into the HTML.
+
