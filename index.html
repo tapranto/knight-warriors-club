@@ -6178,8 +6178,10 @@
 
       /* ================= INBOX PAGE ================= */
       var ibSel = { type: 'notif', id: null };
+      var ibOpenedDMs = {};
       var ibPending = null;
       window.__openDM = function (memberId, name) {
+        ibOpenedDMs[memberId] = true;
         ibPending = { type: 'dm', id: memberId };
         if (name) nameCache[memberId] = { id: memberId, full_name: name };
         if (document.body.getAttribute('data-view') === 'inbox') renderInboxList();
@@ -6234,6 +6236,10 @@
           if (dms) dms.forEach(function (d) {
             var other = d.sender_member_id === m.id ? d.recipient_member_id : d.sender_member_id;
             if (partnerIds.indexOf(other) === -1) partnerIds.push(other);
+          });
+          Object.keys(ibOpenedDMs).forEach(function (k) {
+            var pid = parseInt(k, 10);
+            if (pid && partnerIds.indexOf(pid) === -1) partnerIds.push(pid);
           });
           var friendIds = friends.map(function (f) { return f.requester_id === m.id ? f.addressee_id : f.requester_id; });
           var allIds = partnerIds.concat(friendIds.filter(function (x) { return partnerIds.indexOf(x) === -1; }));
@@ -6442,7 +6448,7 @@
                 else toast('Message not sent', 'Please try again in a moment.');
                 return;
               }
-              loadDMThread(partnerId);
+              renderInboxList();
             });
         });
       }
