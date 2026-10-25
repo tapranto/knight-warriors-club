@@ -6181,7 +6181,7 @@
       var ibOpenedDMs = {};
       var ibPending = null;
       window.__openDM = function (memberId, name) {
-        ibOpenedDMs[memberId] = true;
+        ibOpenedDMs[memberId] = new Date().toISOString();
         ibPending = { type: 'dm', id: memberId };
         if (name) nameCache[memberId] = { id: memberId, full_name: name };
         if (document.body.getAttribute('data-view') === 'inbox') renderInboxList();
@@ -6225,17 +6225,21 @@
           sb.from('notifications').select('id', { count: 'exact', head: true }).eq('member_id', m.id).eq('is_read', false).then(function (r) { return r.error ? 0 : (r.count || 0); }).catch(function () { return 0; }),
           sb.from('squad_members').select('squad_id, squads(id, name, game)').eq('member_id', m.id).then(function (r) { return r.error ? [] : (r.data || []); }).catch(function () { return []; }),
           sb.from('direct_messages').select('sender_member_id, recipient_member_id, created_at').or('sender_member_id.eq.' + m.id + ',recipient_member_id.eq.' + m.id).order('created_at', { ascending: false }).limit(120).then(function (r) { return r.error ? null : (r.data || []); }).catch(function () { return null; }),
-          sb.from('friendships').select('requester_id, addressee_id').eq('status', 'accepted').or('requester_id.eq.' + m.id + ',addressee_id.eq.' + m.id).then(function (r) { return r.error ? [] : (r.data || []); }).catch(function () { return []; })
+          sb.from('friendships').select('requester_id, addressee_id').eq('status', 'accepted').or('requester_id.eq.' + m.id + ',addressee_id.eq.' + m.id).then(function (r) { return r.error ? [] : (r.data || []); }).catch(function () { return []; }),
+          sb.from('squad_messages').select('squad_id, created_at').order('created_at', { ascending: false }).limit(200).then(function (r) { return r.error ? [] : (r.data || []); }).catch(function () { return []; })
         ];
         Promise.all(jobs).then(function (rs) {
           var unreadNotifs = rs[0];
           var mySquads = rs[1].filter(function (x) { return x.squads; });
           var dms = rs[2];
           var friends = rs[3];
+          var sqMsgs = rs[4] || [];
           var partnerIds = [];
+          var dmLatest = {};
           if (dms) dms.forEach(function (d) {
             var other = d.sender_member_id === m.id ? d.recipient_member_id : d.sender_member_id;
             if (partnerIds.indexOf(other) === -1) partnerIds.push(other);
+            if (!dmLatest[other]) dmLatest[other] = d.created_at;
           });
           Object.keys(ibOpenedDMs).forEach(function (k) {
             var pid = parseInt(k, 10);
@@ -6243,16 +6247,23 @@
           });
           var friendIds = friends.map(function (f) { return f.requester_id === m.id ? f.addressee_id : f.requester_id; });
           var allIds = partnerIds.concat(friendIds.filter(function (x) { return partnerIds.indexOf(x) === -1; }));
+          var sqLatest = {};
+          sqMsgs.forEach(function (x) { if (!sqLatest[x.squad_id]) sqLatest[x.squad_id] = x.created_at; });
+          var convos = [];
+          partnerIds.forEach(function (pid) { convos.push({ kind: 'dm', id: pid, at: dmLatest[pid] || ibOpenedDMs[pid] || '' }); });
+          mySquads.forEach(function (x) { convos.push({ kind: 'squad', id: x.squads.id, squad: x.squads, at: sqLatest[x.squads.id] || '' }); });
+          convos.sort(function (a, b) { return a.at < b.at ? 1 : (a.at > b.at ? -1 : 0); });
           var finish = function () {
             var h = '<p class="inbox-group" style="padding:14px 16px 4px">Conversations</p>';
             h += ibItem('notif', null, '<span class="mini-avatar">&#128276;</span>', 'Notifications', 'Club news, requests & invites', unreadNotifs);
             h += ibItem('cast', null, '<span class="mini-avatar">KW</span>', 'Everyone', isPres() ? 'Broadcast to all members' : 'Club broadcasts from the President', 0);
-            partnerIds.forEach(function (pid) {
-              var p = nameCache[pid] || { full_name: 'Member' };
-              h += ibItem('dm', pid, avatarFor(p), p.full_name, 'Personal messages', 0);
-            });
-            mySquads.forEach(function (x) {
-              h += ibItem('squad', x.squads.id, '<span class="mini-avatar">' + esc(initials(x.squads.name)) + '</span>', x.squads.name, (x.squads.game || '') + ' · Squad chat', 0);
+            convos.forEach(function (c) {
+              if (c.kind === 'dm') {
+                var p = nameCache[c.id] || { full_name: 'Member' };
+                h += ibItem('dm', c.id, avatarFor(p), p.full_name, 'Personal messages', 0);
+              } else {
+                h += ibItem('squad', c.id, '<span class="mini-avatar">' + esc(initials(c.squad.name)) + '</span>', c.squad.name, (c.squad.game || '') + ' · Squad chat', 0);
+              }
             });
             var newFriends = friendIds.filter(function (x) { return partnerIds.indexOf(x) === -1; });
             if (newFriends.length) {
