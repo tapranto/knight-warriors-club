@@ -1400,6 +1400,7 @@
       .chat-form .btn { flex-shrink: 0; padding: 12px 22px; }
 
       /* Profile sub-page tabs */
+      #view-profile.pf-loading { visibility: hidden; }
       .pf-tabs { display: flex; flex-wrap: wrap; gap: 8px; margin: 18px 0 20px; }
       .pf-tab { font-family: var(--font-body); font-weight: 700; font-size: 13.5px; letter-spacing: 0.08em; text-transform: uppercase; color: #fff; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.14); border-radius: 999px; padding: 9px 16px; cursor: pointer; }
       .pf-tab.active { background: #c8102e; border-color: #c8102e; color: #fff; }
@@ -2378,7 +2379,7 @@
       </div>
 
       <!-- ==================== VIEW: PROFILE ==================== -->
-      <div class="view" id="view-profile">
+      <div class="view pf-loading" id="view-profile">
         <section>
           <div class="wrap">
             <div class="profile-card glass reveal">
@@ -4279,6 +4280,7 @@
         /* Snapshot of the designed sample profile — restored on log out so
            the logged-out placeholder state is byte-for-byte the design. */
         var privacyChecked = document.querySelector('#settingsForm input[name="privacy"]:checked');
+        window.__pfPainted = function () { var v = document.getElementById('view-profile'); if (v) v.classList.remove('pf-loading'); };
         var SAMPLE = {
           name: el('profileName').textContent,
           handle: el('profileHandle').textContent,
@@ -4331,6 +4333,7 @@
           });
           PREVIEW_MEMBER = 'Bijoy Rahman';
           if (typeof renderHonours === 'function') renderHonours();
+          if (window.__pfPainted) window.__pfPainted();
         }
 
         /* ---------- Header + profile rendering from real rows ---------- */
@@ -4394,6 +4397,7 @@
         }
 
         function applyMemberToPage() {
+          if (window.__pfPainted) window.__pfPainted();
           var m = kwc.member;
           if (!m) { renderHeader(); return; }
           renderHeader();
@@ -4507,7 +4511,9 @@
           sb.auth.getSession().then(function (res) {
             var session = res && res.data ? res.data.session : null;
             if (session && session.user) loadMember(session.user);
-          }).catch(function () { /* no reachable session — visitor state */ });
+            else if (window.__pfPainted) window.__pfPainted();
+          }).catch(function () { if (window.__pfPainted) window.__pfPainted(); });
+          setTimeout(function () { if (window.__pfPainted) window.__pfPainted(); }, 3500);
           sb.auth.onAuthStateChange(function (event, session) {
             if (event === 'PASSWORD_RECOVERY') {
               if (session && session.user) {
@@ -5453,6 +5459,7 @@
         if (typeof renderHonours === 'function') renderHonours();
         loadSquadsInto(g.id, true);
         window.setProfileTab('trophy');
+        if (window.__pfPainted) window.__pfPainted();
       }
 
       /* ---------- Squads list (profile tab) ---------- */
