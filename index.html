@@ -3849,6 +3849,9 @@
               return '<div class="record-card glass"><h4>' + esc(r.label) + '</h4><p class="r-holder">' + esc(r.holder) + '</p><p class="r-detail">' + esc(r.detail) + '</p></div>';
             }).join('') + '</div>'
           : '<div class="t-note glass">Records are calculated from match results — top scorer, best defence, biggest win and more appear here once games are played.</div>';
+        document.querySelectorAll('.jump-bar button').forEach(function (b) {
+          if (b.getAttribute('data-jump') === 'tTable') b.style.display = (t && t.format === 'knockout') ? 'none' : '';
+        });
         document.getElementById('tParticipantsBody').innerHTML = participants.length
           ? '<div class="participants-list">' + participants.map(function (n) { return '<span class="member-name">' + esc(n) + '</span>'; }).join('') + '</div>'
           : '<div class="t-note glass">Participants will be announced when the tournament opens.</div>';
