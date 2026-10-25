@@ -6698,7 +6698,14 @@
     (function () {
       function $(id) { return document.getElementById(id); }
       var btn = $('playerSearchBtn'), panel = $('playerSearchPanel');
-      function closeSearch() { if (panel) panel.hidden = true; document.body.classList.remove('search-open'); }
+      function closeSearch(clear) {
+        if (panel) panel.hidden = true;
+        document.body.classList.remove('search-open');
+        if (clear) {
+          var ip = $('playerSearch'); if (ip) ip.value = '';
+          if (typeof pBox !== 'undefined' && pBox) pBox.innerHTML = '<p class="pf-note">Type at least 2 letters to search.</p>';
+        }
+      }
       if (btn) {
         btn.addEventListener('click', function () {
           var open = document.body.classList.toggle('search-open');
@@ -6708,10 +6715,19 @@
       }
       if (panel) {
         panel.addEventListener('click', function (e) {
-          if (e.target.closest && e.target.closest('a')) setTimeout(closeSearch, 60);
+          if (e.target.closest && e.target.closest('a')) setTimeout(function () { closeSearch(true); }, 60);
         });
       }
-      window.addEventListener('hashchange', closeSearch);
+      window.addEventListener('hashchange', function () { closeSearch(true); });
+      window.addEventListener('popstate', function () { closeSearch(true); });
+      /* The router navigates with pushState (no hashchange), so dismiss the
+         results whenever the user clicks anything outside the search area. */
+      document.addEventListener('click', function (e) {
+        if (!panel || panel.hidden) return;
+        var t = e.target;
+        if (t.closest && (t.closest('#playerSearchPanel') || t.closest('.head-search') || t.closest('#playerSearchBtn'))) return;
+        closeSearch(true);
+      });
       document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeSearch(); });
 
       /* ---------- Registered-player search (header panel) ---------- */
