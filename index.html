@@ -4433,7 +4433,7 @@
           var pImg = el('profileAvatarImg');
           pImg.src = m.avatar_url || initialAvatar(m.full_name);
           pImg.alt = (m.full_name || 'Member') + ' — profile photo';
-          if (m.cover_url) el('profileCoverImg').src = m.cover_url;
+          el('profileCoverImg').src = m.cover_url || 'assets/banner-red-charge.jpg';
           var fb = el('profileFbLink');
           if (m.facebook_id) { fb.href = normalizeUrl(m.facebook_id); fb.style.display = ''; }
           else { fb.style.display = 'none'; }
@@ -5237,9 +5237,7 @@
               var list = mres.data || [];
               elx.innerHTML = list.slice(0, 10).map(function (f) {
                 var chip = '<img src="' + esc(f.avatar_url || initialAvatar(f.full_name)) + '" alt="" style="width:26px;height:26px;border-radius:50%" /><span>' + esc(f.full_name) + '</span>';
-                return f.username
-                  ? '<a class="friend-chip" href="#profile/' + esc(f.username) + '">' + chip + '</a>'
-                  : '<span class="friend-chip">' + chip + '</span>';
+                return '<a class="friend-chip" href="#profile/' + esc(f.username || ('id-' + f.id)) + '">' + chip + '</a>';
               }).join('') + (list.length > 10 ? '<p class="pf-note">+ ' + (list.length - 10) + ' more</p>' : '');
             });
           }).catch(function () { elx.innerHTML = '<p class="pf-note">Friends unavailable right now.</p>'; });
@@ -5406,7 +5404,11 @@
         if (m && m.username && username === String(m.username).toLowerCase()) {
           exitGuest(); showView('profile', false); window.setProfileTab('trophy'); return;
         }
-        sb.from('members').select('*').eq('username', username).maybeSingle()
+        var idMatch = /^id-(\d+)$/.exec(String(username || ''));
+        var lookupP = idMatch
+          ? sb.from('members').select('*').eq('id', parseInt(idMatch[1], 10)).maybeSingle()
+          : sb.from('members').select('*').eq('username', username).maybeSingle();
+        lookupP
           .then(function (res) {
             var g = res.data;
             if (!g) {
@@ -5448,7 +5450,7 @@
         var pImg = $('profileAvatarImg');
         pImg.src = g.avatar_url || initialAvatar(g.full_name);
         pImg.alt = (g.full_name || 'Member') + ' — profile photo';
-        if (g.cover_url) $('profileCoverImg').src = g.cover_url;
+        $('profileCoverImg').src = g.cover_url || 'assets/banner-red-charge.jpg';
         var fb = $('profileFbLink');
         if (g.facebook_id && !guestLimited) { fb.href = normalizeUrl(g.facebook_id); fb.style.display = ''; }
         else fb.style.display = 'none';
@@ -5667,7 +5669,7 @@
           var sub = (mb.username ? '@' + mb.username + ' · ' : '') + (pv.phone || '') + (pv.email ? ' · ' + pv.email : '');
           var html = '<div class="roster-member" style="align-items:flex-start">' +
             '<span class="mini-avatar">' + esc(initialsOf(mb.full_name)) + '</span>' +
-            '<div style="flex:1;min-width:0"><span class="rm-name">' + (mb.username ? '<a class="member-link" href="#profile/' + esc(mb.username) + '">' + esc(mb.full_name || '') + '</a>' : esc(mb.full_name || '')) +
+            '<div style="flex:1;min-width:0"><span class="rm-name">' + ('<a class="member-link" href="#profile/' + esc(mb.username || ('id-' + mb.id)) + '">' + esc(mb.full_name || '') + '</a>') +
             ' <span class="role-sm">· ' + esc(mb.role || 'Member') + (mb.is_committee ? ' · Committee' : '') + '</span></span>' +
             '<span class="rm-sub">' + esc(sub) + '</span>' +
             '<span class="rm-sub">' + esc(games ? 'Games: ' + games : 'No games yet') + ' · Joined ' + esc(monthYear(mb.created_at) || '') + '</span>';
@@ -6100,9 +6102,7 @@
         var canManage = squadCtx.isCaptain || isPres();
         box.innerHTML = squadCtx.rows.map(function (r) {
           var p = squadCtx.byId[r.member_id] || { full_name: 'Member' };
-          var nameHtml = p.username
-            ? '<a class="member-link" href="#profile/' + esc(p.username) + '">' + esc(p.full_name) + '</a>'
-            : esc(p.full_name);
+          var nameHtml = '<a class="member-link" href="#profile/' + esc(p.username || ('id-' + r.member_id)) + '">' + esc(p.full_name) + '</a>';
           var kebab = '';
           if (canManage && r.member_id !== squadCtx.squad.captain_member_id) {
             kebab = '<span class="kebab-wrap"><button class="kebab-btn" type="button" data-kebab="' + r.member_id + '" aria-label="Member options">&#8943;</button>' +
@@ -6965,9 +6965,7 @@
             if (!list.length) { pBox.innerHTML = '<p class="pf-note">No registered player matches &ldquo;' + escH(q) + '&rdquo; yet.</p>'; return; }
             var myId = (typeof kwc !== 'undefined' && kwc.member) ? kwc.member.id : null;
             pBox.innerHTML = '<div class="roster" style="grid-template-columns:1fr">' + list.map(function (pl) {
-              var nameHtml = pl.username
-                ? '<a class="member-link" href="#profile/' + escH(pl.username) + '">' + escH(pl.full_name) + '</a>'
-                : escH(pl.full_name);
+              var nameHtml = '<a class="member-link" href="#profile/' + escH(pl.username || ('id-' + pl.id)) + '">' + escH(pl.full_name) + '</a>';
               var msgBtn = (myId && myId !== pl.id)
                 ? ' <button class="btn btn-glass btn-sm" type="button" data-msgpid="' + pl.id + '" data-msgname="' + escH(pl.full_name) + '">Message</button>' : '';
               return '<div class="roster-member">' +
@@ -7093,7 +7091,7 @@
           } else {
             pb.innerHTML = '<div class="entry-list">' + entryRows.map(function (r, i) {
               var mm = r.member;
-              var nm = mm.username ? '<a class="member-link" href="#profile/' + esc(mm.username) + '">' + esc(mm.full_name) + '</a>' : esc(mm.full_name);
+              var nm = '<a class="member-link" href="#profile/' + esc(mm.username || ('id-' + r.member_id)) + '">' + esc(mm.full_name) + '</a>';
               return '<div class="entry-row">' +
                 (mm.avatar_url ? '<img class="mini-avatar" src="' + esc(mm.avatar_url) + '" alt="" style="object-fit:cover" />' : '<span class="mini-avatar">' + esc(initials(mm.full_name)) + '</span>') +
                 '<span class="entry-name">' + (i + 1) + '. ' + nm + '</span>' +
