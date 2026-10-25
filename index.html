@@ -6477,7 +6477,7 @@
         var m = me(); var sc = $('dmScroll'); if (!m || !sc) return;
         sb.from('direct_messages').select('*')
           .or('and(sender_member_id.eq.' + m.id + ',recipient_member_id.eq.' + partnerId + '),and(sender_member_id.eq.' + partnerId + ',recipient_member_id.eq.' + m.id + ')')
-          .order('created_at', { ascending: true }).limit(200)
+          .order('created_at', { ascending: false }).limit(200)
           .then(function (res) {
             if (res.error) {
               sc.innerHTML = '<p class="pf-note">' + (missing(res.error) ? SETUP_NOTE : 'Messages unavailable right now.') + '</p>';
@@ -6488,7 +6488,7 @@
               var mine = x.sender_member_id === m.id;
               return '<div class="dm-row' + (mine ? ' mine' : '') + '"><div class="dm-bubble"><p>' + esc(x.body) + '</p><p class="dm-meta">' + esc(fmtTime(x.created_at)) + '</p></div></div>';
             }).join('') : '<p class="pf-note">No messages yet — say hello.</p>';
-            sc.scrollTop = sc.scrollHeight;
+            sc.scrollTop = 0;
             sb.from('direct_messages').update({ is_read: true })
               .eq('sender_member_id', partnerId).eq('recipient_member_id', m.id).eq('is_read', false)
               .then(function () { refreshBadges3(); }).catch(function () {});
@@ -6539,7 +6539,7 @@
       }
       function loadSquadThread(squadId) {
         var sc = $('sqScroll'); if (!sc) return;
-        sb.from('squad_messages').select('*').eq('squad_id', squadId).order('created_at', { ascending: true }).limit(200)
+        sb.from('squad_messages').select('*').eq('squad_id', squadId).order('created_at', { ascending: false }).limit(200)
           .then(function (res) {
             if (res.error) {
               sc.innerHTML = '<p class="pf-note">' + (missing(res.error) ? SETUP_NOTE : 'Chat unavailable right now.') + '</p>';
@@ -6554,7 +6554,7 @@
                   (mine ? '' : '<p class="dm-meta" style="margin:0 0 2px">' + esc(memberName(x.sender_member_id)) + '</p>') +
                   '<p>' + esc(x.body) + '</p><p class="dm-meta">' + esc(fmtTime(x.created_at)) + '</p></div></div>';
               }).join('') : '<p class="pf-note">No messages yet — start the conversation.</p>';
-              sc.scrollTop = sc.scrollHeight;
+              sc.scrollTop = 0;
             };
             var unknown = ids.filter(function (id) { return !nameCache[id]; });
             if (unknown.length) {
