@@ -1,1 +1,35 @@
-{"tournaments":[{"champion":"Bijoy Rahman","championCutout":"assets/champion-demo-cutout.png","championCutoutAnim":"assets/champion-demo-cutout-anim.webp","championPhoto":"assets/champion-demo-photo.webp","endDate":"2026-09-26","game":"eFootball","id":"efootball-demo-cup","intro":"Demo tournament — a walkthrough of how a finished Knight Warriors tournament looks: final table, records, results and the champion's page.","name":"eFootball Demo Cup (DEMO)","participants":["Abdullah Al Mahmud","Ahmed Mizan","Bijoy Rahman","Farhan Mahee"],"startDate":"2026-09-05","status":"finished"}]}
+{
+  "tournaments": [
+    {
+      "champion": "Bijoy Rahman",
+      "championCutout": "assets/champion-demo-cutout.png",
+      "championCutoutAnim": "assets/champion-demo-cutout-anim.webp",
+      "championPhoto": "assets/champion-demo-photo.webp",
+      "endDate": "2026-09-26",
+      "game": "eFootball",
+      "id": "efootball-demo-cup",
+      "intro": "Demo tournament \u2014 a walkthrough of how a finished Knight Warriors tournament looks: final table, records, results and the champion's page.",
+      "name": "eFootball Demo Cup (DEMO)",
+      "participants": [
+        "Abdullah Al Mahmud",
+        "Ahmed Mizan",
+        "Bijoy Rahman",
+        "Farhan Mahee"
+      ],
+      "startDate": "2026-09-05",
+      "status": "finished"
+    },
+    {
+      "endDate": "",
+      "entries": "live",
+      "format": "knockout",
+      "game": "eFootball",
+      "id": "efootball-tournament-legacy",
+      "intro": "The club's first open knockout championship. Registered players join right here on the site \u2014 single elimination: Round of 16, Quarter-finals, Semi-finals and the Final. Lose and you are out; win four matches and the Legacy title is yours.",
+      "name": "eFootball Tournament Legacy",
+      "participants": [],
+      "startDate": "",
+      "status": "upcoming"
+    }
+  ]
+}

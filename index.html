@@ -1286,6 +1286,16 @@
       }
       .am-badge[hidden] { display: none; }
 
+      /* Layer 4: tournament entries */
+      .entry-panel { margin-top: 16px; }
+      .entry-head { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 10px; }
+      .entry-head b { font-family: var(--font-display); font-size: 19px; color: #fff; }
+      .entry-head span { color: var(--muted); font-weight: 600; }
+      .entry-msg { margin: 8px 0; }
+      .entry-list { display: flex; flex-direction: column; gap: 8px; }
+      .entry-row { display: flex; align-items: center; gap: 11px; background: rgba(255,255,255,.045); border: 1px solid rgba(255,255,255,.08); border-radius: 12px; padding: 8px 12px; }
+      .entry-name { flex: 1; font-weight: 700; }
+
       /* ---------- Profile ---------- */
       .profile-card { overflow: hidden; padding: 0; }
       .profile-cover { height: 218px; overflow: hidden; }
@@ -3367,16 +3377,19 @@
       function renderHomeTourney() {
         var t = null;
         TOURNAMENTS.forEach(function (x) { if (x.status === 'running' && !t) t = x; });
+        if (!t) TOURNAMENTS.forEach(function (x) { if (x.status === 'upcoming' && !t) t = x; });
         if (!t) return; /* static "Coming Soon" copy already in place */
         homeRunning = t;
         var statusEl = document.getElementById('homeTourneyStatus');
         statusEl.innerHTML = esc(t.name) + '<span class="t-arrow" aria-hidden="true">→</span>';
         statusEl.classList.add('is-link');
         homePanel.setAttribute('aria-label', 'Open the ' + t.name + ' tournament page');
-        document.getElementById('homeTourneySub').textContent = (t.game || 'Tournament') + ' — live now. Follow every fixture, result and the table.';
+        document.getElementById('homeTourneySub').textContent = t.status === 'upcoming'
+          ? (t.game || 'Tournament') + ' — registration is open. Registered players join on its page.'
+          : (t.game || 'Tournament') + ' — live now. Follow every fixture, result and the table.';
         var res = t.results || [], fix = t.fixtures || [];
-        document.getElementById('homeLatestResult').textContent = res.length ? resultLine(res[res.length - 1]) : 'No matches played yet — the first result lands here.';
-        document.getElementById('homeNextFixture').textContent = fix.length ? fix[0].home + ' vs ' + fix[0].away + (fix[0].when ? ' · ' + fix[0].when : '') : 'All scheduled fixtures have been played.';
+        document.getElementById('homeLatestResult').textContent = res.length ? resultLine(res[res.length - 1]) : (t.status === 'upcoming' ? 'No matches yet — the bracket appears when the final 16 are locked.' : 'No matches played yet — the first result lands here.');
+        document.getElementById('homeNextFixture').textContent = fix.length ? fix[0].home + ' vs ' + fix[0].away + (fix[0].when ? ' · ' + fix[0].when : '') : (t.status === 'upcoming' ? 'The draw is made once the President locks the field.' : 'All scheduled fixtures have been played.');
       }
       var homePanel = document.getElementById('homeTourneyPanel');
       function goHomeTourney() { openTournament(homeRunning ? homeRunning.id : ''); }
@@ -3392,11 +3405,13 @@
         return '<a class="t-name-link" href="#tournament" data-tourney="' + esc(t.id) + '" aria-label="Open the ' + esc(t.name) + ' tournament page">' + esc(t.name) + '<span class="t-arrow" aria-hidden="true">→</span></a>';
       }
       function renderEventBanners() {
-        var running = [], finished = [];
+        var running = [], upcoming = [], finished = [];
         TOURNAMENTS.forEach(function (t) {
           if (t.status === 'running') running.push(t);
+          else if (t.status === 'upcoming') upcoming.push(t);
           else if (t.status === 'finished') finished.push(t);
         });
+        var live = running.concat(upcoming);
         function entries(list, desc) {
           return list.map(function (t) {
             return '<div class="ev-entry clickable" data-tourney="' + esc(t.id) + '"><h3>' + tourneyNameLink(t) + '</h3><p>' + desc(t) + '</p></div>';
@@ -3404,8 +3419,10 @@
         }
         var h = '';
         h += '<div class="ev-banner glass"><span class="ev-label">Running</span>' +
-          (running.length
-            ? entries(running, function (t) { return esc(t.game || '') + ' — live now. Fixtures, results, the table and records are on its page.'; })
+          (live.length
+            ? entries(live, function (t) { return t.status === 'upcoming'
+                ? esc(t.game || '') + ' — registration is open. Registered players join on its page.'
+                : esc(t.game || '') + ' — live now. Fixtures, results, the table and records are on its page.'; })
             : '<h3>Coming Soon</h3><p>The next tournament is being prepared — watch this space.</p>') + '</div>';
         h += '<div class="ev-banner glass"><span class="ev-label">Tournament History</span>' +
           (finished.length
@@ -6784,6 +6801,192 @@
         var logged = (typeof kwc !== 'undefined' && !!kwc.user) || (document.getElementById('headAccount') && !document.getElementById('headAccount').hidden);
         document.body.classList.toggle('kwc-logged-in', !!logged);
       }, 1200);
+    })();
+  </script>
+
+  <script>
+    /* ===== Layer 4: live tournament entries — registered players join
+       on the site; the President can remove any entrant (Part 4). ===== */
+    (function () {
+      function $(id) { return document.getElementById(id); }
+      function esc(t) { return String(t == null ? '' : t).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+      function me() { return (typeof kwc !== 'undefined' && kwc.member) ? kwc.member : null; }
+      function isPres() { var m = me(); return !!(m && m.role === 'President'); }
+      function missing(err) { return !!(err && (err.code === '42P01' || err.code === 'PGRST205' || /does not exist/i.test(err.message || ''))); }
+      function initials(name) { return String(name || '?').split(/\s+/).map(function (w) { return w.charAt(0); }).join('').slice(0, 2).toUpperCase(); }
+      function toast(t, b) { if (window.kwcToast) window.kwcToast(t, b || ''); }
+
+      var LIVE = {};
+      var MATCHED = {};
+      var TID = null, builtFor = null;
+      var entryRows = null, entryErr = null;
+
+      fetch('data/tournaments.json').then(function (r) { return r.json(); }).then(function (d) {
+        (d.tournaments || []).forEach(function (t) { if (t.entries === 'live') LIVE[t.id] = t; });
+      }).catch(function () {});
+      fetch('data/matches.json').then(function (r) { return r.json(); }).then(function (d) {
+        (d.matches || []).forEach(function (mt) { MATCHED[mt.tournamentId] = true; });
+      }).catch(function () {});
+
+      function currentId() {
+        if (document.body.getAttribute('data-view') !== 'tournament') return null;
+        var m = (window.location.hash || '').match(/^#tournament\/(.+)$/);
+        return m ? decodeURIComponent(m[1]) : null;
+      }
+
+      function loadEntries() {
+        if (typeof sb === 'undefined' || !sb) { entryErr = { message: 'offline' }; entryRows = null; renderAll(); return; }
+        entryErr = null;
+        sb.from('tournament_entries').select('id, member_id, created_at').eq('tournament_id', TID).order('created_at', { ascending: true })
+          .then(function (res) {
+            if (res.error) { entryErr = res.error; entryRows = null; renderAll(); return; }
+            var rows = res.data || [];
+            var ids = rows.map(function (r) { return r.member_id; });
+            if (!ids.length) { entryRows = []; renderAll(); return; }
+            sb.from('members').select('id, full_name, username, avatar_url').in('id', ids)
+              .then(function (mres) {
+                var byId = {};
+                (mres.data || []).forEach(function (mm) { byId[mm.id] = mm; });
+                entryRows = rows.map(function (r) { return { id: r.id, member_id: r.member_id, member: byId[r.member_id] || { id: r.member_id, full_name: 'Member #' + r.member_id } }; });
+                renderAll();
+              })
+              .catch(function () {
+                entryRows = rows.map(function (r) { return { id: r.id, member_id: r.member_id, member: { id: r.member_id, full_name: 'Member #' + r.member_id } }; });
+                renderAll();
+              });
+          })
+          .catch(function (e) { entryErr = e; entryRows = null; renderAll(); });
+      }
+
+      function renderAll() {
+        if (!TID || !LIVE[TID]) return;
+        var t = LIVE[TID];
+        var m = me();
+        var inCount = entryRows ? entryRows.length : 0;
+        var ob = $('tOverviewBody');
+        if (ob) {
+          var panel = $('entryPanel');
+          if (!panel) { panel = document.createElement('div'); panel.id = 'entryPanel'; ob.appendChild(panel); }
+          var h = '<div class="t-note glass entry-panel">';
+          if (entryErr && missing(entryErr)) {
+            h += isPres()
+              ? '<b>Entries are not switched on yet.</b> Run the Part 4 database update (SQL Editor) and this panel starts taking entries.'
+              : '<b>Entries open soon.</b> The club is switching registration on.';
+          } else if (entryErr) {
+            h += '<b>Entries could not load.</b> Check your connection and reopen this page.';
+          } else if (!entryRows) {
+            h += 'Loading entries&hellip;';
+          } else {
+            var mine = null;
+            if (m) entryRows.forEach(function (r) { if (r.member_id === m.id) mine = r; });
+            h += '<div class="entry-head"><b>' + inCount + ' player' + (inCount === 1 ? '' : 's') + ' in</b><span>The bracket draws when the President locks the final 16.</span></div>';
+            if (!m) {
+              h += '<p class="entry-msg">Only registered players can join this tournament. <a href="#login" data-nav="login">Log in</a> or <a href="#register" data-nav="register">register</a>, then come back and tap Join.</p>';
+            } else if (mine) {
+              h += '<p class="entry-msg">You are in &#10003; — seat #' + (entryRows.indexOf(mine) + 1) + '.</p><button type="button" class="btn btn-glass" data-withdraw-entry="' + mine.id + '">Withdraw</button>';
+            } else {
+              h += '<button type="button" class="btn btn-red" data-join-tourney="' + TID + '">Join Tournament</button>';
+            }
+            if (isPres()) h += '<p class="entry-msg">President: you can remove any player from the Participants tab.</p>';
+          }
+          panel.innerHTML = h + '</div>';
+        }
+        var meta = $('tMeta');
+        if (meta && entryRows && !MATCHED[TID]) {
+          meta.textContent = (t.game || '') + ' · Knockout · ' + inCount + ' players in · bracket draws at 16';
+        }
+        var pb = $('tParticipantsBody');
+        if (pb) {
+          if (entryErr && missing(entryErr)) {
+            pb.innerHTML = '<div class="t-note glass">Entries open as soon as the club switches registration on.</div>';
+          } else if (entryErr) {
+            pb.innerHTML = '<div class="t-note glass">Entries could not load — check your connection.</div>';
+          } else if (!entryRows) {
+            pb.innerHTML = '<div class="t-note glass">Loading entries&hellip;</div>';
+          } else if (!entryRows.length) {
+            pb.innerHTML = '<div class="t-note glass">No entries yet — registered players join from the Overview tab.</div>';
+          } else {
+            pb.innerHTML = '<div class="entry-list">' + entryRows.map(function (r, i) {
+              var mm = r.member;
+              var nm = mm.username ? '<a class="member-link" href="#profile/' + esc(mm.username) + '">' + esc(mm.full_name) + '</a>' : esc(mm.full_name);
+              return '<div class="entry-row">' +
+                (mm.avatar_url ? '<img class="mini-avatar" src="' + esc(mm.avatar_url) + '" alt="" style="object-fit:cover" />' : '<span class="mini-avatar">' + esc(initials(mm.full_name)) + '</span>') +
+                '<span class="entry-name">' + (i + 1) + '. ' + nm + '</span>' +
+                (isPres() && (!m || r.member_id !== m.id) ? '<button type="button" class="btn btn-glass btn-sm" data-remove-entry="' + r.id + '" data-name="' + esc(mm.full_name) + '">Remove</button>' : '') +
+                '</div>';
+            }).join('') + '</div>';
+          }
+        }
+        var fb = $('tFixtureBody');
+        if (fb && !MATCHED[TID]) {
+          fb.innerHTML = '<div class="t-note glass"><b>Knockout bracket</b> — Round of 16 &rarr; Quarter-finals &rarr; Semi-finals &rarr; Final. Pairings appear here the moment the President locks the final 16 and the draw is made.</div>';
+        }
+        document.querySelectorAll('.jump-bar button').forEach(function (b) {
+          if (b.getAttribute('data-jump') === 'tTable') b.style.display = 'none';
+        });
+      }
+
+      function restoreTabs() {
+        document.querySelectorAll('.jump-bar button').forEach(function (b) {
+          if (b.getAttribute('data-jump') === 'tTable') b.style.display = '';
+        });
+      }
+
+      function tick() {
+        var id = currentId();
+        if (!id || !LIVE[id]) {
+          if (builtFor) { restoreTabs(); builtFor = null; TID = null; entryRows = null; }
+          return;
+        }
+        if (builtFor !== id) { builtFor = id; TID = id; loadEntries(); return; }
+        if (!$('entryPanel') && entryRows) renderAll();
+      }
+      setInterval(tick, 1200);
+
+      var prevReady4 = window.__onMemberReady;
+      window.__onMemberReady = function () {
+        if (typeof prevReady4 === 'function') prevReady4();
+        if (builtFor) loadEntries();
+      };
+
+      document.addEventListener('click', function (e) {
+        var j = e.target.closest ? e.target.closest('[data-join-tourney]') : null;
+        if (j) {
+          var m = me();
+          if (!m) { toast('Log in first', 'Only registered players can join.'); return; }
+          j.disabled = true;
+          sb.from('tournament_entries').insert({ tournament_id: TID, member_id: m.id })
+            .then(function (res) {
+              if (res.error) toast('Could not join', /duplicate|unique/i.test(res.error.message || '') ? 'You are already in this tournament.' : 'Please try again.');
+              else toast('You are in!', 'Seat booked in ' + (LIVE[TID] ? LIVE[TID].name : 'the tournament') + '.');
+              loadEntries();
+            });
+          return;
+        }
+        var w = e.target.closest ? e.target.closest('[data-withdraw-entry]') : null;
+        if (w) {
+          var m2 = me(); if (!m2) return;
+          sb.from('tournament_entries').delete().eq('id', parseInt(w.getAttribute('data-withdraw-entry'), 10)).eq('member_id', m2.id)
+            .then(function () { toast('Withdrawn', 'Your seat has been released.'); loadEntries(); });
+          return;
+        }
+        var r = e.target.closest ? e.target.closest('[data-remove-entry]') : null;
+        if (r) {
+          var nm = r.getAttribute('data-name') || 'this player';
+          if (!window.confirm('Remove ' + nm + ' from the tournament?')) return;
+          var eid = parseInt(r.getAttribute('data-remove-entry'), 10);
+          sb.rpc('president_remove_entry', { p_entry_id: eid, p_tournament_name: LIVE[TID] ? LIVE[TID].name : '' })
+            .then(function (res) {
+              if (res.error) {
+                sb.from('tournament_entries').delete().eq('id', eid)
+                  .then(function () { toast('Player removed', nm + ' is out of the tournament.'); loadEntries(); });
+              } else {
+                toast('Player removed', nm + ' is out and has been notified in their inbox.');
+                loadEntries();
+              }
+            });
+        }
+      });
     })();
   </script>
 </body>
