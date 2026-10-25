@@ -1469,12 +1469,13 @@
 
       @media (max-width: 760px) {
         .profile-grid, .squad-grid { grid-template-columns: 1fr; }
-        .profile-main { flex-direction: column; align-items: center; text-align: center; padding: 0 20px 22px; gap: 10px; }
-        .profile-id { width: 100%; padding-top: 2px; }
-        .profile-socials { justify-content: center; padding-top: 6px; }
+        .profile-main { flex-direction: row; flex-wrap: wrap; align-items: flex-start; text-align: left; padding: 0 20px 22px; gap: 12px; }
+        .profile-main .avatar-wrap { order: 1; }
+        .profile-socials { order: 2; flex-direction: column; justify-content: flex-start; padding-top: 10px; gap: 8px; margin-left: auto; }
+        .profile-id { order: 3; flex: 1 1 100%; width: 100%; padding-top: 2px; text-align: center; }
         .profile-avatar { width: 104px; height: 104px; margin-top: -44px; }
         .profile-cover { height: 150px; }
-        .profile-socials { padding-top: 4px; }
+        #profileActions { text-align: center; }
         .pf-panel { padding: 22px 18px; }
         .roster { grid-template-columns: 1fr; }
         .privacy-opts { grid-template-columns: 1fr; }
@@ -2420,7 +2421,8 @@
                 </div>
                 <div class="profile-socials">
                   <a class="soc-btn" id="profileFbLink" href="https://www.facebook.com/bijoy.rahman" target="_blank" rel="noopener" aria-label="Open Bijoy Rahman's Facebook profile"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M24 12.07C24 5.4 18.63 0 12 0S0 5.4 0 12.07C0 18.1 4.39 23.09 10.13 24v-8.44H7.08v-3.49h3.05V9.41c0-3.02 1.79-4.7 4.53-4.7 1.31 0 2.68.24 2.68.24v2.97h-1.51c-1.49 0-1.96.93-1.96 1.89v2.26h3.33l-.53 3.49h-2.8V24C19.61 23.09 24 18.1 24 12.07z"/></svg></a>
-                  <button class="soc-btn" type="button" id="discordBtn" aria-label="Copy Bijoy Rahman's Discord ID"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.317 4.37a19.79 19.79 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.865-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.058a.082.082 0 0 0 .031.056 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.1 13.1 0 0 1-1.872-.892.077.077 0 0 1-.008-.128c.126-.094.252-.192.372-.291a.074.074 0 0 1 .078-.01c3.928 1.793 8.18 1.793 12.061 0a.074.074 0 0 1 .079.009c.12.099.246.198.373.292a.077.077 0 0 1-.006.128 12.3 12.3 0 0 1-1.873.891.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.029 19.84 19.84 0 0 0 6.002-3.03.077.077 0 0 0 .032-.055c.5-5.177-.838-9.674-3.549-13.66a.06.06 0 0 0-.031-.03ZM8.02 15.331c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418Zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418Z"/></svg></button>
+                  <a class="soc-btn" id="profileInstaLink" href="#" target="_blank" rel="noopener" aria-label="Open Instagram profile" style="display:none"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.6" y="2.6" width="18.8" height="18.8" rx="5.4" fill="none"/><circle cx="12" cy="12" r="4.1" fill="none"/><circle cx="17.5" cy="6.5" r="0.4" fill="currentColor" stroke="none"/></svg></a>
+                  <button class="soc-btn" type="button" id="discordBtn" aria-label="Copy Discord ID"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.317 4.37a19.79 19.79 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.865-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.058a.082.082 0 0 0 .031.056 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.1 13.1 0 0 1-1.872-.892.077.077 0 0 1-.008-.128c.126-.094.252-.192.372-.291a.074.074 0 0 1 .078-.01c3.928 1.793 8.18 1.793 12.061 0a.074.074 0 0 1 .079.009c.12.099.246.198.373.292a.077.077 0 0 1-.006.128 12.3 12.3 0 0 1-1.873.891.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.029 19.84 19.84 0 0 0 6.002-3.03.077.077 0 0 0 .032-.055c.5-5.177-.838-9.674-3.549-13.66a.06.06 0 0 0-.031-.03ZM8.02 15.331c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418Zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418Z"/></svg></button>
                   <span class="discord-note" id="discordNote" hidden></span>
                 </div>
               </div>
@@ -2483,6 +2485,9 @@
                   <div class="form-row">
                     <div class="field"><label for="sFacebook">Facebook ID link</label><input id="sFacebook" type="url" value="https://www.facebook.com/bijoy.rahman" placeholder="https://www.facebook.com/your.profile" /></div>
                     <div class="field"><label for="sDiscord">Discord ID</label><input id="sDiscord" type="text" value="bijoy.kw" placeholder="your Discord username" /></div>
+                  </div>
+                  <div class="form-row">
+                    <div class="field"><label for="sInstagram">Instagram</label><input id="sInstagram" type="text" placeholder="Instagram username or profile link" /></div>
                   </div>
                   <div class="form-row">
                     <div class="field"><label for="sDob">Date of birth</label><input id="sDob" type="date" /></div>
@@ -4274,6 +4279,7 @@
           else { btn.disabled = false; if (btn.getAttribute('data-label')) btn.textContent = btn.getAttribute('data-label'); }
         }
         function normalizeUrl(u) { return /^https?:\/\//i.test(u) ? u : 'https://' + u; }
+        window.instaUrl = function (v) { v = String(v || '').trim(); if (!v) return '#'; if (/instagram\.com/i.test(v) || /^https?:\/\//i.test(v)) return normalizeUrl(v); return 'https://www.instagram.com/' + v.replace(/^@+/, '').replace(/\/+$/, ''); };
         function monthYear(iso) {
           var d = new Date(iso);
           if (!iso || isNaN(d.getTime())) return '';
@@ -4328,6 +4334,7 @@
         };
 
         function restoreSample() {
+          if (window.__guestSeg) return;
           el('profileName').textContent = SAMPLE.name;
           var handle = el('profileHandle');
           handle.textContent = SAMPLE.handle; handle.hidden = false;
@@ -4445,10 +4452,13 @@
           if (m.facebook_id) { fb.href = normalizeUrl(m.facebook_id); fb.style.display = ''; }
           else { fb.style.display = 'none'; }
           el('discordBtn').style.display = m.discord_id ? '' : 'none';
+          var igA = el('profileInstaLink');
+          if (m.instagram_id) { igA.href = window.instaUrl(m.instagram_id); igA.style.display = ''; } else { igA.style.display = 'none'; }
           el('sName').value = m.full_name || '';
           el('sUsername').value = m.username || '';
           el('sFacebook').value = m.facebook_id || '';
           el('sDiscord').value = m.discord_id || '';
+          el('sInstagram').value = m.instagram_id || '';
           el('sBio').value = m.bio || '';
           var vis = m.profile_visibility === 'friends' ? 'friends' : 'public';
           document.querySelectorAll('#settingsForm input[name="privacy"]').forEach(function (r) {
@@ -4757,19 +4767,26 @@
           var uname = el('sUsername').value.trim().replace(/^@+/, '');
           var fb = el('sFacebook').value.trim();
           var discord = el('sDiscord').value.trim();
+          var insta = el('sInstagram').value.trim();
           var bio = el('sBio').value.trim();
           var visEl = document.querySelector('#settingsForm input[name="privacy"]:checked');
           var vis = visEl ? visEl.value : 'public';
           var btn = document.querySelector('#settingsForm button[type="submit"]');
           setBusy(btn, true);
-          sb.from('members').update({
+          var updObj = {
             full_name: name || kwc.member.full_name,
             username: uname ? uname : null,
             facebook_id: fb ? fb : null,
             discord_id: discord ? discord : null,
+            instagram_id: insta ? insta : null,
             bio: bio ? bio : null,
             profile_visibility: vis
-          }).eq('id', kwc.member.id).then(function (res) {
+          };
+          var doUpd = function () { return sb.from('members').update(updObj).eq('id', kwc.member.id); };
+          doUpd().then(function (res) {
+            if (res.error && /instagram/i.test(String(res.error.message || ''))) { delete updObj.instagram_id; return doUpd(); }
+            return res;
+          }).then(function (res) {
             if (res.error) throw res.error;
             return sb.from('member_private').upsert({
               member_id: kwc.member.id,
@@ -4783,6 +4800,7 @@
             kwc.member.username = uname || null;
             kwc.member.facebook_id = fb || null;
             kwc.member.discord_id = discord || null;
+            kwc.member.instagram_id = insta || null;
             kwc.member.bio = bio || null;
             kwc.member.profile_visibility = vis;
             if (!kwc.priv) kwc.priv = { member_id: kwc.member.id };
@@ -5099,6 +5117,7 @@
       var PANELS = { trophy: 'profileHonours', about: 'profileAbout', squads: 'profileSquads', settings: 'profileSettings' };
       var ROLES = ['Member', 'Vice President', 'Secretary', 'Treasurer', 'Sponsorship Head', 'Events Coordinator', 'Public Relations Officer', 'Disciplinary Officer', 'Media & Promotion Head', 'Community Manager', 'President'];
       var guest = null;
+      var guestWdFor = null;
       var guestGames = [];
       var guestLimited = false;
       var featuresReady = false;
@@ -5193,6 +5212,7 @@
       function exitGuest() {
         guest = null; guestGames = []; guestLimited = false;
         window.__guestSeg = null;
+        guestWdFor = null;
         $('view-profile').classList.remove('guest-mode');
         var gn = $('guestNote'); if (gn) gn.hidden = true;
         document.querySelectorAll('#pfTabs .pf-tab').forEach(function (b) { b.style.display = ''; if (b.getAttribute('data-pftab') === 'trophy') b.textContent = 'My Trophy'; });
@@ -5465,6 +5485,8 @@
         if (g.facebook_id && !guestLimited) { fb.href = normalizeUrl(g.facebook_id); fb.style.display = ''; }
         else fb.style.display = 'none';
         $('discordBtn').style.display = (g.discord_id && !guestLimited) ? '' : 'none';
+        var igB = $('profileInstaLink');
+        if (g.instagram_id && !guestLimited) { igB.href = window.instaUrl(g.instagram_id); igB.style.display = ''; } else { igB.style.display = 'none'; }
         var gn = $('guestNote');
         gn.textContent = 'You are viewing ' + (g.full_name || 'this member') + '\'s profile.';
         gn.hidden = false;
@@ -5492,6 +5514,21 @@
         loadSquadsInto(g.id, true);
         window.setProfileTab('trophy');
         if (window.__pfPainted) window.__pfPainted();
+        if (guestWdFor !== g.id) {
+          guestWdFor = g.id;
+          var wdN = 0;
+          var wd = setInterval(function () {
+            wdN++;
+            if (!guest || guest.id !== g.id || !$('view-profile').classList.contains('guest-mode')) { clearInterval(wd); return; }
+            var badName = ($('profileName').textContent || '') !== (g.full_name || '');
+            var tab0 = document.querySelector('#pfTabs .pf-tab[data-pftab="trophy"]');
+            var badTab = !tab0 || tab0.textContent !== 'Trophy';
+            var badAv = false;
+            if (g.avatar_url) { var av0 = $('profileAvatarImg'); badAv = !av0 || av0.src.indexOf(g.avatar_url) === -1; }
+            if (badName || badTab || badAv) renderGuest();
+            if (wdN >= 4) clearInterval(wd);
+          }, 800);
+        }
       }
 
       /* ---------- Squads list (profile tab) ---------- */
