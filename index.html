@@ -5131,6 +5131,7 @@
         if (tab === 'about') fillAbout();
       };
       function gotoTab(tab) {
+        if (guest) { window.setProfileTab(tab); return; }
         exitGuest();
         if (tab === 'trophy') showView('profile', true, 'profile');
         else showView('profile', true, 'profile/' + tab);
@@ -5161,7 +5162,7 @@
         guest = null; guestGames = []; guestLimited = false;
         $('view-profile').classList.remove('guest-mode');
         var gn = $('guestNote'); if (gn) gn.hidden = true;
-        document.querySelectorAll('#pfTabs .pf-tab').forEach(function (b) { b.style.display = ''; });
+        document.querySelectorAll('#pfTabs .pf-tab').forEach(function (b) { b.style.display = ''; if (b.getAttribute('data-pftab') === 'trophy') b.textContent = 'My Trophy'; });
         var af = $('aboutFriend'); if (af) af.innerHTML = '';
         if (me()) applyMemberToPage();
         else if (typeof restoreSample === 'function') restoreSample();
@@ -5432,7 +5433,9 @@
         document.querySelectorAll('#pfTabs .pf-tab').forEach(function (b) {
           var t = b.getAttribute('data-pftab');
           b.style.display = (t === 'settings') ? 'none' : '';
+          if (t === 'trophy') b.textContent = 'Trophy';
         });
+        renderGuestActions();
         /* Games, read-only */
         var list = $('myGamesList');
         if (list) {
