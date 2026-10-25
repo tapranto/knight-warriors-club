@@ -6691,50 +6691,6 @@
           });
       });
 
-      /* ---------- Registered-player search (Community) ---------- */
-      var pInput = $('playerSearch'), pBox = $('playerResults');
-      if (pInput && pBox) {
-        var pTimer = null;
-        pInput.addEventListener('input', function () {
-          clearTimeout(pTimer);
-          var q = pInput.value.trim();
-          if (q.length < 2) { pBox.innerHTML = '<p class="pf-note">Type at least 2 letters to search.</p>'; return; }
-          pTimer = setTimeout(function () { runPlayerSearch(q); }, 260);
-        });
-      }
-      function runPlayerSearch(q) {
-        if (!sb) { pBox.innerHTML = '<p class="pf-note">Search is unavailable right now.</p>'; return; }
-        var settled = false;
-        setTimeout(function () {
-          if (!settled) pBox.innerHTML = '<p class="pf-note">Search is taking too long — check your connection and try again.</p>';
-        }, 7000);
-        var like = '%' + q.replace(/[%_]/g, '') + '%';
-        sb.from('members').select('id, full_name, username, role, avatar_url')
-          .or('full_name.ilike.' + like + ',username.ilike.' + like)
-          .order('full_name').limit(12)
-          .then(function (res) {
-            settled = true;
-            if (res.error) throw res.error;
-            var list = res.data || [];
-            if (!list.length) { pBox.innerHTML = '<p class="pf-note">No registered player matches “' + esc(q) + '” yet.</p>'; return; }
-            pBox.innerHTML = '<div class="roster" style="grid-template-columns:1fr">' + list.map(function (p) {
-              var nameHtml = p.username
-                ? '<a class="member-link" href="#profile/' + esc(p.username) + '">' + esc(p.full_name) + '</a>'
-                : esc(p.full_name);
-              var msgBtn = (me() && me().id !== p.id)
-                ? ' <button class="btn btn-glass btn-sm" type="button" data-msgpid="' + p.id + '" data-msgname="' + esc(p.full_name) + '">Message</button>' : '';
-              return '<div class="roster-member">' +
-                (p.avatar_url ? '<img class="mini-avatar" src="' + esc(p.avatar_url) + '" alt="" style="object-fit:cover" />' : '<span class="mini-avatar">' + esc(initials(p.full_name)) + '</span>') +
-                '<span class="rm-name">' + nameHtml + ' <span class="role-sm">· ' + esc(p.role || 'Member') + (p.username ? ' · @' + esc(p.username) : '') + '</span></span>' + msgBtn + '</div>';
-            }).join('') + '</div>';
-            pBox.querySelectorAll('[data-msgpid]').forEach(function (b) {
-              b.addEventListener('click', function () {
-                if (window.__openDM) window.__openDM(parseInt(b.getAttribute('data-msgpid'), 10), b.getAttribute('data-msgname'));
-              });
-            });
-          })
-          .catch(function () { settled = true; pBox.innerHTML = '<p class="pf-note">Search could not run right now.</p>'; });
-      }
     })();
   </script>
 
@@ -6757,6 +6713,54 @@
         });
         window.addEventListener('hashchange', function () { panel.hidden = true; });
         document.addEventListener('keydown', function (e) { if (e.key === 'Escape') panel.hidden = true; });
+      }
+
+      /* ---------- Registered-player search (header panel) ---------- */
+      function escH(t) { return String(t == null ? '' : t).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+      function initialsH(name) { return String(name || '?').split(/\s+/).map(function (w) { return w.charAt(0); }).join('').slice(0, 2).toUpperCase(); }
+      var pInput = $('playerSearch'), pBox = $('playerResults'), pTimer = null;
+      if (pInput && pBox) {
+        pInput.addEventListener('input', function () {
+          clearTimeout(pTimer);
+          var q = pInput.value.trim();
+          if (q.length < 2) { pBox.innerHTML = '<p class="pf-note">Type at least 2 letters to search.</p>'; return; }
+          pBox.innerHTML = '<p class="pf-note">Searching&hellip;</p>';
+          pTimer = setTimeout(function () { runPlayerSearchH(q); }, 260);
+        });
+      }
+      function runPlayerSearchH(q) {
+        if (typeof sb === 'undefined' || !sb) { pBox.innerHTML = '<p class="pf-note">Search is unavailable right now.</p>'; return; }
+        var settled = false;
+        setTimeout(function () {
+          if (!settled) pBox.innerHTML = '<p class="pf-note">Search is taking too long &mdash; check your connection and try again.</p>';
+        }, 7000);
+        var like = '%' + q.replace(/[%_]/g, '') + '%';
+        sb.from('members').select('id, full_name, username, role, avatar_url')
+          .or('full_name.ilike.' + like + ',username.ilike.' + like)
+          .order('full_name').limit(12)
+          .then(function (res) {
+            settled = true;
+            if (res.error) throw res.error;
+            var list = res.data || [];
+            if (!list.length) { pBox.innerHTML = '<p class="pf-note">No registered player matches &ldquo;' + escH(q) + '&rdquo; yet.</p>'; return; }
+            var myId = (typeof kwc !== 'undefined' && kwc.member) ? kwc.member.id : null;
+            pBox.innerHTML = '<div class="roster" style="grid-template-columns:1fr">' + list.map(function (pl) {
+              var nameHtml = pl.username
+                ? '<a class="member-link" href="#profile/' + escH(pl.username) + '">' + escH(pl.full_name) + '</a>'
+                : escH(pl.full_name);
+              var msgBtn = (myId && myId !== pl.id)
+                ? ' <button class="btn btn-glass btn-sm" type="button" data-msgpid="' + pl.id + '" data-msgname="' + escH(pl.full_name) + '">Message</button>' : '';
+              return '<div class="roster-member">' +
+                (pl.avatar_url ? '<img class="mini-avatar" src="' + escH(pl.avatar_url) + '" alt="" style="object-fit:cover" />' : '<span class="mini-avatar">' + escH(initialsH(pl.full_name)) + '</span>') +
+                '<span class="rm-name">' + nameHtml + ' <span class="role-sm">&middot; ' + escH(pl.role || 'Member') + (pl.username ? ' &middot; @' + escH(pl.username) : '') + '</span></span>' + msgBtn + '</div>';
+            }).join('') + '</div>';
+            pBox.querySelectorAll('[data-msgpid]').forEach(function (b) {
+              b.addEventListener('click', function () {
+                if (window.__openDM) window.__openDM(parseInt(b.getAttribute('data-msgpid'), 10), b.getAttribute('data-msgname'));
+              });
+            });
+          })
+          .catch(function () { settled = true; pBox.innerHTML = '<p class="pf-note">Search could not run right now.</p>'; });
       }
       setInterval(function () {
         var logged = (typeof kwc !== 'undefined' && !!kwc.user) || (document.getElementById('headAccount') && !document.getElementById('headAccount').hidden);
