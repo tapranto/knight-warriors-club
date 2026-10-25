@@ -4248,6 +4248,13 @@
         } catch (e) { sb = null; }
 
         var kwc = { user: null, member: null, priv: null, games: [], loadedFor: null };
+        /* Layers 3+ run in their own script scopes and read the database
+           client and session state as globals — publish them, or their
+           member features (search, photo uploads, badges, messages)
+           silently switch off. */
+        window.sb = sb;
+        window.kwc = kwc;
+        window.applyMemberToPage = applyMemberToPage;
 
         /* Snapshot of the designed sample profile — restored on log out so
            the logged-out placeholder state is byte-for-byte the design. */
