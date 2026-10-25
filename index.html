@@ -6992,5 +6992,32 @@
       });
     })();
   </script>
+<!-- Layer 5: one-time welcome email trigger -->
+<script>
+(function () {
+  var tried = false;
+  function tryWelcome() {
+    if (tried) return; tried = true;
+    try {
+      if (!window.sb || !window.kwc || !kwc.member) return;
+      sb.auth.getSession().then(function (r) {
+        var tok = r && r.data && r.data.session && r.data.session.access_token;
+        if (!tok) return;
+        fetch('https://jpurbipmekomqjdjvquo.supabase.co/functions/v1/send-welcome', {
+          method: 'POST',
+          headers: { 'Authorization': 'Bearer ' + tok, 'apikey': 'sb_publishable_htkGQfItE4eW5WLngiShdw_30wHl4xF', 'Content-Type': 'application/json' },
+          body: '{}'
+        }).catch(function () {});
+      });
+    } catch (e) {}
+  }
+  var prevReady5 = window.__onMemberReady;
+  window.__onMemberReady = function (m) {
+    if (typeof prevReady5 === 'function') { try { prevReady5(m); } catch (e) {} }
+    tryWelcome();
+  };
+  setTimeout(tryWelcome, 4000);
+})();
+</script>
 </body>
 </html>
