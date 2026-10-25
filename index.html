@@ -6754,7 +6754,7 @@
                 ? ' <button class="btn btn-glass btn-sm" type="button" data-msgpid="' + pl.id + '" data-msgname="' + escH(pl.full_name) + '">Message</button>' : '';
               return '<div class="roster-member">' +
                 (pl.avatar_url ? '<img class="mini-avatar" src="' + escH(pl.avatar_url) + '" alt="" style="object-fit:cover" />' : '<span class="mini-avatar">' + escH(initialsH(pl.full_name)) + '</span>') +
-                '<span class="rm-name">' + nameHtml + ' <span class="role-sm">&middot; ' + escH(pl.role || 'Member') + (pl.username ? ' &middot; @' + escH(pl.username) : '') + '</span></span>' + msgBtn + '</div>';
+                '<span class="rm-name">' + nameHtml + '</span>' + msgBtn + '</div>';
             }).join('') + '</div>';
             pBox.querySelectorAll('[data-msgpid]').forEach(function (b) {
               b.addEventListener('click', function () {
