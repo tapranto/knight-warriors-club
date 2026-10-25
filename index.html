@@ -305,6 +305,10 @@
         main { padding-top: 128px; }
         body.search-open .head-search { top: 122px; }
         body.search-open #playerSearchPanel { top: 178px; }
+        .head-brand { position: static; transform: none; flex: 1 1 auto; min-width: 0; }
+        .head-tools { gap: 6px; }
+        .wordmark { font-size: 17px; letter-spacing: 0.02em; -webkit-text-stroke: 1px rgba(225, 29, 46, 0.9); }
+        .since-tag { font-size: 8px; letter-spacing: 0.3em; margin-top: 3px; }
       }
 
       /* ---------- Hero ---------- */
@@ -6912,12 +6916,21 @@
       /* The router navigates with pushState (no hashchange), so dismiss the
          results whenever the user clicks anything outside the search area. */
       document.addEventListener('click', function (e) {
-        if (!panel || panel.hidden) return;
+        if (!document.body.classList.contains('search-open') && (!panel || panel.hidden)) return;
         var t = e.target;
         if (t.closest && (t.closest('#playerSearchPanel') || t.closest('.head-search') || t.closest('#playerSearchBtn'))) return;
         closeSearch(true);
       });
       document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeSearch(); });
+      var lastSY = window.scrollY || 0;
+      window.addEventListener('scroll', function () {
+        var y = window.scrollY || 0;
+        if (document.body.classList.contains('search-open') && Math.abs(y - lastSY) > 24) {
+          var ip2 = $('playerSearch');
+          if (document.activeElement !== ip2) closeSearch(true);
+        }
+        lastSY = y;
+      }, { passive: true });
 
       /* ---------- Registered-player search (header panel) ---------- */
       function escH(t) { return String(t == null ? '' : t).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
