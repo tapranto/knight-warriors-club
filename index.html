@@ -2422,7 +2422,6 @@
                 <div class="profile-socials">
                   <a class="soc-btn" id="profileFbLink" href="https://www.facebook.com/bijoy.rahman" target="_blank" rel="noopener" aria-label="Open Bijoy Rahman's Facebook profile"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M24 12.07C24 5.4 18.63 0 12 0S0 5.4 0 12.07C0 18.1 4.39 23.09 10.13 24v-8.44H7.08v-3.49h3.05V9.41c0-3.02 1.79-4.7 4.53-4.7 1.31 0 2.68.24 2.68.24v2.97h-1.51c-1.49 0-1.96.93-1.96 1.89v2.26h3.33l-.53 3.49h-2.8V24C19.61 23.09 24 18.1 24 12.07z"/></svg></a>
                   <a class="soc-btn" id="profileInstaLink" href="#" target="_blank" rel="noopener" aria-label="Open Instagram profile" style="display:none"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.6" y="2.6" width="18.8" height="18.8" rx="5.4" fill="none"/><circle cx="12" cy="12" r="4.1" fill="none"/><circle cx="17.5" cy="6.5" r="0.4" fill="currentColor" stroke="none"/></svg></a>
-                  <button class="soc-btn" type="button" id="discordBtn" aria-label="Copy Discord ID"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.317 4.37a19.79 19.79 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.865-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.058a.082.082 0 0 0 .031.056 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.1 13.1 0 0 1-1.872-.892.077.077 0 0 1-.008-.128c.126-.094.252-.192.372-.291a.074.074 0 0 1 .078-.01c3.928 1.793 8.18 1.793 12.061 0a.074.074 0 0 1 .079.009c.12.099.246.198.373.292a.077.077 0 0 1-.006.128 12.3 12.3 0 0 1-1.873.891.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.029 19.84 19.84 0 0 0 6.002-3.03.077.077 0 0 0 .032-.055c.5-5.177-.838-9.674-3.549-13.66a.06.06 0 0 0-.031-.03ZM8.02 15.331c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418Zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418Z"/></svg></button>
                   <span class="discord-note" id="discordNote" hidden></span>
                 </div>
               </div>
@@ -2484,7 +2483,6 @@
                   </div>
                   <div class="form-row">
                     <div class="field"><label for="sFacebook">Facebook ID link</label><input id="sFacebook" type="url" value="https://www.facebook.com/bijoy.rahman" placeholder="https://www.facebook.com/your.profile" /></div>
-                    <div class="field"><label for="sDiscord">Discord ID</label><input id="sDiscord" type="text" value="bijoy.kw" placeholder="your Discord username" /></div>
                   </div>
                   <div class="form-row">
                     <div class="field"><label for="sInstagram">Instagram</label><input id="sInstagram" type="text" placeholder="Instagram username or profile link" /></div>
@@ -4307,6 +4305,10 @@
         window.sb = sb;
         window.kwc = kwc;
         window.applyMemberToPage = applyMemberToPage;
+        window.monthYear = monthYear;
+        window.normalizeUrl = normalizeUrl;
+        window.initialAvatar = initialAvatar;
+        window.gameRowEl = gameRowEl;
 
         /* Snapshot of the designed sample profile — restored on log out so
            the logged-out placeholder state is byte-for-byte the design. */
@@ -4328,7 +4330,7 @@
           addOptionsHTML: el('addGameSelect').innerHTML,
           sName: el('sName').value, sPhone: el('sPhone').value,
           sUsername: el('sUsername').value, sFacebook: el('sFacebook').value,
-          sDiscord: el('sDiscord').value, sDob: el('sDob').value,
+          sDiscord: '', sDob: el('sDob').value,
           sGender: el('sGender').value, sBio: el('sBio').value,
           privacy: privacyChecked ? privacyChecked.value : 'public'
         };
@@ -4346,7 +4348,6 @@
           el('profileCoverImg').src = SAMPLE.cover;
           var fb = el('profileFbLink');
           fb.href = SAMPLE.fb; fb.style.display = '';
-          el('discordBtn').style.display = '';
           el('amName').textContent = SAMPLE.amName;
           el('amSub').textContent = SAMPLE.amSub;
           el('allMembersLink').hidden = true;
@@ -4358,7 +4359,7 @@
           el('addGameSelect').innerHTML = SAMPLE.addOptionsHTML;
           el('sName').value = SAMPLE.sName; el('sPhone').value = SAMPLE.sPhone;
           el('sUsername').value = SAMPLE.sUsername; el('sFacebook').value = SAMPLE.sFacebook;
-          el('sDiscord').value = SAMPLE.sDiscord; el('sDob').value = SAMPLE.sDob;
+          el('sDob').value = SAMPLE.sDob;
           el('sGender').value = SAMPLE.sGender; el('sBio').value = SAMPLE.sBio;
           document.querySelectorAll('#settingsForm input[name="privacy"]').forEach(function (r) {
             r.checked = r.value === SAMPLE.privacy;
@@ -4451,13 +4452,11 @@
           var fb = el('profileFbLink');
           if (m.facebook_id) { fb.href = normalizeUrl(m.facebook_id); fb.style.display = ''; }
           else { fb.style.display = 'none'; }
-          el('discordBtn').style.display = m.discord_id ? '' : 'none';
           var igA = el('profileInstaLink');
           if (m.instagram_id) { igA.href = window.instaUrl(m.instagram_id); igA.style.display = ''; } else { igA.style.display = 'none'; }
           el('sName').value = m.full_name || '';
           el('sUsername').value = m.username || '';
           el('sFacebook').value = m.facebook_id || '';
-          el('sDiscord').value = m.discord_id || '';
           el('sInstagram').value = m.instagram_id || '';
           el('sBio').value = m.bio || '';
           var vis = m.profile_visibility === 'friends' ? 'friends' : 'public';
@@ -4766,7 +4765,7 @@
           var name = el('sName').value.trim();
           var uname = el('sUsername').value.trim().replace(/^@+/, '');
           var fb = el('sFacebook').value.trim();
-          var discord = el('sDiscord').value.trim();
+          var discord = '';
           var insta = el('sInstagram').value.trim();
           var bio = el('sBio').value.trim();
           var visEl = document.querySelector('#settingsForm input[name="privacy"]:checked');
@@ -5484,7 +5483,6 @@
         var fb = $('profileFbLink');
         if (g.facebook_id && !guestLimited) { fb.href = normalizeUrl(g.facebook_id); fb.style.display = ''; }
         else fb.style.display = 'none';
-        $('discordBtn').style.display = (g.discord_id && !guestLimited) ? '' : 'none';
         var igB = $('profileInstaLink');
         if (g.instagram_id && !guestLimited) { igB.href = window.instaUrl(g.instagram_id); igB.style.display = ''; } else { igB.style.display = 'none'; }
         var gn = $('guestNote');
