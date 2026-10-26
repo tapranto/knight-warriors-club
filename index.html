@@ -4473,6 +4473,28 @@
           if (typeof renderHonours === 'function') renderHonours();
         }
 
+        /* Welcome email: fired ONCE, at the moment a member's profile is
+           created (ensureProfile below, or the completion form) — never
+           on refresh or later logins. The function itself also enforces
+           once-per-member via members.welcome_sent_at. */
+        var welcomeFired = false;
+        window.__sendWelcome = function () {
+          if (welcomeFired) return; welcomeFired = true;
+          try {
+            if (!window.sb) return;
+            sb.auth.getSession().then(function (r) {
+              var tok = r && r.data && r.data.session && r.data.session.access_token;
+              if (!tok) return;
+              fetch('https://jpurbipmekomqjdjvquo.supabase.co/functions/v1/send-welcome', {
+                method: 'POST',
+                keepalive: true,
+                headers: { 'Authorization': 'Bearer ' + tok, 'apikey': 'sb_publishable_htkGQfItE4eW5WLngiShdw_30wHl4xF', 'Content-Type': 'application/json' },
+                body: '{}'
+              }).catch(function () {});
+            });
+          } catch (e) {}
+        };
+
         var ensuredFor = null;
         function ensureProfile(user) {
           var meta = (user && user.user_metadata) || {};
@@ -4500,7 +4522,7 @@
                 return { member_id: mid, game: g, uid: null, team_strength: null };
               })));
             }
-            return Promise.all(jobs).then(function () { return true; });
+            return Promise.all(jobs).then(function () { if (window.__sendWelcome) window.__sendWelcome(); return true; });
           }).catch(function () { return false; });
         }
 
@@ -6912,6 +6934,7 @@
             return Promise.all(jobs);
           })
           .then(function () {
+            if (window.__sendWelcome) window.__sendWelcome();
             try { sessionStorage.removeItem('kwcCpShown'); } catch (e) {}
             window.__kwcNeedsProfile = false;
             toast('Profile complete', 'Welcome to Knight Warriors Club, ' + name + '.');
@@ -7217,33 +7240,5 @@
       });
     })();
   </script>
-<!-- Layer 5: one-time welcome email trigger -->
-<script>
-(function () {
-  var tried = false;
-  function tryWelcome() {
-    if (tried) return; tried = true;
-    try {
-      if (!window.sb || !window.kwc || !kwc.member) return;
-      sb.auth.getSession().then(function (r) {
-        var tok = r && r.data && r.data.session && r.data.session.access_token;
-        if (!tok) return;
-        fetch('https://jpurbipmekomqjdjvquo.supabase.co/functions/v1/send-welcome', {
-          method: 'POST',
-          keepalive: true,
-          headers: { 'Authorization': 'Bearer ' + tok, 'apikey': 'sb_publishable_htkGQfItE4eW5WLngiShdw_30wHl4xF', 'Content-Type': 'application/json' },
-          body: '{}'
-        }).catch(function () {});
-      });
-    } catch (e) {}
-  }
-  var prevReady5 = window.__onMemberReady;
-  window.__onMemberReady = function (m) {
-    if (typeof prevReady5 === 'function') { try { prevReady5(m); } catch (e) {} }
-    tryWelcome();
-  };
-  setTimeout(tryWelcome, 4000);
-})();
-</script>
 </body>
 </html>
