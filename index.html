@@ -7230,6 +7230,7 @@
         if (!tok) return;
         fetch('https://jpurbipmekomqjdjvquo.supabase.co/functions/v1/send-welcome', {
           method: 'POST',
+          keepalive: true,
           headers: { 'Authorization': 'Bearer ' + tok, 'apikey': 'sb_publishable_htkGQfItE4eW5WLngiShdw_30wHl4xF', 'Content-Type': 'application/json' },
           body: '{}'
         }).catch(function () {});
