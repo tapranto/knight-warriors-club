@@ -360,13 +360,6 @@
         backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
       }
       .btn-glass:hover { background: rgba(255,255,255,0.15); }
-      .stats {
-        display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 54px; padding: 28px 18px;
-      }
-      .stat b { display: block; font-family: var(--font-display); font-size: clamp(26px, 4vw, 38px); font-weight: 800; color: #fff; }
-      .stat b em { font-style: normal; color: var(--red-bright); }
-      .stat span { color: var(--muted); font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; font-size: 14px; }
-
       /* ---------- Section headers ---------- */
       .sec-head { max-width: 720px; margin-bottom: 40px; }
       .sec-head.center { margin-left: auto; margin-right: auto; text-align: center; }
@@ -493,8 +486,7 @@
       .member-card h3 { font-size: 15.5px; font-weight: 700; letter-spacing: 0.01em; }
       .member-card span { display: block; margin-top: 5px; color: #ff97a1; font-weight: 600; font-size: 14.5px; letter-spacing: 0.06em; text-transform: uppercase; }
 
-      /* ---------- Members ---------- */
-      .members-tools { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; margin-bottom: 22px; }
+      /* ---------- Search box (shared) ---------- */
       .search-box { flex: 1 1 280px; display: flex; align-items: center; gap: 11px; padding: 13px 18px; border-radius: 14px; }
       .search-box svg { width: 20px; height: 20px; stroke: var(--faint); flex-shrink: 0; }
       .search-box input {
@@ -502,9 +494,8 @@
         font-size: 18px; font-weight: 500; width: 100%;
       }
       .search-box input::placeholder { color: var(--faint); }
-      .members-count { color: var(--muted); font-weight: 600; white-space: nowrap; }
-      .members-count b { color: #fff; font-family: var(--font-display); }
-      .members-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+
+      /* ---------- Name chips (tournament participants list) ---------- */
       .member-name {
         padding: 13px 16px; border-radius: 12px; font-weight: 600; font-size: 17.5px; color: #e8e8f0;
         display: flex; align-items: center; gap: 11px;
@@ -515,7 +506,6 @@
         content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--red); flex-shrink: 0;
         box-shadow: 0 0 8px rgba(225,29,46,0.8);
       }
-      .no-results { display: none; padding: 34px; text-align: center; color: var(--muted); }
 
       /* ---------- Leaderboard ---------- */
       .tabs { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; }
@@ -1090,7 +1080,6 @@
         .committee-grid { grid-template-columns: repeat(3, 1fr); }
         .games-grid, .events-grid { grid-template-columns: repeat(2, 1fr); }
         .genre-list { grid-template-columns: repeat(2, 1fr); }
-        .members-grid { grid-template-columns: repeat(3, 1fr); }
         .gallery-grid { grid-template-columns: repeat(3, 1fr); }
         .news-grid { grid-template-columns: repeat(2, 1fr); }
         .corner-knight.left { height: 150px; }
@@ -1105,8 +1094,6 @@
         .teaser { grid-template-columns: 1fr; padding: 30px 26px; }
         .tourney-slots { grid-template-columns: 1fr; }
         .tourney-panel, .join-panel { padding: 32px 24px; }
-        .stats { grid-template-columns: repeat(2, 1fr); }
-        .members-grid { grid-template-columns: repeat(2, 1fr); }
         .gallery-grid { grid-template-columns: repeat(2, 1fr); }
         .foot-in { grid-template-columns: 1fr; }
         .rule-body-in { padding-left: 24px; }
@@ -1117,7 +1104,6 @@
       }
       @media (max-width: 520px) {
         .committee-grid, .games-grid, .events-grid, .genre-list { grid-template-columns: 1fr; }
-        .members-grid { grid-template-columns: 1fr; }
         .hero-logo { width: 122px; height: 122px; }
         .head-brand img { width: 38px; height: 38px; }
         .corner-knight.left { height: 76px; }
@@ -1143,8 +1129,6 @@
         .hero-sub { font-size: 15.5px; }
         .since { font-size: 11.5px; }
         .btn { font-size: 12.5px; padding: 13px 22px; }
-        .stat b { font-size: 24px; }
-        .stat span { font-size: 12px; }
 
         /* Section headings */
         .kicker { font-size: 11px; }
@@ -1700,12 +1684,6 @@
               <a class="btn btn-red" href="#register" data-nav="register">Join the Club</a>
               <a class="btn btn-glass" href="#community" data-nav="community">Meet the Committee</a>
             </div>
-            <div class="stats glass">
-              <div class="stat"><b>80<em>+</em></b><span>Members</span></div>
-              <div class="stat"><b>10</b><span>Committee Members</span></div>
-              <div class="stat"><b>4</b><span>Core Games</span></div>
-              <div class="stat"><b>2023</b><span>Established</span></div>
-            </div>
           </div>
         </section>
 
@@ -2011,25 +1989,6 @@
                 <div class="mc-body"><h3>Efty Ahmed Titu</h3><span>Sponsorship Head</span></div>
               </article>
             </div>
-          </div>
-        </section>
-
-        <section>
-          <div class="wrap">
-            <div class="sec-head reveal">
-              <p class="kicker">The Ranks</p>
-              <h2>Our Members</h2>
-              <p>The warriors of Knight Warriors Club — 68 general members strong, and growing.</p>
-            </div>
-            <div class="members-tools reveal">
-              <label class="search-box glass">
-                <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-                <input type="search" id="memberSearch" placeholder="Search members by name…" aria-label="Search members by name" />
-              </label>
-              <p class="members-count">Showing <b id="memberCount">68</b> of 68 members</p>
-            </div>
-            <div class="members-grid" id="membersGrid"></div>
-            <div class="no-results glass" id="noResults">No members match that name — try a different spelling.</div>
           </div>
         </section>
       </div>
@@ -3030,43 +2989,6 @@
       }
       window.addEventListener('popstate', runRoute);
       window.addEventListener('hashchange', runRoute);
-
-      /* ---------- Members ---------- */
-      var MEMBERS = [
-        "Abdullah Al Mahmud","Abdullah Al Maruf","Ahmed Mizan","Al Imran Sarker","Al Sadi Hriddhy",
-        "Anwar Hossen Munna","Apurba Pal Joy","Ashik Mostofa Sajib","Asikur Rahman Jeayad","Atiur Anik",
-        "Bijoy Rahman","Farhan Mahee","Foysal Islam Muaz","Fozle Rabbie","Gowrob Saha",
-        "Hasib Al Hasan Talukder","Hasibur Rahman Hasib","Hedayetul Islam","Humayun Tazwar Pollob","Jahid Hasan",
-        "Jahidul Haque Jahid","Jakir Hosen","Jakir Hossain II","Jus Tin","Kamrul Islam Ziad",
-        "Kamruzzaman Sazol","Kayeduzzaman Akash","Ma Hi","Mahedi Hasan Zihan","Majharul Raiyan",
-        "Mashiat Rahman Bijoy","Masum Hassan","Masum HasSan","MD Mehedi Hasan","Md Akash Ahmed",
-        "Md Sohel Khan","Md Sumon","Md. Imam Hasan","Mehedi Hasan Shimul","Mohammad Shopon",
-        "Muhammad Tanvir Al-Islam","Na Fis","Najmul Hasan Hridom","Nayem Evon","Niloy C S",
-        "Nirjon Sarker","Nure Alam Shuvo","Piyal Paul","RaDu Wan","Rafiul Hasan Rafi",
-        "Rakibul Hasan Sifat","Riduyan Talukdar","Rubayet Zaman Rappu","Sadat Tasin","Sadik Shahria Sajid",
-        "Sayed Arman","Sheikh Jahir","Sheikh Washib Naim","Shovon Bhuiyan","Shubir Sarker Raj",
-        "Sohidul Islam Noyon","Suchak","Sultan Mahmud Topchi Shawon","Tanjim Akando","Tasib Kabir Nahiyan",
-        "Thaib Al Pidim","Tufayel Alam Akash","Turjoy Hasan Mahin"
-      ];
-      var grid = document.getElementById('membersGrid');
-      var countEl = document.getElementById('memberCount');
-      var noResults = document.getElementById('noResults');
-      function renderMembers(list) {
-        grid.innerHTML = '';
-        list.forEach(function (name) {
-          var d = document.createElement('div');
-          d.className = 'member-name';
-          d.textContent = name;
-          grid.appendChild(d);
-        });
-        countEl.textContent = list.length;
-        noResults.style.display = list.length ? 'none' : 'block';
-      }
-      renderMembers(MEMBERS);
-      document.getElementById('memberSearch').addEventListener('input', function (e) {
-        var q = e.target.value.trim().toLowerCase();
-        renderMembers(MEMBERS.filter(function (n) { return n.toLowerCase().indexOf(q) !== -1; }));
-      });
 
       /* ---------- Leaderboard: tournament-first flow ----------
          Pick a game → that game's tournaments are listed by name → pick a
@@ -5081,7 +5003,7 @@
 
     <script>
       /* ---------- Club data layer: live JSON files, embedded fallback ----------
-         On the live site the club's data lives in four JSON files, edited
+         On the live site the club's data lives in three JSON files, edited
          through the admin panel and the owner's update workflow:
            data/tournaments.json   — { tournaments: [ {id, name, game, status,
                                        startDate, endDate, intro, participants[],
@@ -5089,7 +5011,6 @@
                                        championCutoutAnim} ] }
            data/matches.json       — { matches: [ {tournamentId, date, player1,
                                        player2, goals1, goals2, played} ] }
-           data/members.json       — member names (array of strings)
            data/announcements.json — { announcements: [ {date, title, body,
                                        link, linkText} ] } (the written news posts)
          On load each file is fetched (cache: 'no-cache') and, when it loads
@@ -5097,8 +5018,8 @@
          data is converted into the exact shapes the renderers above already
          use, swapped in, and every data-driven view is rendered again —
          tournaments and their tabbed pages, standings/records, the
-         leaderboard, the news portal, the community members list and the
-         profile's tournament honours. If a fetch fails or a file is missing
+         leaderboard, the news portal and the profile's tournament
+         honours. If a fetch fails or a file is missing
          (as in preview environments with no data/ folder), that dataset
          silently keeps the embedded snapshot above — no error is ever shown
          to visitors. This layer is independent of the Supabase account
@@ -5199,18 +5120,6 @@
           });
         }
         function rerenderClubData() {
-          var search = document.getElementById('memberSearch');
-          var q = search ? search.value.trim().toLowerCase() : '';
-          renderMembers(q ? MEMBERS.filter(function (n) { return n.toLowerCase().indexOf(q) !== -1; }) : MEMBERS);
-          var mc = document.querySelector('.members-count');
-          if (mc) {
-            for (var i = 0; i < mc.childNodes.length; i++) {
-              var node = mc.childNodes[i];
-              if (node.nodeType === 3 && node.textContent.indexOf('of') !== -1) {
-                node.textContent = ' of ' + MEMBERS.length + ' members';
-              }
-            }
-          }
           renderNews();
           homeRunning = null;
           renderHomeTourney();
@@ -5233,16 +5142,7 @@
             if (!currentTournament || currentTournament.id !== wantId) openTournament(wantId);
           }
         }
-        /* ================= Load the four club data files ================= */
-        getJSON('data/members.json').then(function (data) {
-          var names = rootList(data, 'members');
-          if (!names || !names.length) return;
-          var clean = names.map(function (n) { return typeof n === 'string' ? n : (n && n.name) || ''; })
-            .filter(function (n) { return !!n; });
-          if (!clean.length) return;
-          MEMBERS = clean;
-          rerenderClubData();
-        });
+        /* ================= Load the three club data files ================= */
         Promise.all([
           getJSON('data/tournaments.json'),
           getJSON('data/matches.json'),
