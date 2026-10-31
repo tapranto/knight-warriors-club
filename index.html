@@ -7476,6 +7476,7 @@
           '<div class="field" id="mkGroupsRow" hidden><label for="mkGroups">Number of groups</label><select id="mkGroups"><option value="2">2 groups</option><option value="4">4 groups</option></select></div>' +
           '<div class="field"><label>Entrants <span id="mkCount" style="color:var(--faint)">(0)</span></label>' +
           '<p style="font-size:13.5px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#ff97a1;margin-bottom:8px">Pick from registered members</p>' +
+          '<input id="mkMemberSearch" type="text" placeholder="Search members by name…" autocomplete="off" style="width:100%;margin-bottom:8px" />' +
           '<div style="display:flex;gap:10px;flex-wrap:wrap"><select id="mkMemberSel" style="flex:1;min-width:180px"><option value="">— pick a registered member —</option></select>' +
           '<button type="button" class="btn btn-glass btn-sm" data-mk-add-member>Add member</button></div>' +
           '<p class="pf-note" style="margin-top:8px">Players are picked from registered members only — each member can be added once.</p></div>' +
@@ -7494,12 +7495,32 @@
             .then(function (res) {
               if (res.error) return;
               state.wiz.members = res.data || [];
-              var sel = $('mkMemberSel');
-              if (sel) sel.innerHTML = '<option value="">— pick a registered member —</option>' + state.wiz.members.map(function (mm) {
-                return '<option value="' + mm.id + '">' + esc(mm.full_name) + '</option>';
-              }).join('');
+              renderMemberOptions();
             }).catch(function () {});
         }
+      }
+
+      /* Rebuild the member select from the cached state.wiz.members,
+         filtered by the #mkMemberSearch text (no re-query per keystroke).
+         Exactly one match is pre-selected so Add member works at once. */
+      function renderMemberOptions() {
+        var sel = $('mkMemberSel'); if (!sel || !state.wiz) return;
+        var inp = $('mkMemberSearch');
+        var q = inp ? String(inp.value || '').trim().toLowerCase() : '';
+        var list = (state.wiz.members || []).filter(function (mm) {
+          return !q || String(mm.full_name || '').toLowerCase().indexOf(q) !== -1;
+        });
+        if (!list.length) {
+          sel.innerHTML = '<option value="" disabled selected>No member matches your search</option>';
+          return;
+        }
+        var h = '';
+        if (list.length !== 1) h += '<option value="">— pick a registered member —</option>';
+        h += list.map(function (mm) {
+          return '<option value="' + mm.id + '">' + esc(mm.full_name) + '</option>';
+        }).join('');
+        sel.innerHTML = h;
+        if (list.length === 1) sel.value = String(list[0].id);
       }
 
       function renderEntrants() {
@@ -7999,6 +8020,9 @@
         if (gko) { generateKo(gko); return; }
         var open = e.target.closest('[data-mk-open]');
         if (open) { openDetail(open.getAttribute('data-mk-open')); return; }
+      });
+      document.addEventListener('input', function (e) {
+        if (e.target && e.target.id === 'mkMemberSearch') renderMemberOptions();
       });
       document.addEventListener('change', function (e) {
         if (e.target && e.target.id === 'mkFormat') {
