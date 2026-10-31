@@ -5749,6 +5749,7 @@
         var icon = ICONS[n.type] || ICONS.info;
         var linkBtn = '';
         if (n.link === 'createsquad') linkBtn = '<a class="btn btn-red btn-sm" href="#createsquad" data-nav="createsquad" style="margin-top:8px">Create a Squad</a>';
+        else if (typeof n.link === 'string' && n.link.indexOf('maker-shared/') === 0) linkBtn = '<a class="btn btn-red btn-sm" href="#' + esc(n.link) + '" style="margin-top:8px">View Tournament</a>';
         return '<div class="notif' + (n.type === 'squad_invite' ? ' grant' : '') + '">' +
           '<span class="notif-icon' + (n.type === 'broadcast' ? ' plain' : '') + '"><svg viewBox="0 0 24 24"><path d="' + icon + '"/></svg></span>' +
           '<div class="notif-body"><p><b>' + esc(n.title || '') + '</b>' + (n.body ? ' ' + esc(n.body) : '') + '</p>' +
@@ -7399,7 +7400,7 @@
         active: false, memberKey: null, mode: 'own', token: null,
         screen: 'home', list: null, counts: {},
         detail: null, detailOwner: null, shared: null, wiz: null,
-        settingsWarned: false, openTabOnce: null, routeKey: null, openingId: null
+        settingsWarned: false, notifyWarned: false, openTabOnce: null, routeKey: null, openingId: null
       };
 
       function setFab(show) { var f = $('mkFab'); if (f) f.hidden = !show; }
@@ -7452,6 +7453,30 @@
             return true;
           })
           .catch(function () { return false; });
+      }
+
+      /* ---------- Player notifications (Part 9) ----------
+         notify_maker_players() inserts an Inbox notification ("Added
+         to a tournament") for the tournament's players, creator
+         excluded. Fire-and-forget: create/add flows never wait on it.
+         Until Part 9 runs, the RPC does not exist (PGRST202 / 42883)
+         — warn once per session, otherwise stay silent. */
+      function notifyWarnOnce(err) {
+        if (!err) return;
+        if (!(err.code === 'PGRST202' || err.code === '42883' || missing(err))) return;
+        if (state.notifyWarned) return;
+        state.notifyWarned = true;
+        toast('Player notifications need a small database update — tell Amane (Part 9)', 'Players are still added — they just won\'t get an Inbox alert until then.');
+      }
+      function notifyPlayers(tid, memberIds) {
+        var s = db(); if (!s || !tid) return;
+        var args = { p_tournament_id: tid };
+        if (memberIds) args.p_member_ids = memberIds;
+        try {
+          s.rpc('notify_maker_players', args).then(function (res) {
+            if (res && res.error) notifyWarnOnce(res.error);
+          }).catch(function (err) { notifyWarnOnce(err); });
+        } catch (e) { /* fire-and-forget: never break the caller */ }
       }
 
       /* ---------- Round helpers ---------- */
@@ -7742,6 +7767,7 @@
             });
           })
           .then(function () {
+            notifyPlayers(tid);
             toast('Tournament created', name + ' is ready — create its schedule from the Matches tab.');
             state.wiz = null;
             openDetail(tid);
@@ -8459,6 +8485,7 @@
           .then(function (res) {
             if (res.error) { toast('Could not add', 'Please try again.'); return; }
             ctx.players.push(res.data);
+            notifyPlayers(ctx.t.id, [mm.id]);
             renderCtx();
           })
           .catch(function () { toast('Could not add', 'Please try again.'); });
