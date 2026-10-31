@@ -1269,8 +1269,6 @@
       .bell-panel { position: absolute; right: 0; top: 52px; width: min(360px, calc(100vw - 24px)); max-height: 70vh; overflow-y: auto; padding: 12px; background: rgba(10, 10, 17, 0.97); border: 1px solid var(--glass-border); border-radius: 14px; box-shadow: var(--shadow); z-index: 130; }
       .bell-panel[hidden] { display: none; }
       .bell-foot { display: block; text-align: center; padding: 10px; margin-top: 6px; border-top: 1px solid rgba(255,255,255,0.09); color: #ececf2; text-decoration: none; font-weight: 700; }
-      .msg-row { cursor: pointer; }
-      .msg-snip { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
       .account-menu {
         position: absolute; right: 0; top: 54px; width: 236px; padding: 10px;
         background: rgba(10, 10, 17, 0.97); border: 1px solid var(--glass-border); border-radius: 14px;
@@ -1627,10 +1625,9 @@
           </label>
       <button type="button" class="head-search-btn" id="playerSearchBtn" aria-label="Search registered players"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></button>
       <div class="bell-wrap" id="bellWrap" hidden>
-        <button type="button" class="bell-btn" id="inboxBtn" aria-label="Inbox" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><path d="m22 6-10 7L2 6"/></svg><span class="bell-badge" id="inboxBtnBadge" hidden></span></button>
+        <button type="button" class="bell-btn" id="inboxBtn" aria-label="Inbox"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><path d="m22 6-10 7L2 6"/></svg><span class="bell-badge" id="inboxBtnBadge" hidden></span></button>
         <button type="button" class="bell-btn" id="bellBtn" aria-label="Notifications" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg><span class="bell-badge" id="bellBadge" hidden></span></button>
         <div class="bell-panel" id="bellPanel" hidden></div>
-        <div class="bell-panel" id="msgPanel" hidden></div>
       </div>
       <!-- Logged-in state: the member's round avatar replaces Log in / Register -->
       <div class="head-account" id="headAccount" hidden>
@@ -6942,106 +6939,26 @@
         var e = bellEls(); if (!e.btn) return;
         e.btn.addEventListener('click', function (ev) {
           ev.stopPropagation();
-          if (e.panel.hidden) { closeMsgPanel(); renderBellPanel(); e.panel.hidden = false; e.btn.setAttribute('aria-expanded', 'true'); }
+          if (e.panel.hidden) { renderBellPanel(); e.panel.hidden = false; e.btn.setAttribute('aria-expanded', 'true'); }
           else closeBell();
         });
         e.panel.addEventListener('click', function (ev) { ev.stopPropagation(); });
         document.addEventListener('click', function () { closeBell(); });
       })();
-      /* ---------- Header messages dropdown (envelope button) ---------- */
-      function msgEls() { return { btn: $('inboxBtn'), badge: $('inboxBtnBadge'), panel: $('msgPanel') }; }
-      function closeMsgPanel() { var e = msgEls(); if (e.panel) e.panel.hidden = true; if (e.btn) e.btn.setAttribute('aria-expanded', 'false'); }
-      function renderMsgPanel() {
-        var e = msgEls(); var m = me(); if (!e.panel || !m) return;
-        e.panel.innerHTML = '<p class="pf-note">Loading\u2026</p>';
-        Promise.all([
-          sb.from('squad_members').select('squad_id, squads(id, name, game)').eq('member_id', m.id).then(function (r) { return r.error ? [] : (r.data || []); }).catch(function () { return []; }),
-          sb.from('direct_messages').select('sender_member_id, recipient_member_id, body, created_at, is_read').or('sender_member_id.eq.' + m.id + ',recipient_member_id.eq.' + m.id).order('created_at', { ascending: false }).limit(120).then(function (r) { return r.error ? null : (r.data || []); }).catch(function () { return null; }),
-          sb.from('squad_messages').select('squad_id, sender_member_id, body, created_at').order('created_at', { ascending: false }).limit(200).then(function (r) { return r.error ? [] : (r.data || []); }).catch(function () { return []; })
-        ]).then(function (rs) {
-          var mySquads = rs[0].filter(function (x) { return x.squads; });
-          var dmErr = rs[1] === null;
-          var dms = rs[1] || [];
-          var sqMsgs = rs[2] || [];
-          var convos = [];
-          var byPartner = {};
-          dms.forEach(function (d) {
-            var other = d.sender_member_id === m.id ? d.recipient_member_id : d.sender_member_id;
-            var c = byPartner[other];
-            if (!c) {
-              c = byPartner[other] = { kind: 'dm', id: other, at: d.created_at, snip: (d.sender_member_id === m.id ? 'You: ' : '') + (d.body || ''), unread: 0 };
-              convos.push(c);
-            }
-            if (d.recipient_member_id === m.id && !d.is_read) c.unread++;
-          });
-          var sqById = {};
-          mySquads.forEach(function (x) { sqById[x.squads.id] = x.squads; });
-          var sqSeen = {};
-          sqMsgs.forEach(function (x) {
-            if (!sqById[x.squad_id] || sqSeen[x.squad_id]) return;
-            sqSeen[x.squad_id] = true;
-            convos.push({ kind: 'squad', id: x.squad_id, name: sqById[x.squad_id].name, at: x.created_at, snip: x.body || '', unread: 0 });
-          });
-          convos.sort(function (a, b) { return a.at < b.at ? 1 : (a.at > b.at ? -1 : 0); });
-          convos = convos.slice(0, 8);
-          var finish = function () {
-            var h = '<p class="inbox-group">MESSAGES</p>';
-            if (convos.length) {
-              h += convos.map(function (c) {
-                var av, nm;
-                if (c.kind === 'dm') { var p = nameCache[c.id] || { full_name: 'Member' }; av = avatarFor(p); nm = p.full_name; }
-                else { av = '<span class="mini-avatar">' + esc(initials(c.name)) + '</span>'; nm = c.name; }
-                return '<div class="notif-row msg-row' + (c.unread ? ' unread' : '') + '" data-msgtype="' + c.kind + '" data-msgid="' + c.id + '">' +
-                  av + '<div style="flex:1;min-width:0">' +
-                  '<p class="msg-snip" style="margin:0"><b>' + esc(nm) + '</b></p>' +
-                  '<p class="msg-snip" style="margin:2px 0 0">' + esc(c.snip) + '</p>' +
-                  '<p class="dm-meta">' + esc(fmtTime(c.at)) + '</p></div>' +
-                  (c.unread ? '<span class="ib-unread">' + c.unread + '</span>' : '') + '</div>';
-              }).join('');
-            } else {
-              h += '<p class="pf-note">' + (dmErr ? SETUP_NOTE : 'No messages yet.') + '</p>';
-            }
-            h += '<a class="bell-foot" href="#inbox">Open Inbox \u2192</a>';
-            e.panel.innerHTML = h;
-            wireMsgActions(e.panel);
-          };
-          var ids = convos.filter(function (c) { return c.kind === 'dm'; }).map(function (c) { return c.id; });
-          if (ids.length) {
-            sb.from('members').select('id, full_name, username, avatar_url').in('id', ids)
-              .then(function (r) { cacheNames(r.data); finish(); }).catch(finish);
-          } else finish();
-        });
-      }
-      function wireMsgActions(panel) {
-        panel.querySelectorAll('[data-msgtype]').forEach(function (row) {
-          row.addEventListener('click', function () {
-            closeMsgPanel();
-            openInboxThread(row.getAttribute('data-msgtype'), parseInt(row.getAttribute('data-msgid'), 10));
-          });
-        });
-        var foot = panel.querySelector('.bell-foot');
-        if (foot) foot.addEventListener('click', closeMsgPanel);
-      }
-      (function wireMsgBtn() {
+      /* ---------- Header envelope button: open the Inbox page ---------- */
+      (function wireInboxBtn() {
         var b = $('inboxBtn'); if (!b) return;
-        b.addEventListener('click', function (ev) {
-          ev.stopPropagation();
-          var e = msgEls(); if (!e.panel) return;
-          if (e.panel.hidden) {
-            closeBell();
-            /* Same badge clearing as the account-menu Inbox path and the
-               old button: hide the inbox badges once messages are opened. */
-            ['inboxBadge', 'inboxBadge2', 'inboxBtnBadge'].forEach(function (id) {
-              var x = $(id); if (x) x.hidden = true;
-            });
-            renderMsgPanel();
-            e.panel.hidden = false;
-            b.setAttribute('aria-expanded', 'true');
-          } else closeMsgPanel();
+        b.addEventListener('click', function () {
+          closeBell();
+          /* Same badge clearing as the account-menu Inbox path: hide the
+             inbox badges once the Inbox is opened. */
+          ['inboxBadge', 'inboxBadge2', 'inboxBtnBadge'].forEach(function (id) {
+            var x = $(id); if (x) x.hidden = true;
+          });
+          /* Same navigation as the account-menu Inbox link (data-nav):
+             the plain Inbox page, no thread preselected. */
+          showView('inbox', true);
         });
-        var p = $('msgPanel');
-        if (p) p.addEventListener('click', function (ev) { ev.stopPropagation(); });
-        document.addEventListener('click', function () { closeMsgPanel(); });
       })();
       var bellRtStarted = false;
       function bellSubscribe() {
