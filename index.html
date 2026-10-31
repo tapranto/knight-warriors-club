@@ -6659,6 +6659,25 @@
           }).catch(function () { pane.innerHTML = paneHead('Everyone — Club Broadcasts') + '<div class="ib-scroll"><p class="pf-note">Broadcasts unavailable right now.</p></div>'; wireBack(); });
       }
 
+      /* ----- Chat thread ordering + scroll behaviour -----
+         Threads display oldest -> newest (latest at the bottom). A reload
+         keeps the reader's place unless they were already near the bottom
+         (or the reload was forced by their own send), in which case the
+         newest message is pinned into view. */
+      var ibPendingBottom = null;
+      function ibNearBottom(sc) { return !sc || (sc.scrollHeight - sc.scrollTop - sc.clientHeight <= 150); }
+      function ibApplyScroll(sc, shouldBottom, prevTop) {
+        if (!sc) return;
+        var apply = function () { sc.scrollTop = shouldBottom ? sc.scrollHeight : prevTop; };
+        apply();
+        if (shouldBottom && window.requestAnimationFrame) requestAnimationFrame(apply);
+      }
+      function ibQueueBottom(type, id) { ibPendingBottom = { type: type, id: id }; }
+      function ibTakeQueuedBottom(type, id) {
+        if (ibPendingBottom && ibPendingBottom.type === type && String(ibPendingBottom.id) === String(id)) { ibPendingBottom = null; return true; }
+        return false;
+      }
+
       /* ----- Personal messages pane ----- */
       function renderDMPane(pane, partnerId) {
         var m = me(); if (!m || !partnerId) return;
@@ -6688,12 +6707,15 @@
                 else toast('Message not sent', 'Please try again in a moment.');
                 return;
               }
+              ibQueueBottom('dm', partnerId);
               renderInboxList();
             });
         });
       }
-      function loadDMThread(partnerId) {
+      function loadDMThread(partnerId, opts) {
         var m = me(); var sc = $('dmScroll'); if (!m || !sc) return;
+        var prevTop = sc.scrollTop;
+        var shouldBottom = !!((opts && opts.forceBottom) || ibTakeQueuedBottom('dm', partnerId) || ibNearBottom(sc));
         sb.from('direct_messages').select('*')
           .or('and(sender_member_id.eq.' + m.id + ',recipient_member_id.eq.' + partnerId + '),and(sender_member_id.eq.' + partnerId + ',recipient_member_id.eq.' + m.id + ')')
           .order('created_at', { ascending: false }).limit(200)
@@ -6702,12 +6724,14 @@
               sc.innerHTML = '<p class="pf-note">' + (missing(res.error) ? SETUP_NOTE : 'Messages unavailable right now.') + '</p>';
               return;
             }
-            var msgs = res.data || [];
+            /* The query returns the newest 200 first; reverse the copy so
+               the thread displays oldest at top, latest at bottom. */
+            var msgs = (res.data || []).slice().reverse();
             sc.innerHTML = msgs.length ? msgs.map(function (x) {
               var mine = x.sender_member_id === m.id;
               return '<div class="dm-row' + (mine ? ' mine' : '') + '"><div class="dm-bubble"><p>' + esc(x.body) + '</p><p class="dm-meta">' + esc(fmtTime(x.created_at)) + '</p></div></div>';
             }).join('') : '<p class="pf-note">No messages yet — say hello.</p>';
-            sc.scrollTop = 0;
+            ibApplyScroll(sc, shouldBottom, prevTop);
             sb.from('direct_messages').update({ is_read: true })
               .eq('sender_member_id', partnerId).eq('recipient_member_id', m.id).eq('is_read', false)
               .then(function () { refreshBadges3(); }).catch(function () {});
@@ -6750,21 +6774,25 @@
                     else toast('Message not sent', 'Please try again in a moment.');
                     return;
                   }
-                  loadSquadThread(squadId);
+                  loadSquadThread(squadId, { forceBottom: true });
                 });
             });
           });
         }).catch(function () {});
       }
-      function loadSquadThread(squadId) {
+      function loadSquadThread(squadId, opts) {
         var sc = $('sqScroll'); if (!sc) return;
+        var prevTop = sc.scrollTop;
+        var shouldBottom = !!((opts && opts.forceBottom) || ibTakeQueuedBottom('squad', squadId) || ibNearBottom(sc));
         sb.from('squad_messages').select('*').eq('squad_id', squadId).order('created_at', { ascending: false }).limit(200)
           .then(function (res) {
             if (res.error) {
               sc.innerHTML = '<p class="pf-note">' + (missing(res.error) ? SETUP_NOTE : 'Chat unavailable right now.') + '</p>';
               return;
             }
-            var msgs = res.data || [];
+            /* Newest-first page from the query, reversed for display:
+               oldest at top, latest at bottom. */
+            var msgs = (res.data || []).slice().reverse();
             var ids = []; msgs.forEach(function (x) { if (ids.indexOf(x.sender_member_id) === -1) ids.push(x.sender_member_id); });
             var draw = function () {
               sc.innerHTML = msgs.length ? msgs.map(function (x) {
@@ -6773,7 +6801,7 @@
                   (mine ? '' : '<p class="dm-meta" style="margin:0 0 2px">' + esc(memberName(x.sender_member_id)) + '</p>') +
                   '<p>' + esc(x.body) + '</p><p class="dm-meta">' + esc(fmtTime(x.created_at)) + '</p></div></div>';
               }).join('') : '<p class="pf-note">No messages yet — start the conversation.</p>';
-              sc.scrollTop = 0;
+              ibApplyScroll(sc, shouldBottom, prevTop);
             };
             var unknown = ids.filter(function (id) { return !nameCache[id]; });
             if (unknown.length) {
@@ -7023,13 +7051,13 @@
               if (n.sender_member_id !== m.id && n.recipient_member_id !== m.id) return;
               refreshBadges3();
               if (document.body.getAttribute('data-view') === 'inbox') {
-                if (ibSel.type === 'dm' && (ibSel.id === n.sender_member_id || ibSel.id === n.recipient_member_id)) loadDMThread(ibSel.id);
+                if (ibSel.type === 'dm' && (ibSel.id === n.sender_member_id || ibSel.id === n.recipient_member_id)) loadDMThread(ibSel.id, { forceBottom: n.sender_member_id === m.id });
                 else if (n.recipient_member_id === m.id) toast('New message', memberName(n.sender_member_id) + ' sent you a message.', 'inbox');
               }
             })
             .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'squad_messages' }, function (pl) {
               var n = pl.new; var m = me(); if (!n || !m) return;
-              if (document.body.getAttribute('data-view') === 'inbox' && ibSel.type === 'squad' && ibSel.id === n.squad_id) loadSquadThread(n.squad_id);
+              if (document.body.getAttribute('data-view') === 'inbox' && ibSel.type === 'squad' && ibSel.id === n.squad_id) loadSquadThread(n.squad_id, { forceBottom: n.sender_member_id === m.id });
             })
             .subscribe();
         } catch (e) { /* realtime unavailable — panes still load on open */ }
