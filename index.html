@@ -6678,6 +6678,108 @@
         return false;
       }
 
+      /* ----- Thread history pagination ("See previous messages") -----
+         Threads open with the newest IB_PAGE_SIZE messages. ibHist holds
+         the pagination state for the one thread on screen, keyed by
+         (type, id, owner): opening a different thread — or a different
+         account opening the same thread — starts pagination fresh.
+         hist.oldestAt marks the oldest currently loaded message and
+         hist.older caches the pages already fetched (ascending order),
+         so the full-thread reloads fired by realtime inserts and sends
+         keep the prepended history in place. */
+      var IB_PAGE_SIZE = 200;
+      var IB_PREV_LABEL = '&#8593; See previous messages';
+      var ibHist = null;
+      function ibHistFor(type, id) {
+        var owner = me() ? me().id : null;
+        if (!ibHist || ibHist.type !== type || String(ibHist.id) !== String(id) || ibHist.owner !== owner) {
+          ibHist = { type: type, id: id, owner: owner, oldestAt: null, hasMore: false, older: [], loading: false };
+        }
+        return ibHist;
+      }
+      function ibPrevBtnHTML(hist) {
+        return '<div class="ib-prev-wrap" style="text-align:center;margin:0 0 14px"><button class="btn btn-glass btn-sm" type="button" data-ib-prev="1"' +
+          (hist.loading ? ' disabled' : '') + '>' + (hist.loading ? 'Loading…' : IB_PREV_LABEL) + '</button></div>';
+      }
+      function ibDMRowHTML(x, myId) {
+        var mine = x.sender_member_id === myId;
+        return '<div class="dm-row' + (mine ? ' mine' : '') + '"><div class="dm-bubble"><p>' + esc(x.body) + '</p><p class="dm-meta">' + esc(fmtTime(x.created_at)) + '</p></div></div>';
+      }
+      function ibSquadRowHTML(x) {
+        var mine = me() && x.sender_member_id === me().id;
+        return '<div class="dm-row' + (mine ? ' mine' : '') + '"><div class="dm-bubble">' +
+          (mine ? '' : '<p class="dm-meta" style="margin:0 0 2px">' + esc(memberName(x.sender_member_id)) + '</p>') +
+          '<p>' + esc(x.body) + '</p><p class="dm-meta">' + esc(fmtTime(x.created_at)) + '</p></div></div>';
+      }
+      function ibRestorePrevBtn(type) {
+        var sc = $(type === 'dm' ? 'dmScroll' : 'sqScroll'); if (!sc) return;
+        var b = sc.querySelector('[data-ib-prev]');
+        if (b) { b.disabled = false; b.innerHTML = IB_PREV_LABEL; }
+      }
+      function ibLoadOlder() {
+        var hist = ibHist;
+        if (!hist || !hist.hasMore || hist.loading || !hist.oldestAt) return;
+        var type = hist.type;
+        var sc = $(type === 'dm' ? 'dmScroll' : 'sqScroll'); if (!sc) return;
+        var m = me(); if (!m) return;
+        hist.loading = true;
+        var btn = sc.querySelector('[data-ib-prev]');
+        if (btn) { btn.disabled = true; btn.textContent = 'Loading…'; }
+        var q;
+        if (type === 'dm') {
+          q = sb.from('direct_messages').select('*')
+            .or('and(sender_member_id.eq.' + m.id + ',recipient_member_id.eq.' + hist.id + '),and(sender_member_id.eq.' + hist.id + ',recipient_member_id.eq.' + m.id + ')')
+            .lt('created_at', hist.oldestAt)
+            .order('created_at', { ascending: false }).limit(IB_PAGE_SIZE);
+        } else {
+          q = sb.from('squad_messages').select('*').eq('squad_id', hist.id)
+            .lt('created_at', hist.oldestAt)
+            .order('created_at', { ascending: false }).limit(IB_PAGE_SIZE);
+        }
+        q.then(function (res) {
+          hist.loading = false;
+          if (ibHist !== hist) return; /* thread switched mid-flight — discard */
+          if (res.error) { ibRestorePrevBtn(type); return; }
+          var pageAsc = (res.data || []).slice().reverse();
+          if ((res.data || []).length < IB_PAGE_SIZE) hist.hasMore = false;
+          if (pageAsc.length) {
+            hist.older = pageAsc.concat(hist.older);
+            hist.oldestAt = pageAsc[0].created_at;
+          }
+          var prepend = function () {
+            var scNow = $(type === 'dm' ? 'dmScroll' : 'sqScroll'); if (!scNow) return;
+            var prevH = scNow.scrollHeight, prevTop = scNow.scrollTop;
+            var wrap = scNow.querySelector('.ib-prev-wrap');
+            if (pageAsc.length) {
+              var html = pageAsc.map(function (x) { return type === 'dm' ? ibDMRowHTML(x, m.id) : ibSquadRowHTML(x); }).join('');
+              if (wrap) wrap.insertAdjacentHTML('afterend', html);
+              else scNow.insertAdjacentHTML('afterbegin', html);
+              wrap = scNow.querySelector('.ib-prev-wrap');
+            }
+            if (!hist.hasMore) { if (wrap) wrap.remove(); }
+            else ibRestorePrevBtn(type);
+            /* Everything inserted/removed sits above the reader's
+               position, so shifting scrollTop by the height delta keeps
+               the exact same messages in view. Done directly here (not
+               via ibApplyScroll) so a reload's bottom-pin never fights
+               the restore. */
+            scNow.scrollTop = prevTop + (scNow.scrollHeight - prevH);
+          };
+          if (type === 'squad' && pageAsc.length) {
+            var unknown = [];
+            pageAsc.forEach(function (x) { if (!nameCache[x.sender_member_id] && unknown.indexOf(x.sender_member_id) === -1) unknown.push(x.sender_member_id); });
+            if (unknown.length) {
+              sb.from('members').select('id, full_name, username, avatar_url').in('id', unknown)
+                .then(function (r) { cacheNames(r.data); prepend(); }).catch(prepend);
+            } else prepend();
+          } else prepend();
+        }).catch(function () { hist.loading = false; if (ibHist === hist) ibRestorePrevBtn(type); });
+      }
+      document.addEventListener('click', function (e) {
+        var b = e.target && e.target.closest ? e.target.closest('[data-ib-prev]') : null;
+        if (b) ibLoadOlder();
+      });
+
       /* ----- Personal messages pane ----- */
       function renderDMPane(pane, partnerId) {
         var m = me(); if (!m || !partnerId) return;
@@ -6716,21 +6818,31 @@
         var m = me(); var sc = $('dmScroll'); if (!m || !sc) return;
         var prevTop = sc.scrollTop;
         var shouldBottom = !!((opts && opts.forceBottom) || ibTakeQueuedBottom('dm', partnerId) || ibNearBottom(sc));
+        var hist = ibHistFor('dm', partnerId);
         sb.from('direct_messages').select('*')
           .or('and(sender_member_id.eq.' + m.id + ',recipient_member_id.eq.' + partnerId + '),and(sender_member_id.eq.' + partnerId + ',recipient_member_id.eq.' + m.id + ')')
-          .order('created_at', { ascending: false }).limit(200)
+          .order('created_at', { ascending: false }).limit(IB_PAGE_SIZE)
           .then(function (res) {
             if (res.error) {
               sc.innerHTML = '<p class="pf-note">' + (missing(res.error) ? SETUP_NOTE : 'Messages unavailable right now.') + '</p>';
               return;
             }
-            /* The query returns the newest 200 first; reverse the copy so
-               the thread displays oldest at top, latest at bottom. */
-            var msgs = (res.data || []).slice().reverse();
-            sc.innerHTML = msgs.length ? msgs.map(function (x) {
-              var mine = x.sender_member_id === m.id;
-              return '<div class="dm-row' + (mine ? ' mine' : '') + '"><div class="dm-bubble"><p>' + esc(x.body) + '</p><p class="dm-meta">' + esc(fmtTime(x.created_at)) + '</p></div></div>';
-            }).join('') : '<p class="pf-note">No messages yet — say hello.</p>';
+            /* The query returns the newest page first; reverse the copy
+               so the thread displays oldest at top, latest at bottom.
+               Older pages already fetched via "See previous messages"
+               are cached in hist.older and stay on top of the fresh
+               page; until any exist, this page decides whether the
+               history button shows (full page = maybe more above). */
+            var page = (res.data || []).slice().reverse();
+            if (hist.older.length) {
+              hist.oldestAt = hist.older[0].created_at;
+            } else {
+              hist.hasMore = page.length === IB_PAGE_SIZE;
+              hist.oldestAt = page.length ? page[0].created_at : null;
+            }
+            var msgs = hist.older.concat(page);
+            sc.innerHTML = (hist.hasMore ? ibPrevBtnHTML(hist) : '') +
+              (msgs.length ? msgs.map(function (x) { return ibDMRowHTML(x, m.id); }).join('') : '<p class="pf-note">No messages yet — say hello.</p>');
             ibApplyScroll(sc, shouldBottom, prevTop);
             sb.from('direct_messages').update({ is_read: true })
               .eq('sender_member_id', partnerId).eq('recipient_member_id', m.id).eq('is_read', false)
@@ -6784,23 +6896,30 @@
         var sc = $('sqScroll'); if (!sc) return;
         var prevTop = sc.scrollTop;
         var shouldBottom = !!((opts && opts.forceBottom) || ibTakeQueuedBottom('squad', squadId) || ibNearBottom(sc));
-        sb.from('squad_messages').select('*').eq('squad_id', squadId).order('created_at', { ascending: false }).limit(200)
+        var hist = ibHistFor('squad', squadId);
+        sb.from('squad_messages').select('*').eq('squad_id', squadId).order('created_at', { ascending: false }).limit(IB_PAGE_SIZE)
           .then(function (res) {
             if (res.error) {
               sc.innerHTML = '<p class="pf-note">' + (missing(res.error) ? SETUP_NOTE : 'Chat unavailable right now.') + '</p>';
               return;
             }
             /* Newest-first page from the query, reversed for display:
-               oldest at top, latest at bottom. */
-            var msgs = (res.data || []).slice().reverse();
+               oldest at top, latest at bottom. Older pages fetched via
+               "See previous messages" (hist.older) stay on top; until
+               any exist, this page decides the history button (full
+               page = maybe more above). */
+            var page = (res.data || []).slice().reverse();
+            if (hist.older.length) {
+              hist.oldestAt = hist.older[0].created_at;
+            } else {
+              hist.hasMore = page.length === IB_PAGE_SIZE;
+              hist.oldestAt = page.length ? page[0].created_at : null;
+            }
+            var msgs = hist.older.concat(page);
             var ids = []; msgs.forEach(function (x) { if (ids.indexOf(x.sender_member_id) === -1) ids.push(x.sender_member_id); });
             var draw = function () {
-              sc.innerHTML = msgs.length ? msgs.map(function (x) {
-                var mine = me() && x.sender_member_id === me().id;
-                return '<div class="dm-row' + (mine ? ' mine' : '') + '"><div class="dm-bubble">' +
-                  (mine ? '' : '<p class="dm-meta" style="margin:0 0 2px">' + esc(memberName(x.sender_member_id)) + '</p>') +
-                  '<p>' + esc(x.body) + '</p><p class="dm-meta">' + esc(fmtTime(x.created_at)) + '</p></div></div>';
-              }).join('') : '<p class="pf-note">No messages yet — start the conversation.</p>';
+              sc.innerHTML = (hist.hasMore ? ibPrevBtnHTML(hist) : '') +
+                (msgs.length ? msgs.map(function (x) { return ibSquadRowHTML(x); }).join('') : '<p class="pf-note">No messages yet — start the conversation.</p>');
               ibApplyScroll(sc, shouldBottom, prevTop);
             };
             var unknown = ids.filter(function (id) { return !nameCache[id]; });
@@ -9416,7 +9535,7 @@
       /* call = { id, kind:'voice'|'video', role:'caller'|'callee',
                   partner:{id, name, avatar_url}, state, pc, chan,
                   localStream, iceQueue:[], answered, startedAt,
-                  ringTimer, uiTimer, discTimer, logged } */
+                  ringTimer, uiTimer, discTimer, logged, speakerOn } */
 
       /* ---------------- personal channel (invites) ---------------- */
       var personalChan = null, personalFor = null;
@@ -9531,6 +9650,10 @@
               c.answered = true; c.startedAt = Date.now(); c.state = 'in-call';
               ringStop();
               paintCall();
+              /* Default output for this call kind: earpiece for voice,
+                 loudspeaker for video (silently kept as-is if the
+                 browser cannot switch outputs). */
+              applySpeaker(c, c.speakerOn, true);
             }
           } else if (st === 'failed') {
             endCall('failed');
@@ -9561,6 +9684,52 @@
         }
       }
 
+      /* ---------------- speaker / earpiece routing ----------------
+         The remote stream plays through kwcRemoteVideo (video calls) or
+         kwcRemoteAudio (voice calls) — the same element attachRemote()
+         feeds. Where the browser supports output-device selection
+         (HTMLMediaElement.setSinkId), a connected VOICE call defaults
+         to the earpiece and a VIDEO call to the loudspeaker; the
+         Speaker button flips it mid-call. Devices are enumerated at
+         call-connect time, when mic permission is already granted and
+         device labels are readable. Any routing failure leaves the
+         audio exactly as it was and never breaks the call. */
+      function remoteAudioEl(c) {
+        return c.kind === 'video' ? $('kwcRemoteVideo') : $('kwcRemoteAudio');
+      }
+      function applySpeaker(c, on, silent) {
+        var el = remoteAudioEl(c);
+        function revert() {
+          if (!silent) toast("Speaker switching isn't available in this browser.", '');
+          if (call === c) paintCall();
+        }
+        if (!el || typeof el.setSinkId !== 'function' ||
+            !navigator.mediaDevices || typeof navigator.mediaDevices.enumerateDevices !== 'function') { revert(); return; }
+        navigator.mediaDevices.enumerateDevices().then(function (devices) {
+          if (call !== c) return;
+          var outs = (devices || []).filter(function (d) { return d.kind === 'audiooutput'; });
+          var speaker = null, ear = null, i, d;
+          for (i = 0; i < outs.length; i++) {
+            d = outs[i];
+            if (!speaker && /speaker/i.test(d.label || '')) speaker = d;
+            if (!ear && d.deviceId === 'default') ear = d;
+          }
+          if (!ear) {
+            for (i = 0; i < outs.length; i++) {
+              d = outs[i];
+              if (/earpiece|phone/i.test(d.label || '')) { ear = d; break; }
+            }
+          }
+          var target = on ? (speaker ? speaker.deviceId : null) : (ear ? ear.deviceId : '');
+          if (target === null) { revert(); return; }
+          el.setSinkId(target).then(function () {
+            if (call !== c) return;
+            c.speakerOn = on;
+            paintCall();
+          }).catch(function () { revert(); });
+        }).catch(function () { revert(); });
+      }
+
       /* ---------------- caller flow ---------------- */
       function startCall(partnerId, kind, knownName) {
         var m = me();
@@ -9578,7 +9747,8 @@
               id: Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 10),
               kind: kind, role: 'caller', partner: partner, state: 'outgoing',
               pc: null, chan: null, localStream: stream, iceQueue: [],
-              answered: false, startedAt: 0, ringTimer: null, uiTimer: null, discTimer: null, logged: false
+              answered: false, startedAt: 0, ringTimer: null, uiTimer: null, discTimer: null, logged: false,
+              speakerOn: kind === 'video'
             };
             paintCall(); showOverlay(true); attachLocal(c);
             joinCallChannel(c, function () {
@@ -9621,7 +9791,8 @@
           id: p.callId, kind: p.kind === 'video' ? 'video' : 'voice', role: 'callee',
           partner: { id: p.from.id, name: p.from.name || 'Member', avatar_url: p.from.avatar_url || null },
           state: 'ringing', pc: null, chan: null, localStream: null, iceQueue: [],
-          answered: false, startedAt: 0, ringTimer: null, uiTimer: null, discTimer: null, logged: false
+          answered: false, startedAt: 0, ringTimer: null, uiTimer: null, discTimer: null, logged: false,
+          speakerOn: p.kind === 'video'
         };
         paintCall(); showOverlay(true); ringStart();
         call.ringTimer = setTimeout(function () { if (call && call.state === 'ringing') endCall('gone', { silent: true }); }, CALLEE_RING_MS);
@@ -9727,7 +9898,9 @@
         '.kwc-cbtn.green{background:#1faa55;border-color:#1faa55}',
         '.kwc-cbtn.red{background:#c8102e;border-color:#c8102e}',
         '.kwc-cbtn.off{background:#c8102e;border-color:#c8102e;opacity:.85}',
-        '.kwc-cbtn svg{width:24px;height:24px}'
+        '.kwc-cbtn svg{width:24px;height:24px}',
+        '.kwc-cwrap{display:flex;flex-direction:column;align-items:center;gap:5px}',
+        '.kwc-clab{font-size:10px;line-height:1;letter-spacing:.05em;text-transform:uppercase;opacity:.7}'
       ].join('\n');
       var styleEl = document.createElement('style');
       styleEl.textContent = css;
@@ -9737,6 +9910,7 @@
       var PHONE_DOWN = '<svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 9c-1.6 0-3.22.25-4.75.72v3.1c0 .39-.23.74-.56.9-.98.49-1.96 1.12-2.66 1.85-.87.91-2.27.82-2.94-.19C.36 13.84 0 12.44 0 11.08 0 10.47.4 9.95.97 9.8 3.57 9.13 7.6 8.5 12 8.5s8.43.63 11.03 1.3c.57.15.97.67.97 1.28 0 1.36-.36 2.76-1.09 4.3-.67 1.01-2.07 1.1-2.94.19-.7-.73-1.68-1.36-2.66-1.85-.33-.16-.56-.51-.56-.9v-3.1C15.22 9.25 13.6 9 12 9z" transform="translate(0,2)"/></svg>';
       var MIC = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>';
       var CAM = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>';
+      var SPEAKER = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>';
 
       var overlay = document.createElement('div');
       overlay.id = 'kwcCall';
@@ -9752,10 +9926,11 @@
           '<p class="kwc-call-name" id="kwcCallName"></p>' +
           '<p class="kwc-call-status" id="kwcCallStatus"></p>' +
           '<div class="kwc-call-actions">' +
-            '<button type="button" class="kwc-cbtn" id="kwcBtnMute" title="Mute" aria-label="Toggle microphone">' + MIC + '</button>' +
-            '<button type="button" class="kwc-cbtn" id="kwcBtnCam" title="Camera" aria-label="Toggle camera">' + CAM + '</button>' +
-            '<button type="button" class="kwc-cbtn green" id="kwcBtnAccept" title="Accept" aria-label="Accept call">' + PHONE + '</button>' +
-            '<button type="button" class="kwc-cbtn red" id="kwcBtnEnd" title="End call" aria-label="End or decline call">' + PHONE_DOWN + '</button>' +
+            '<span class="kwc-cwrap"><button type="button" class="kwc-cbtn" id="kwcBtnMute" title="Mute" aria-label="Toggle microphone">' + MIC + '</button><span class="kwc-clab">Mute</span></span>' +
+            '<span class="kwc-cwrap"><button type="button" class="kwc-cbtn" id="kwcBtnSpeaker" title="Speaker" aria-label="Toggle loudspeaker">' + SPEAKER + '</button><span class="kwc-clab">Speaker</span></span>' +
+            '<span class="kwc-cwrap"><button type="button" class="kwc-cbtn" id="kwcBtnCam" title="Camera" aria-label="Toggle camera">' + CAM + '</button><span class="kwc-clab">Camera</span></span>' +
+            '<span class="kwc-cwrap"><button type="button" class="kwc-cbtn green" id="kwcBtnAccept" title="Accept" aria-label="Accept call">' + PHONE + '</button><span class="kwc-clab">Accept</span></span>' +
+            '<span class="kwc-cwrap"><button type="button" class="kwc-cbtn red" id="kwcBtnEnd" title="End call" aria-label="End or decline call">' + PHONE_DOWN + '</button><span class="kwc-clab">End</span></span>' +
           '</div>' +
         '</div>';
       document.body.appendChild(overlay);
@@ -9784,11 +9959,13 @@
         else if (c.state === 'connecting') status = 'Connecting…';
         else status = fmtDur(Date.now() - c.startedAt);
         var st = $('kwcCallStatus'); if (st) st.textContent = status;
-        $('kwcBtnAccept').style.display = c.state === 'ringing' ? '' : 'none';
-        $('kwcBtnMute').style.display = c.state === 'ringing' ? 'none' : '';
-        $('kwcBtnCam').style.display = (c.kind === 'video' && c.state !== 'ringing') ? '' : 'none';
+        $('kwcBtnAccept').parentNode.style.display = c.state === 'ringing' ? '' : 'none';
+        $('kwcBtnMute').parentNode.style.display = c.state === 'ringing' ? 'none' : '';
+        $('kwcBtnSpeaker').parentNode.style.display = c.state === 'ringing' ? 'none' : '';
+        $('kwcBtnCam').parentNode.style.display = (c.kind === 'video' && c.state !== 'ringing') ? '' : 'none';
         var muted = c.localStream && c.localStream.getAudioTracks().some(function (t) { return !t.enabled; });
         $('kwcBtnMute').classList.toggle('off', !!muted);
+        $('kwcBtnSpeaker').classList.toggle('off', !c.speakerOn);
         var camOff = c.localStream && c.localStream.getVideoTracks().some(function (t) { return !t.enabled; });
         $('kwcBtnCam').classList.toggle('off', !!camOff);
       }
@@ -9854,6 +10031,10 @@
         var turnOff = tracks.some(function (t) { return t.enabled; });
         tracks.forEach(function (t) { t.enabled = !turnOff; });
         paintCall();
+      });
+      $('kwcBtnSpeaker').addEventListener('click', function () {
+        var c = call; if (!c) return;
+        applySpeaker(c, !c.speakerOn, false);
       });
       $('kwcBtnCam').addEventListener('click', function () {
         var c = call; if (!c || !c.localStream) return;
