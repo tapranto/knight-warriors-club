@@ -7412,7 +7412,7 @@
 
       /* ---------- Series settings (kwc_tournaments.settings, Part 8) ----------
          Shape: { legs: {final, sf, qf, r16, r32, r64, r128, r256, third},
-                  groups: 1-8, picks: { <seriesKey>: <winner name> } }
+                  groups: 2/4/8/16, picks: { <seriesKey>: <winner name> } }
          legs keys are by round SIZE: final = 2 players left, sf = 4,
          qf = 8, r16/r32/... = Round of 16/32/...; third = third-place
          series (0 = no third-place match). Until the settings column
@@ -7426,7 +7426,7 @@
         var s = (t && t.settings && typeof t.settings === 'object') ? t.settings : null;
         if (s) {
           if (s.legs && typeof s.legs === 'object') LEG_KEYS.forEach(function (k) { if (typeof s.legs[k] === 'number' && isFinite(s.legs[k])) d.legs[k] = Math.max(0, Math.min(9, Math.round(s.legs[k]))); });
-          if (typeof s.groups === 'number' && isFinite(s.groups)) { var gv = Math.round(s.groups); if (gv >= 1 && gv <= 8) d.groups = gv; }
+          if (typeof s.groups === 'number' && isFinite(s.groups)) { var gv = Math.round(s.groups); if (GROUP_COUNT_OPTIONS.indexOf(gv) !== -1) d.groups = gv; }
           if (s.picks && typeof s.picks === 'object') d.picks = s.picks;
         }
         return d;
@@ -7479,13 +7479,15 @@
 
       /* ---------- Round helpers ---------- */
       function bracketSizeFor(n) { var B = 2; while (B < n) B *= 2; return B; }
-      /* Group counts run 1–8 (letters A–H) across the whole Maker. */
-      var GROUP_LETTERS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
-      function groupLetters(G) { return GROUP_LETTERS.slice(0, Math.max(1, Math.min(8, G || 2))); }
+      /* Selectable group counts are powers of two (2, 4, 8, 16). The
+         engine's letter range runs A–P so group data up to 16 scales. */
+      var GROUP_COUNT_OPTIONS = [2, 4, 8, 16];
+      var GROUP_LETTERS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P'];
+      function groupLetters(G) { return GROUP_LETTERS.slice(0, Math.max(1, Math.min(16, G || 2))); }
       function groupCountOptions(sel) {
-        var h = '';
-        for (var n = 1; n <= 8; n++) h += '<option value="' + n + '"' + (n === sel ? ' selected' : '') + '>' + n + (n === 1 ? ' group' : ' groups') + '</option>';
-        return h;
+        return GROUP_COUNT_OPTIONS.map(function (n) {
+          return '<option value="' + n + '"' + (n === sel ? ' selected' : '') + '>' + n + ' groups</option>';
+        }).join('');
       }
       function legsKeyForTeams(teams) { return teams === 2 ? 'final' : teams === 4 ? 'sf' : teams === 8 ? 'qf' : 'r' + teams; }
       function roundLabelForTeams(teams) { return teams === 2 ? 'Final' : teams === 4 ? 'Semi-final' : teams === 8 ? 'Quarter-final' : 'Round of ' + teams; }
@@ -8040,7 +8042,7 @@
          flat [winner, runner-up, winner, runner-up, …] sequence that
          buildKoSeries pairs off adjacently. 1 group: the single final
          A1–A2. 2 and 4 groups keep the club's traditional crosses.
-         Every other count (3, 5–8) uses the cyclic rotation: winner of
+         Every other count (3, 5–16) uses the cyclic rotation: winner of
          group i meets runner-up of group i+1, wrapping to A at the end
          (A1–B2, B1–C2, C1–D2, …). */
       function koAdvancers(groupsSeen, top) {
@@ -8061,7 +8063,7 @@
         var groupsSeen = [];
         players.forEach(function (p) { if (p.group_label && groupsSeen.indexOf(p.group_label) === -1) groupsSeen.push(p.group_label); });
         groupsSeen.sort();
-        if (!groupsSeen.length || groupsSeen.length > 8) { toast('Cannot generate', 'This tournament does not have a valid number of groups (1 to 8).'); return; }
+        if (!groupsSeen.length || groupsSeen.length > 16) { toast('Cannot generate', 'This tournament does not have a valid number of groups (1 to 16).'); return; }
         var top = {};
         groupsSeen.forEach(function (g) {
           var gNames = players.filter(function (p) { return p.group_label === g; }).map(function (p) { return p.name; });
