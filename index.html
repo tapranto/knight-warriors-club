@@ -7475,12 +7475,10 @@
           '</select></div>' +
           '<div class="field" id="mkGroupsRow" hidden><label for="mkGroups">Number of groups</label><select id="mkGroups"><option value="2">2 groups</option><option value="4">4 groups</option></select></div>' +
           '<div class="field"><label>Entrants <span id="mkCount" style="color:var(--faint)">(0)</span></label>' +
-          '<p style="font-size:13.5px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#ff97a1;margin-bottom:8px">Add from members</p>' +
+          '<p style="font-size:13.5px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#ff97a1;margin-bottom:8px">Pick from registered members</p>' +
           '<div style="display:flex;gap:10px;flex-wrap:wrap"><select id="mkMemberSel" style="flex:1;min-width:180px"><option value="">— pick a registered member —</option></select>' +
           '<button type="button" class="btn btn-glass btn-sm" data-mk-add-member>Add member</button></div>' +
-          '<p style="font-size:13.5px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#ff97a1;margin:14px 0 8px">or type a name</p>' +
-          '<div style="display:flex;gap:10px;flex-wrap:wrap"><input id="mkTypeName" type="text" placeholder="Guest / non-member name" style="flex:1;min-width:180px" maxlength="60" />' +
-          '<button type="button" class="btn btn-glass btn-sm" data-mk-add-name>Add</button></div></div>' +
+          '<p class="pf-note" style="margin-top:8px">Players are picked from registered members only — each member can be added once.</p></div>' +
           '<div id="mkEntrants"></div>' +
           '<p class="form-err" id="mkWizErr" role="alert"></p>' +
           '<div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:16px">' +
@@ -7517,10 +7515,10 @@
       function wizError(msg) { var n = $('mkWizErr'); if (n) { n.textContent = msg; n.classList.add('show'); } }
       function addEntrant(name, memberId) {
         name = String(name || '').trim();
-        if (!name) return;
-        var dup = state.wiz.entrants.some(function (e) { return e.name.toLowerCase() === name.toLowerCase(); });
+        if (!name || !memberId) return;
+        var dup = state.wiz.entrants.some(function (e) { return String(e.member_id) === String(memberId); });
         if (dup) { wizError(name + ' is already in the list.'); return; }
-        state.wiz.entrants.push({ name: name, member_id: memberId || null });
+        state.wiz.entrants.push({ name: name, member_id: memberId });
         renderEntrants();
       }
 
@@ -7982,11 +7980,6 @@
         if (copy) { copyLinkFor(copy.getAttribute('data-mk-copy')); return; }
         if (e.target.closest('[data-mk-create]')) { state.screen = 'wizard'; openWizard(); return; }
         if (e.target.closest('[data-mk-back]')) { state.detail = null; loadHome(); return; }
-        if (e.target.closest('[data-mk-add-name]')) {
-          var inp = $('mkTypeName');
-          if (inp) { addEntrant(inp.value, null); inp.value = ''; inp.focus(); }
-          return;
-        }
         if (e.target.closest('[data-mk-add-member]')) {
           var sel = $('mkMemberSel');
           if (sel && sel.value && state.wiz) {
@@ -8014,11 +8007,6 @@
         }
       });
       document.addEventListener('keydown', function (e) {
-        if (e.target && e.target.id === 'mkTypeName' && e.key === 'Enter') {
-          e.preventDefault();
-          addEntrant(e.target.value, null);
-          e.target.value = '';
-        }
         if (e.target && e.target.classList && e.target.classList.contains('mk-card') && (e.key === 'Enter' || e.key === ' ')) {
           e.preventDefault();
           openDetail(e.target.getAttribute('data-mk-open'));
