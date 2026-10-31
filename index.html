@@ -820,11 +820,6 @@
       .foot-contact a { color: var(--muted); text-decoration: none; font-weight: 500; }
       .foot-contact a:hover { color: #fff; }
       .foot-contact span { color: var(--faint); font-size: 12px; }
-      .foot-moon { height: 300px; background: url("assets/moon-swords.webp") center center / contain no-repeat; }
-      @media (max-width: 640px) {
-        .foot-moon { height: 200px; }
-      }
-
       /* ---------- News ---------- */
       .n-tag {
         display: inline-block; font-family: var(--font-display); font-size: 10.5px; font-weight: 700; letter-spacing: 0.16em;
@@ -1395,6 +1390,58 @@
       .mk-head-row .mk-head-title { flex: 1; min-width: 200px; }
       .mk-head-row h3 { font-family: var(--font-display); font-size: 21px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.03em; }
       .mk-head-row p { color: var(--muted); margin-top: 3px; }
+
+      /* Layer 6 v2: tabs, series, draw, bracket tree */
+      .mk-tabs { display: flex; gap: 4px; flex-wrap: wrap; border-bottom: 1px solid rgba(255,255,255,0.1); margin: 4px 0 20px; }
+      .mk-tab { background: none; border: none; border-bottom: 3px solid transparent; color: var(--muted); font: inherit; font-size: 15.5px; font-weight: 700; letter-spacing: 0.03em; padding: 11px 15px; cursor: pointer; }
+      .mk-tab:hover { color: #fff; }
+      .mk-tab.active { color: #fff; border-bottom-color: var(--red); }
+      .mk-info { display: flex; justify-content: space-between; gap: 14px; padding: 9px 0; border-bottom: 1px solid rgba(255,255,255,0.06); }
+      .mk-info:last-child { border-bottom: none; }
+      .mk-info-k { color: var(--muted); font-weight: 600; }
+      .mk-info-v { font-weight: 700; text-align: right; }
+      .mk-set-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.06); font-weight: 600; }
+      .mk-set-row:last-child { border-bottom: none; }
+      .mk-stepper { display: inline-flex; align-items: center; gap: 12px; }
+      .mk-step-btn { width: 38px; height: 38px; border-radius: 50%; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.06); color: #fff; font-size: 20px; line-height: 1; cursor: pointer; display: grid; place-items: center; }
+      .mk-step-btn:hover { background: rgba(225,29,46,0.25); border-color: var(--red); }
+      .mk-step-val { font-family: var(--font-display); font-weight: 800; font-size: 17px; min-width: 22px; text-align: center; }
+      .mk-select { background: rgba(255,255,255,0.06); border: 1px solid var(--glass-border); border-radius: 10px; color: #fff; font-family: var(--font-body); font-size: 15.5px; font-weight: 600; padding: 9px 12px; outline: none; }
+      .mk-select:focus { border-color: var(--red); }
+      .mk-select option { color: #111; }
+      .mk-ava { width: 38px; height: 38px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
+      .mk-ava-init { display: grid; place-items: center; background: rgba(225,29,46,0.16); border: 1px solid var(--glass-border-red); color: #ffd7db; font-weight: 800; font-size: 16px; }
+      .mk-icon-btn { width: 34px; height: 34px; border-radius: 50%; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.05); color: #fff; font-size: 15px; cursor: pointer; display: grid; place-items: center; flex-shrink: 0; }
+      .mk-icon-btn:hover:not(:disabled) { background: rgba(225,29,46,0.22); border-color: var(--red); }
+      .mk-icon-btn:disabled { opacity: 0.35; cursor: default; }
+      .mk-series { border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 12px 14px 6px; margin-bottom: 12px; background: rgba(255,255,255,0.02); }
+      .mk-series-h { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 8px; }
+      .mk-series-title { font-family: var(--font-display); font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; font-size: 13.5px; color: #ff97a1; }
+      .mk-series-names { font-weight: 700; font-size: 16.5px; }
+      .mk-series-names .tbd { color: var(--faint); font-weight: 500; }
+      .mk-series-status { color: var(--muted); font-size: 14.5px; font-weight: 600; }
+      .mk-leg-tag { font-size: 11.5px; font-weight: 800; letter-spacing: 0.09em; text-transform: uppercase; color: #ff97a1; min-width: 48px; }
+      .mk-pick-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 4px 0 10px; }
+      .mk-dialog { border: 1px solid var(--glass-border-red); background: rgba(225,29,46,0.05); border-radius: 14px; padding: 22px; }
+      .mk-draw-opt { display: flex; flex-direction: column; gap: 2px; width: 100%; text-align: left; padding: 13px 16px; margin-bottom: 9px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.11); background: rgba(255,255,255,0.04); color: #fff; cursor: pointer; font: inherit; }
+      .mk-draw-opt:hover { border-color: var(--red); background: rgba(225,29,46,0.1); }
+      .mk-draw-t { font-weight: 800; font-size: 16.5px; }
+      .mk-draw-s { color: var(--muted); font-size: 14.5px; font-weight: 600; }
+      .mk-man-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 9px; }
+      .mk-man-name { flex: 1; min-width: 140px; font-weight: 700; }
+      .mk-bctl { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; margin-bottom: 16px; }
+      .mk-bctl label { display: inline-flex; align-items: center; gap: 9px; font-weight: 700; color: var(--muted); }
+      .mk-tree { display: flex; gap: 24px; overflow-x: auto; padding: 4px 2px 14px; }
+      .mk-tcol { min-width: 218px; flex-shrink: 0; display: flex; flex-direction: column; }
+      .mk-tcol-h { font-family: var(--font-display); font-size: 13px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; color: #ff97a1; text-align: center; margin-bottom: 12px; }
+      .mk-tcol-body { flex: 1; display: flex; flex-direction: column; justify-content: space-around; gap: 16px; }
+      .mk-tcard { border: 1px solid rgba(255,255,255,0.12); border-left: 3px solid var(--red); border-radius: 10px; padding: 10px 12px; background: rgba(255,255,255,0.03); position: relative; }
+      .mk-tcard::after { content: ''; position: absolute; right: -25px; top: 50%; width: 24px; border-top: 2px solid rgba(255,255,255,0.25); }
+      .mk-tcol:last-child .mk-tcard::after { display: none; }
+      .mk-trow { display: flex; justify-content: space-between; gap: 8px; padding: 3px 0; font-weight: 600; }
+      .mk-trow .sc { font-family: var(--font-display); font-weight: 800; }
+      .mk-trow .tbd { color: var(--faint); }
+      .mk-tstat { color: var(--muted); font-size: 13.5px; font-weight: 600; border-top: 1px solid rgba(255,255,255,0.07); margin-top: 6px; padding-top: 6px; }
 
       /* ---------- Profile ---------- */
       .profile-card { overflow: hidden; padding: 0; }
@@ -2844,7 +2891,6 @@
           <a href="mailto:feedback@knightwarriorsclub.com">Feedback</a>
         </div>
       </div>
-      <div class="foot-moon" aria-hidden="true"></div>
       <div class="wrap">
         <div class="foot-bottom">
           <span>Knight Warriors Club — Since 2023</span>
@@ -7342,13 +7388,21 @@
   </script>
 
   <script>
-    /* ===== Layer 6: Tournament Maker — a PERSONAL tool. Any logged-in
+    /* ===== Layer 6: Tournament Maker v2 — a PERSONAL tool. Any logged-in
        member creates their own tournaments (league, knockout, groups +
-       knockout) with generated fixtures, live results and standings.
+       knockout) and runs them Winner-app style: five tabs (Details,
+       Players, Bracket, Matches, Stats), the schedule created later
+       from the Matches tab with a choice of draw (Random / By seeding /
+       Random by seeding / Manual), and knockout pairings played as
+       multi-match SERIES (legs per round set on the Details tab).
        A member sees ONLY their own tournaments (RLS enforces it too);
        each tournament also has a secret share link — anyone with the
-       link views that one tournament read-only via the
-       get_maker_tournament_by_token RPC. Needs Part 7. ===== */
+       link views that one tournament read-only (same five tabs) via the
+       get_maker_tournament_by_token RPC. Needs Part 7; series settings
+       persist in kwc_tournaments.settings once Part 8 adds the column
+       (until then they are kept in memory — see maker-v2-notes.md).
+       Hash routing: opening a tournament sets #maker/<id>, tab switches
+       update it to #maker/<id>/<tab>; see tick() + maker-v2-notes.md. ===== */
     (function () {
       function $(id) { return document.getElementById(id); }
       function esc(t) { return String(t == null ? '' : t).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
@@ -7366,12 +7420,102 @@
 
       var state = {
         active: false, memberKey: null, mode: 'own', token: null,
-        screen: 'home', list: null, listErr: null, counts: {},
-        detail: null, wiz: null
+        screen: 'home', list: null, counts: {},
+        detail: null, detailOwner: null, shared: null, wiz: null,
+        settingsWarned: false, openTabOnce: null, routeKey: null, openingId: null
       };
 
       function setFab(show) { var f = $('mkFab'); if (f) f.hidden = !show; }
       function body(html) { var b = $('makerBody'); if (b) b.innerHTML = html; }
+      function currentCtx() { return state.mode === 'shared' ? state.shared : state.detail; }
+      function shuffle(a) {
+        var arr = a.slice();
+        for (var i = arr.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = arr[i]; arr[i] = arr[j]; arr[j] = t; }
+        return arr;
+      }
+
+      /* ---------- Series settings (kwc_tournaments.settings, Part 8) ----------
+         Shape: { legs: {final, sf, qf, r16, r32, r64, r128, r256, third},
+                  groups: 2|4, picks: { <seriesKey>: <winner name> } }
+         legs keys are by round SIZE: final = 2 players left, sf = 4,
+         qf = 8, r16/r32/... = Round of 16/32/...; third = third-place
+         series (0 = no third-place match). Until the settings column
+         exists, reads fall back to defaults and saves stay in memory. */
+      var LEG_KEYS = ['final', 'sf', 'qf', 'r16', 'r32', 'r64', 'r128', 'r256', 'third'];
+      function defaultSettings() {
+        return { legs: { final: 1, third: 0, sf: 1, qf: 1, r16: 1, r32: 1, r64: 1, r128: 1, r256: 1 }, groups: 2, picks: {} };
+      }
+      function getSettings(t) {
+        var d = defaultSettings();
+        var s = (t && t.settings && typeof t.settings === 'object') ? t.settings : null;
+        if (s) {
+          if (s.legs && typeof s.legs === 'object') LEG_KEYS.forEach(function (k) { if (typeof s.legs[k] === 'number' && isFinite(s.legs[k])) d.legs[k] = Math.max(0, Math.min(9, Math.round(s.legs[k]))); });
+          if (s.groups === 2 || s.groups === 4) d.groups = s.groups;
+          if (s.picks && typeof s.picks === 'object') d.picks = s.picks;
+        }
+        return d;
+      }
+      function settingsColumnError(err) {
+        if (!err) return false;
+        var msg = String(err.message || '');
+        return err.code === '42703' || err.code === 'PGRST204' || (/settings/i.test(msg) && /column|could not find/i.test(msg));
+      }
+      function warnSettingsOnce() {
+        if (state.settingsWarned) return;
+        state.settingsWarned = true;
+        toast('Series settings need a small database update — tell Amane (Part 8)', 'Until then, settings are kept for this session only.');
+      }
+      function saveSettings(ctx) {
+        var s = db();
+        if (!s || !ctx || ctx.owner === false || !ctx.t) return Promise.resolve(false);
+        ctx.t.settings = ctx.settings;
+        return s.from('kwc_tournaments').update({ settings: ctx.settings }).eq('id', ctx.t.id)
+          .then(function (res) {
+            if (res.error) { if (settingsColumnError(res.error)) warnSettingsOnce(); return false; }
+            return true;
+          })
+          .catch(function () { return false; });
+      }
+
+      /* ---------- Round helpers ---------- */
+      function bracketSizeFor(n) { var B = 2; while (B < n) B *= 2; return B; }
+      function legsKeyForTeams(teams) { return teams === 2 ? 'final' : teams === 4 ? 'sf' : teams === 8 ? 'qf' : 'r' + teams; }
+      function roundLabelForTeams(teams) { return teams === 2 ? 'Final' : teams === 4 ? 'Semi-final' : teams === 8 ? 'Quarter-final' : 'Round of ' + teams; }
+      function koRoundList(B) {
+        var out = [];
+        for (var teams = B; teams >= 2; teams /= 2) out.push({ key: legsKeyForTeams(teams), label: roundLabelForTeams(teams), teams: teams });
+        return out;
+      }
+
+      /* ---------- Hash routing for maker tournaments ----------
+         The site's main router (Layer 1) resolves unknown hashes to the
+         home view, and #maker/<id>[/<tab>] is unknown to it — so on
+         popstate/hashchange it briefly selects home. Layer 6 runs its
+         own listeners (registered after the main router's, so they run
+         after it in the same event) plus a 1s tick, and re-asserts the
+         maker view + the routed tournament. Entering a tournament
+         pushStates #maker/<id> (Back → maker list, Forward → back in);
+         tab switches replaceState #maker/<id>/<tab> (no history spam);
+         the in-page "← My Tournaments" button pushStates #maker. */
+      var MAKER_TABS = ['details', 'players', 'bracket', 'matches', 'stats'];
+      function parseMakerRoute(h) {
+        var m = String(h || '').match(/^#maker\/([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})(?:\/([a-z]+))?\/?$/);
+        if (!m) return null;
+        var tab = (m[2] && MAKER_TABS.indexOf(m[2]) !== -1) ? m[2] : null;
+        return { id: m[1], tab: tab };
+      }
+      function pushDetailHash(id) {
+        try {
+          var want = '#maker/' + id;
+          if ((window.location.hash || '').indexOf(want) !== 0) history.pushState(null, '', want);
+        } catch (e) { /* sandboxed iframe */ }
+      }
+      function replaceDetailHash(id, tab) {
+        try {
+          var want = '#maker/' + id + (tab && tab !== 'details' ? '/' + tab : '');
+          if (window.location.hash !== want) history.replaceState(null, '', want);
+        } catch (e) { /* sandboxed iframe */ }
+      }
 
       /* ---------- Shared-link routing + view activation ---------- */
       function tick() {
@@ -7387,8 +7531,38 @@
           setFab(false);
           return;
         }
-        if (state.mode === 'shared') { state.mode = 'own'; state.token = null; state.active = false; }
+        if (state.mode === 'shared') { state.mode = 'own'; state.token = null; state.shared = null; state.active = false; }
+
+        var route = parseMakerRoute(h);
+        if (route) {
+          if (document.body.getAttribute('data-view') !== 'maker' && typeof showView === 'function') showView('maker', false);
+          setFab(false);
+          state.active = true;
+          var mm = me();
+          if (state.detail && state.detail.t && state.detail.t.id === route.id && mm && state.detailOwner === mm.id) {
+            if (route.tab && route.tab !== state.detail.tab) { state.detail.tab = route.tab; renderCtx(); }
+            state.routeKey = h;
+            return;
+          }
+          if (!mm) {
+            if (state.routeKey !== h) { state.routeKey = h; state.detail = null; loadHome(); }
+            return;
+          }
+          if (state.openingId === route.id) return;
+          state.routeKey = h;
+          openDetail(route.id, { fromRoute: true, tab: route.tab });
+          return;
+        }
+        state.routeKey = null;
+
         if (document.body.getAttribute('data-view') !== 'maker') { state.active = false; setFab(false); return; }
+        /* Plain #maker while a detail is open (browser Back from a
+           tournament, or the Maker nav link): fall back to the list. */
+        if (state.detail && state.screen === 'detail' && (h === '#maker' || h === '#maker/' || h === '')) {
+          state.detail = null;
+          loadHome();
+          return;
+        }
         var m = me();
         var mid = m ? m.id : 0;
         if (!state.active || state.memberKey !== mid) {
@@ -7444,7 +7618,7 @@
           '<p>' + list.length + ' tournament' + (list.length === 1 ? '' : 's') + ' · only you can see these</p></div>' +
           '<button type="button" class="btn btn-red" data-mk-create>+ Create Tournament</button></div>';
         if (!list.length) {
-          h += '<div class="t-note glass"><b>No tournaments yet.</b><p style="margin-top:8px">Tap <b>+ Create</b> to make your first one — pick a format, add the players, and the fixtures generate themselves.</p></div>';
+          h += '<div class="t-note glass"><b>No tournaments yet.</b><p style="margin-top:8px">Tap <b>+ Create</b> to make your first one — pick a format, add the players, then create the schedule from its Matches tab when you are ready.</p></div>';
         }
         h += list.map(function (t) {
           var n = state.counts[t.id] || 0;
@@ -7465,13 +7639,14 @@
         setFab(true);
       }
 
-      /* ---------- Create wizard ---------- */
+      /* ---------- Create wizard (tournament + players only — the
+         schedule is created later from the Matches tab) ---------- */
       function openWizard() {
         var m = me(); if (!m) return;
         state.wiz = { entrants: [], members: [] };
         state.screen = 'wizard';
         setFab(false);
-        var h = '<div class="mk-head-row"><div class="mk-head-title"><h3>Create Tournament</h3><p>Fixtures and standings generate themselves.</p></div>' +
+        var h = '<div class="mk-head-row"><div class="mk-head-title"><h3>Create Tournament</h3><p>Set the basics and add the players — the schedule comes later.</p></div>' +
           '<button type="button" class="btn btn-glass" data-mk-back>&larr; My Tournaments</button></div>' +
           '<div class="pf-panel glass">' +
           '<div class="field"><label for="mkName">Tournament name</label><input id="mkName" type="text" placeholder="e.g. Friday Night Cup" maxlength="80" /></div>' +
@@ -7492,21 +7667,26 @@
           '<div id="mkEntrants"></div>' +
           '<p class="form-err" id="mkWizErr" role="alert"></p>' +
           '<div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:16px">' +
-          '<button type="button" class="btn btn-red" data-mk-generate>Create &amp; Generate Fixtures</button>' +
+          '<button type="button" class="btn btn-red" data-mk-generate>Create Tournament</button>' +
           '<button type="button" class="btn btn-glass" data-mk-back>Cancel</button></div>' +
-          '<p class="pf-note">Win = 3 points, draw = 1 (club standard). For groups, the draw is random and balanced.</p>' +
+          '<p class="pf-note">Win = 3 points, draw = 1 (club standard). Series lengths are set on the Details tab; the draw is chosen when you create the schedule from the Matches tab.</p>' +
           '</div>';
         body(h);
         renderEntrants();
-        var s = db();
-        if (s) {
-          s.from('members').select('id, full_name').order('full_name', { ascending: true })
-            .then(function (res) {
-              if (res.error) return;
-              state.wiz.members = res.data || [];
-              renderMemberOptions();
-            }).catch(function () {});
-        }
+        loadMembers(db()).then(function (list) {
+          if (state.wiz) { state.wiz.members = list; renderMemberOptions(); }
+        });
+      }
+
+      function loadMembers(s) {
+        if (!s) return Promise.resolve([]);
+        return s.from('members').select('id, full_name, avatar_url').order('full_name', { ascending: true })
+          .then(function (res) { if (res.error) throw res.error; return res.data || []; })
+          .catch(function () {
+            return s.from('members').select('id, full_name').order('full_name', { ascending: true })
+              .then(function (res) { return res.data || []; })
+              .catch(function () { return []; });
+          });
       }
 
       /* Rebuild the member select from the cached state.wiz.members,
@@ -7552,6 +7732,50 @@
         renderEntrants();
       }
 
+      function doCreate(btn) {
+        var m = me(); if (!m || !state.wiz) return;
+        var s = db(); if (!s) { setupNote(); return; }
+        var name = ($('mkName') ? $('mkName').value : '').trim();
+        var game = $('mkGame') ? $('mkGame').value : GAMES[0];
+        var format = $('mkFormat') ? $('mkFormat').value : 'league';
+        var entrants = state.wiz.entrants.slice();
+        if (!name) { wizError('Give the tournament a name.'); return; }
+        if (format === 'league' && entrants.length < 2) { wizError('A league needs at least 2 entrants.'); return; }
+        if (format === 'knockout' && entrants.length < 2) { wizError('A knockout needs at least 2 entrants.'); return; }
+        var groups = 0;
+        if (format === 'groups') {
+          groups = parseInt($('mkGroups') ? $('mkGroups').value : '2', 10) || 2;
+          if (entrants.length < 2 * groups) { wizError('Groups need at least ' + (2 * groups) + ' entrants — 2 in each of the ' + groups + ' groups.'); return; }
+        }
+        btn.disabled = true; btn.textContent = 'Creating…';
+        var tid = null;
+        s.from('kwc_tournaments').insert({ name: name, game: game, format: format, status: 'live', created_by: m.id }).select().single()
+          .then(function (res) {
+            if (res.error) throw res.error;
+            tid = res.data.id;
+            var playerRows = entrants.map(function (e, i) {
+              return { tournament_id: tid, name: e.name, member_id: e.member_id, seed: i + 1, group_label: null };
+            });
+            return s.from('kwc_tournament_players').insert(playerRows).then(function (pres) {
+              if (pres.error) throw pres.error;
+              var st = defaultSettings();
+              if (format === 'groups') st.groups = groups;
+              var tmpCtx = { owner: true, t: { id: tid }, settings: st };
+              return saveSettings(tmpCtx);
+            });
+          })
+          .then(function () {
+            toast('Tournament created', name + ' is ready — create its schedule from the Matches tab.');
+            state.wiz = null;
+            openDetail(tid);
+          })
+          .catch(function (err) {
+            btn.disabled = false; btn.textContent = 'Create Tournament';
+            if (missing(err)) { setupNote(); return; }
+            wizError('Could not create the tournament. Please try again.');
+          });
+      }
+
       /* ---------- Fixture generation ---------- */
       function rrRounds(names) {
         var arr = names.slice();
@@ -7577,10 +7801,13 @@
         }
         return arr;
       }
-      /* Build a single-elimination bracket from seeded slots (names or
-         nulls, length a power of two). Returns match descriptors with
-         next-pointer wiring by descriptor index. */
-      function buildKo(seeded) {
+      /* Build single-elimination SERIES descriptors from seeded slots
+         (names or nulls, length a power of two). Mirrors v1's buildKo,
+         but each pairing is a series: it expands into settings.legs
+         match rows and advances as a unit. Bye/walkover propagation is
+         identical to v1: a lone name walks over; a lone feeder series
+         feeds the next pairing directly. */
+      function buildKoSeries(seeded, legsMap) {
         var descs = [];
         var feeders = seeded.map(function (nm) { return { name: nm, key: null }; });
         var roundGroups = [];
@@ -7596,7 +7823,7 @@
               if (keep.key === null) { next.push({ name: keep.name, key: null }); continue; }
               next.push(keep); continue;
             }
-            var d = { p1: a.name, p2: b.name, nextKey: null, slot: null, key: descs.length };
+            var d = { p1: a.name, p2: b.name, nextKey: null, slot: null, key: descs.length, stage: 'knockout', group_label: null };
             descs.push(d); group.push(d);
             if (a.key !== null) { descs[a.key].nextKey = d.key; descs[a.key].slot = 0; }
             if (b.key !== null) { descs[b.key].nextKey = d.key; descs[b.key].slot = 1; }
@@ -7608,19 +7835,46 @@
         var R = roundGroups.length;
         roundGroups.forEach(function (g, j) {
           var teams = Math.pow(2, R - j);
-          var label = teams === 2 ? 'Final' : teams === 4 ? 'Semi-final' : teams === 8 ? 'Quarter-final' : 'Round of ' + teams;
-          g.forEach(function (d) { d.round = j + 1; d.round_label = label; });
+          var lk = legsKeyForTeams(teams);
+          g.forEach(function (d) {
+            d.round = j + 1;
+            d.round_label = roundLabelForTeams(teams);
+            d.legs = Math.max(1, (legsMap && legsMap[lk]) || 1);
+          });
         });
-        descs.forEach(function (d, i) { d.sortOff = i; });
         return descs;
       }
-      function koGen(tid, stage, seeded, startSort) {
-        var descs = buildKo(seeded);
-        var rows = descs.map(function (d) {
-          return { tournament_id: tid, stage: stage, round: d.round, round_label: d.round_label, p1: d.p1, p2: d.p2, sort: startSort + d.sortOff };
+      /* Optional third-place series: only when there are exactly two
+         semi-final series and legs.third >= 1. Created with null
+         players; syncBracket fills in the semi-final losers. */
+      function thirdDesc(legsMap, descs) {
+        if (!legsMap || !(legsMap.third >= 1)) return null;
+        var sf = descs.filter(function (d) { return d.round_label === 'Semi-final'; });
+        if (sf.length !== 2) return null;
+        return { p1: null, p2: null, nextKey: null, slot: null, key: 'third', stage: 'thirdplace', group_label: null, round: 1, round_label: 'Third place', legs: legsMap.third };
+      }
+      /* Expand series descriptors into match rows. Series identity is
+         encoded WITHOUT extra columns: a series' legs are consecutive
+         rows (sort spaced 100 per series) sharing stage + round +
+         group_label + next_match + slot — every leg points at the
+         FIRST leg row of the series it feeds (see maker-v2-notes.md). */
+      function koRowsFromDescs(tid, descs, startSort) {
+        var rows = [], wiring = [];
+        var bases = {};
+        descs.forEach(function (d, i) { bases[d.key] = startSort + i * 100; });
+        descs.forEach(function (d) {
+          var base = bases[d.key];
+          for (var leg = 0; leg < d.legs; leg++) {
+            rows.push({ tournament_id: tid, stage: d.stage || 'knockout', round: d.round, round_label: d.round_label, group_label: d.group_label || null, p1: d.p1, p2: d.p2, sort: base + leg });
+          }
         });
-        var wiring = [];
-        descs.forEach(function (d) { if (d.nextKey !== null) wiring.push({ sort: startSort + d.sortOff, nextSort: startSort + descs[d.nextKey].sortOff, slot: d.slot }); });
+        descs.forEach(function (d) {
+          if (d.nextKey === null || d.nextKey === undefined) return;
+          var targetBase = bases[d.nextKey];
+          for (var leg = 0; leg < d.legs; leg++) {
+            wiring.push({ sort: bases[d.key] + leg, nextSort: targetBase, slot: d.slot });
+          }
+        });
         return { rows: rows, wiring: wiring };
       }
       function insertMatches(tid, rows, wiring) {
@@ -7640,76 +7894,175 @@
         });
       }
 
-      function doCreate(btn) {
-        var m = me(); if (!m || !state.wiz) return;
-        var s = db(); if (!s) { setupNote(); return; }
-        var name = ($('mkName') ? $('mkName').value : '').trim();
-        var game = $('mkGame') ? $('mkGame').value : GAMES[0];
-        var format = $('mkFormat') ? $('mkFormat').value : 'league';
-        var entrants = state.wiz.entrants.slice();
-        if (!name) { wizError('Give the tournament a name.'); return; }
-        if (format === 'league' && entrants.length < 2) { wizError('A league needs at least 2 entrants.'); return; }
-        if (format === 'knockout' && entrants.length < 2) { wizError('A knockout needs at least 2 entrants.'); return; }
-        var groups = 0;
-        if (format === 'groups') {
-          groups = parseInt($('mkGroups') ? $('mkGroups').value : '2', 10) || 2;
-          if (entrants.length < 4) { wizError('Groups need at least 4 entrants.'); return; }
-          if (entrants.length % groups !== 0) { wizError('With ' + groups + ' groups, the entrant count must divide evenly (e.g. ' + (groups * 2) + ', ' + (groups * 3) + ', ' + (groups * 4) + ').'); return; }
-          if (entrants.length / groups < 2) { wizError('Each group needs at least 2 entrants.'); return; }
+      /* ---------- Draws ---------- */
+      /* Knockout slots for a draw type. names[] is seed order. */
+      function bracketSlots(names, drawType) {
+        var N = names.length, B = bracketSizeFor(Math.max(2, N));
+        var order = seedOrder(B);
+        if (drawType === 'seeded') return order.map(function (sd) { return sd <= N ? names[sd - 1] : null; });
+        if (drawType === 'random') {
+          var sh = shuffle(names);
+          return order.map(function (sd) { return sd <= N ? sh[sd - 1] : null; });
         }
-        btn.disabled = true; btn.textContent = 'Creating…';
-        var tid = null;
-        s.from('kwc_tournaments').insert({ name: name, game: game, format: format, status: 'live', created_by: m.id }).select().single()
-          .then(function (res) {
-            if (res.error) throw res.error;
-            tid = res.data.id;
-            var names = entrants.map(function (e) { return e.name; });
-            var groupOf = {};
-            if (format === 'groups') {
-              var shuffled = entrants.slice();
-              for (var i = shuffled.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var tmp = shuffled[i]; shuffled[i] = shuffled[j]; shuffled[j] = tmp; }
-              var labels = ['A', 'B', 'C', 'D'];
-              shuffled.forEach(function (e, k) { groupOf[e.name] = labels[k % groups]; });
-            }
-            var playerRows = entrants.map(function (e, i) {
-              return { tournament_id: tid, name: e.name, member_id: e.member_id, seed: i + 1, group_label: groupOf[e.name] || null };
+        /* Random by seeding: top seeds (first half of the seed list,
+           capped at bracketSize/2) shuffled among the standard top-seed
+           positions; everyone else shuffled into the remaining slots. */
+        var topCount = Math.min(B / 2, N);
+        var topPool = shuffle(names.slice(0, topCount));
+        var restPool = shuffle(names.slice(topCount));
+        var ti = 0, ri = 0;
+        return order.map(function (sd) {
+          if (sd <= topCount) return topPool[ti++];
+          if (sd <= N) return restPool[ri++];
+          return null;
+        });
+      }
+      function leagueRandSeed(names) {
+        var half = Math.ceil(names.length / 2);
+        return shuffle(names.slice(0, half)).concat(shuffle(names.slice(half)));
+      }
+      function groupAssign(names, G, drawType) {
+        var labels = ['A', 'B', 'C', 'D'].slice(0, G);
+        var assign = {};
+        if (drawType === 'seeded') {
+          names.forEach(function (nm, i) {
+            var row = Math.floor(i / G), pos = i % G;
+            assign[nm] = labels[row % 2 === 0 ? pos : G - 1 - pos];
+          });
+        } else if (drawType === 'randseed') {
+          for (var start = 0; start < names.length; start += G) {
+            var pot = shuffle(names.slice(start, start + G));
+            pot.forEach(function (nm, j) { assign[nm] = labels[j]; });
+          }
+        } else {
+          shuffle(names).forEach(function (nm, i) { assign[nm] = labels[i % G]; });
+        }
+        return assign;
+      }
+
+      /* ---------- Create Schedule (Matches tab) ---------- */
+      function generateSchedule(ctx, drawType, manual) {
+        var s = db(); if (!s) return Promise.reject(new Error('offline'));
+        var t = ctx.t, players = ctx.players;
+        var names = players.map(function (p) { return p.name; });
+        var legsMap = (ctx.settings && ctx.settings.legs) || defaultSettings().legs;
+        var tid = t.id;
+        if (t.format === 'league') {
+          var order = drawType === 'random' ? shuffle(names) : drawType === 'randseed' ? leagueRandSeed(names) : names.slice();
+          var rows = [], sort = 0;
+          rrRounds(order).forEach(function (pairs, r) {
+            pairs.forEach(function (pr) { rows.push({ tournament_id: tid, stage: 'league', round: r + 1, round_label: 'Round ' + (r + 1), p1: pr[0], p2: pr[1], sort: sort++ }); });
+          });
+          return insertMatches(tid, rows, []);
+        }
+        if (t.format === 'knockout') {
+          var slots = drawType === 'manual' ? manual.slots : bracketSlots(names, drawType);
+          var descs = buildKoSeries(slots, legsMap);
+          var td = thirdDesc(legsMap, descs); if (td) descs.push(td);
+          var gen = koRowsFromDescs(tid, descs, 0);
+          return insertMatches(tid, gen.rows, gen.wiring);
+        }
+        /* groups: assign groups (persisted on the player rows), then a
+           round-robin inside each group */
+        var G = (ctx.settings && ctx.settings.groups) || 2;
+        var assign = drawType === 'manual' ? manual.assign : groupAssign(names, G, drawType);
+        var jobs = players.map(function (p) {
+          return s.from('kwc_tournament_players').update({ group_label: assign[p.name] || null }).eq('id', p.id)
+            .then(function () { p.group_label = assign[p.name] || null; });
+        });
+        return Promise.all(jobs).then(function () {
+          var grows = [], gsort = 0;
+          ['A', 'B', 'C', 'D'].slice(0, G).forEach(function (g) {
+            var gNames = names.filter(function (nm) { return assign[nm] === g; });
+            rrRounds(gNames).forEach(function (pairs, r) {
+              pairs.forEach(function (pr) { grows.push({ tournament_id: tid, stage: 'group', round: r + 1, round_label: 'Round ' + (r + 1), group_label: g, p1: pr[0], p2: pr[1], sort: gsort++ }); });
             });
-            return s.from('kwc_tournament_players').insert(playerRows).then(function (pres) {
-              if (pres.error) throw pres.error;
-              var rows = [], wiring = [], sort = 0;
-              if (format === 'league') {
-                rrRounds(names).forEach(function (pairs, r) {
-                  pairs.forEach(function (pr) { rows.push({ tournament_id: tid, stage: 'league', round: r + 1, round_label: 'Round ' + (r + 1), p1: pr[0], p2: pr[1], sort: sort++ }); });
-                });
-                return insertMatches(tid, rows, wiring);
-              }
-              if (format === 'knockout') {
-                var B = 2; while (B < names.length) B *= 2;
-                var seeded = seedOrder(B).map(function (sd) { return sd <= names.length ? names[sd - 1] : null; });
-                var gen = koGen(tid, 'knockout', seeded, 0);
-                return insertMatches(tid, gen.rows, gen.wiring);
-              }
-              /* groups: round-robin inside each group */
-              var labels2 = ['A', 'B', 'C', 'D'].slice(0, groups);
-              labels2.forEach(function (g) {
-                var gNames = entrants.filter(function (e) { return groupOf[e.name] === g; }).map(function (e) { return e.name; });
-                rrRounds(gNames).forEach(function (pairs, r) {
-                  pairs.forEach(function (pr) { rows.push({ tournament_id: tid, stage: 'group', round: r + 1, round_label: 'Round ' + (r + 1), group_label: g, p1: pr[0], p2: pr[1], sort: sort++ }); });
-                });
-              });
-              return insertMatches(tid, rows, wiring);
-            });
-          })
+          });
+          return insertMatches(tid, grows, []);
+        });
+      }
+      function runSchedule(drawType, manual) {
+        var ctx = state.detail; if (!ctx) return;
+        ctx.schedUI = null;
+        body('<p class="pf-note">Creating the schedule&hellip;</p>');
+        generateSchedule(ctx, drawType, manual)
           .then(function () {
-            toast('Tournament created', name + ' is ready — fixtures generated.');
-            state.wiz = null;
-            openDetail(tid);
+            toast('Schedule created', 'Fixtures are ready in the Matches tab.');
+            state.openTabOnce = 'matches';
+            openDetail(ctx.t.id);
           })
           .catch(function (err) {
-            btn.disabled = false; btn.textContent = 'Create & Generate Fixtures';
             if (missing(err)) { setupNote(); return; }
-            wizError('Could not create the tournament. Please try again.');
+            toast('Could not create the schedule', 'Please try again.');
+            renderCtx();
           });
+      }
+      function resetSchedule() {
+        var ctx = state.detail; if (!ctx) return;
+        var s = db(); if (!s) return;
+        if (!window.confirm('Reset the schedule? All fixtures for "' + ctx.t.name + '" will be deleted. The players stay, and you can create a new schedule.')) return;
+        s.from('kwc_tournament_matches').delete().eq('tournament_id', ctx.t.id)
+          .then(function (res) {
+            if (res.error) throw res.error;
+            ctx.matches = [];
+            var jobs = [];
+            if (ctx.t.format === 'groups') {
+              ctx.players.forEach(function (p) { p.group_label = null; });
+              jobs.push(s.from('kwc_tournament_players').update({ group_label: null }).eq('tournament_id', ctx.t.id));
+            }
+            if (ctx.t.champion || ctx.t.status === 'finished') {
+              ctx.t.champion = null; ctx.t.status = 'live';
+              jobs.push(s.from('kwc_tournaments').update({ champion: null, status: 'live' }).eq('id', ctx.t.id));
+            }
+            if (ctx.settings && ctx.settings.picks && Object.keys(ctx.settings.picks).length) {
+              ctx.settings.picks = {};
+              jobs.push(saveSettings(ctx));
+            }
+            return Promise.all(jobs);
+          })
+          .then(function () {
+            toast('Schedule reset', 'Players are unlocked — create a new schedule any time.');
+            renderCtx();
+          })
+          .catch(function () { toast('Could not reset', 'Please try again.'); });
+      }
+
+      /* ---------- Generate knockout from groups (creator) ---------- */
+      function generateKo(btn) {
+        var ctx = state.detail; if (!ctx) return;
+        var s = db(); if (!s) return;
+        var t = ctx.t, players = ctx.players, matches = ctx.matches;
+        var groupsSeen = [];
+        players.forEach(function (p) { if (p.group_label && groupsSeen.indexOf(p.group_label) === -1) groupsSeen.push(p.group_label); });
+        groupsSeen.sort();
+        if (groupsSeen.length !== 2 && groupsSeen.length !== 4) { toast('Cannot generate', 'This tournament does not have 2 or 4 groups.'); return; }
+        var top = {};
+        groupsSeen.forEach(function (g) {
+          var gNames = players.filter(function (p) { return p.group_label === g; }).map(function (p) { return p.name; });
+          var gMatches = matches.filter(function (mt) { return mt.stage === 'group' && mt.group_label === g; });
+          var rows = standingsFor(gNames, gMatches);
+          top[g] = [rows[0].name, rows[1].name];
+        });
+        var seeded;
+        if (groupsSeen.length === 2) {
+          seeded = [top.A[0], top.B[1], top.B[0], top.A[1]];
+        } else {
+          seeded = [top.A[0], top.B[1], top.C[0], top.D[1], top.B[0], top.A[1], top.D[0], top.C[1]];
+        }
+        var maxSort = 0;
+        matches.forEach(function (mt) { if ((mt.sort || 0) > maxSort) maxSort = mt.sort || 0; });
+        btn.disabled = true; btn.textContent = 'Generating…';
+        var legsMap = (ctx.settings && ctx.settings.legs) || defaultSettings().legs;
+        var descs = buildKoSeries(seeded, legsMap);
+        var td = thirdDesc(legsMap, descs); if (td) descs.push(td);
+        var gen = koRowsFromDescs(t.id, descs, maxSort + 1);
+        insertMatches(t.id, gen.rows, gen.wiring)
+          .then(function () {
+            toast('Knockout stage ready', 'The bracket has been generated from the group standings.');
+            state.openTabOnce = 'matches';
+            openDetail(t.id);
+          })
+          .catch(function () { btn.disabled = false; btn.textContent = 'Generate Knockout Stage'; toast('Could not generate', 'Please try again.'); });
       }
 
       /* ---------- Standings ---------- */
@@ -7746,8 +8099,7 @@
         });
         return h + '</tbody></table></div>';
       }
-
-      /* ---------- Detail rendering (owner + shared) ---------- */
+      function playedScore(mt) { return (mt.played && mt.s1 !== null && mt.s2 !== null) ? mt.s1 + ' – ' + mt.s2 : ''; }
       function matchRowHTML(mt, editable) {
         var p1 = mt.p1 ? esc(mt.p1) : '<span class="tbd">TBD</span>';
         var p2 = mt.p2 ? esc(mt.p2) : '<span class="tbd">TBD</span>';
@@ -7759,70 +8111,8 @@
             '<input class="mk-score-inp" id="mk-s2-' + mt.id + '" type="number" min="0" step="1" value="' + (mt.played && mt.s2 !== null ? mt.s2 : '') + '" aria-label="Score for ' + esc(mt.p2) + '" />' +
             '<button type="button" class="btn btn-red btn-sm" data-mk-save="' + mt.id + '">' + (mt.played ? 'Update' : 'Save result') + '</button>';
         }
-        var warn = '';
-        if (mt.played && mt.stage === 'knockout' && mt.s1 !== null && mt.s1 === mt.s2) warn = ' <span class="mk-warn">⚠ Draw — knockout needs a winner</span>';
-        return '<div class="mk-match"><span class="mk-m-names">' + p1 + ' <span class="mk-m-vs">vs</span> ' + p2 + warn + '</span>' +
-          (ctl ? ctl : (mid ? '<span class="mk-m-score">' + mid + '</span>' : '<span class="mk-m-vs">not played</span>')) + '</div>';
-      }
-      function playedScore(mt) { return (mt.played && mt.s1 !== null && mt.s2 !== null) ? mt.s1 + ' – ' + mt.s2 : ''; }
-      function winnerOf(mt) {
-        if (!mt.played || mt.s1 === null || mt.s2 === null || mt.s1 === mt.s2) return null;
-        return mt.s1 > mt.s2 ? mt.p1 : mt.p2;
-      }
-      function computeChampion(t, players, matches) {
-        if (t.format === 'league') {
-          if (!matches.length || !matches.every(function (mt) { return mt.played; })) return null;
-          var rows = standingsFor(players.map(function (p) { return p.name; }), matches);
-          return rows.length ? rows[0].name : null;
-        }
-        var ko = matches.filter(function (mt) { return mt.stage === 'knockout'; });
-        var final = null;
-        ko.forEach(function (mt) { if (!mt.next_match) final = mt; });
-        return final ? winnerOf(final) : null;
-      }
-      function detailHTML(t, players, matches, owner) {
-        var champ = t.champion || computeChampion(t, players, matches);
-        var h = '';
-        if (owner) {
-          h += '<div class="mk-head-row"><div class="mk-head-title"><h3>' + esc(t.name) + '</h3>' +
-            '<p>' + esc(t.game) + ' · ' + esc(FORMAT_LABEL[t.format] || t.format) + ' · ' + players.length + ' players</p></div>' +
-            '<button type="button" class="btn btn-glass" data-mk-back>&larr; My Tournaments</button>' +
-            '<button type="button" class="btn btn-glass" data-mk-copy="' + esc(t.id) + '">Copy link</button>' +
-            '<button type="button" class="btn btn-glass" data-mk-delt="' + esc(t.id) + '" data-name="' + esc(t.name) + '" style="color:#ff8089">Delete</button></div>';
-        } else {
-          h += '<div class="mk-head-row"><div class="mk-head-title"><h3>' + esc(t.name) + '</h3>' +
-            '<p>' + esc(t.game) + ' · ' + esc(FORMAT_LABEL[t.format] || t.format) + ' · ' + players.length + ' players · <span class="mk-badge">Shared · view only</span></p></div></div>';
-        }
-        if (champ) h += '<div class="mk-champ">🏆 Champion — <b>' + esc(champ) + '</b></div>';
-        var names = players.map(function (p) { return p.name; });
-        if (t.format === 'league') {
-          h += '<div class="pf-panel glass"><h3 class="pf-title">Standings</h3>' + standingsHTML(standingsFor(names, matches)) + '</div>';
-          h += fixturesHTML(matches, ['league'], owner, null);
-        } else if (t.format === 'knockout') {
-          h += bracketHTML(matches, owner);
-        } else {
-          var groupsSeen = [];
-          players.forEach(function (p) { if (p.group_label && groupsSeen.indexOf(p.group_label) === -1) groupsSeen.push(p.group_label); });
-          groupsSeen.sort();
-          groupsSeen.forEach(function (g) {
-            var gNames = players.filter(function (p) { return p.group_label === g; }).map(function (p) { return p.name; });
-            var gMatches = matches.filter(function (mt) { return mt.stage === 'group' && mt.group_label === g; });
-            h += '<div class="pf-panel glass" style="margin-bottom:18px"><h3 class="pf-title">Group ' + esc(g) + ' — Standings</h3>' + standingsHTML(standingsFor(gNames, gMatches)) + '</div>';
-            h += fixturesHTML(gMatches, ['group'], owner, 'Group ' + g + ' — Fixtures');
-          });
-          var koMatches = matches.filter(function (mt) { return mt.stage === 'knockout'; });
-          if (koMatches.length) {
-            h += '<h3 class="mk-round-h" style="font-size:18px">Knockout Stage</h3>' + bracketHTML(koMatches, owner);
-          } else if (owner) {
-            var groupMatches = matches.filter(function (mt) { return mt.stage === 'group'; });
-            var allPlayed = groupMatches.length > 0 && groupMatches.every(function (mt) { return mt.played; });
-            if (allPlayed) {
-              h += '<div class="t-note glass" style="margin-top:18px"><b>Group stage complete.</b><p style="margin:8px 0 14px">The top 2 from each group go through. Generate the knockout bracket now.</p>' +
-                '<button type="button" class="btn btn-red" data-mk-genko>Generate Knockout Stage</button></div>';
-            }
-          }
-        }
-        return h;
+        return '<div class="mk-match"><span class="mk-m-names">' + p1 + ' <span class="mk-m-vs">vs</span> ' + p2 + '</span>' +
+          (ctl ? ctl : (mid ? '<span class="mk-m-score">' + mid + '</span>' : '<span class="mk-m-vs">No result</span>')) + '</div>';
       }
       function fixturesHTML(matches, stages, owner, title) {
         var ms = matches.filter(function (mt) { return stages.indexOf(mt.stage) !== -1; });
@@ -7837,45 +8127,733 @@
         });
         return h + '</div>';
       }
-      function bracketHTML(matches, owner) {
-        return fixturesHTML(matches, ['knockout'], owner, null);
+
+      /* ---------- Series machinery ----------
+         A series = the legs of one knockout pairing. Legs share
+         (stage, group_label, round, next_match, slot): every leg of a
+         feeder series points at the FIRST leg row of the series it
+         feeds, so that tuple is the series identity (see
+         maker-v2-notes.md). v1 matches (one row per pairing, unique
+         next_match) each form their own 1-leg series — back-compatible. */
+      function seriesKeyOf(mt) {
+        return [mt.stage, mt.group_label || '', mt.round || 0, (mt.next_match === null || mt.next_match === undefined ? '' : String(mt.next_match)), (mt.slot === null || mt.slot === undefined ? '' : mt.slot)].join('|');
+      }
+      function seriesList(matches) {
+        var map = {}, list = [];
+        (matches || []).forEach(function (mt) {
+          if (mt.stage !== 'knockout' && mt.stage !== 'thirdplace') return;
+          var k = seriesKeyOf(mt);
+          var s = map[k];
+          if (!s) {
+            s = { key: k, stage: mt.stage, round: mt.round || 0, round_label: mt.round_label || '', legs: [], next_match: (mt.next_match === undefined ? null : mt.next_match), slot: (mt.slot === undefined ? null : mt.slot) };
+            map[k] = s; list.push(s);
+          }
+          s.legs.push(mt);
+        });
+        list.forEach(function (s) {
+          s.legs.sort(function (a, b) { return (a.sort || 0) - (b.sort || 0); });
+          s.p1 = null; s.p2 = null;
+          s.legs.forEach(function (l) {
+            if (s.p1 === null && l.p1 !== null && l.p1 !== undefined) s.p1 = l.p1;
+            if (s.p2 === null && l.p2 !== null && l.p2 !== undefined) s.p2 = l.p2;
+          });
+          s.minSort = s.legs.length ? (s.legs[0].sort || 0) : 0;
+        });
+        list.sort(function (a, b) {
+          var sa = a.stage === 'thirdplace' ? 1 : 0, sb = b.stage === 'thirdplace' ? 1 : 0;
+          if (sa !== sb) return sa - sb;
+          if (a.round !== b.round) return a.round - b.round;
+          return a.minSort - b.minSort;
+        });
+        return list;
+      }
+      /* Winner of a series: first to a majority of leg WINS
+         (floor(N/2)+1), else — once every leg is played — most leg
+         wins, then higher aggregate goals. Level on both = tied; the
+         owner's pick (settings.picks) then decides who advances.
+         A drawn leg counts as played, with no win. */
+      function seriesOutcome(s, picks) {
+        var out = { w1: 0, w2: 0, g1: 0, g2: 0, played: 0, total: s.legs.length, winner: null, decided: false, tied: false, pick: null, effective: null };
+        if (!s.p1 || !s.p2) return out;
+        s.legs.forEach(function (l) {
+          if (!l.played || l.s1 === null || l.s2 === null) return;
+          out.played++; out.g1 += l.s1; out.g2 += l.s2;
+          if (l.s1 > l.s2) out.w1++; else if (l.s2 > l.s1) out.w2++;
+        });
+        var maj = Math.floor(out.total / 2) + 1;
+        if (out.w1 >= maj) { out.winner = s.p1; out.decided = true; }
+        else if (out.w2 >= maj) { out.winner = s.p2; out.decided = true; }
+        else if (out.total > 0 && out.played === out.total) {
+          if (out.w1 !== out.w2) { out.winner = out.w1 > out.w2 ? s.p1 : s.p2; out.decided = true; }
+          else if (out.g1 !== out.g2) { out.winner = out.g1 > out.g2 ? s.p1 : s.p2; out.decided = true; }
+          else out.tied = true;
+        }
+        var pk = picks ? picks[s.key] : null;
+        if (pk && (pk === s.p1 || pk === s.p2)) out.pick = pk;
+        out.effective = out.winner || out.pick || null;
+        return out;
+      }
+      /* Recompute advancement after any result change (owner only —
+         writes winners into the next series' leg rows, clears slots a
+         now-undecided series no longer owns, and fills the third-place
+         series with the semi-final losers). Returns true if any row
+         changed. Shared view never calls this; it only displays the
+         rows the owner already wrote. */
+      function syncBracket(ctx) {
+        if (!ctx || ctx.owner === false) return Promise.resolve(false);
+        var s = db(); if (!s) return Promise.resolve(false);
+        var picks = (ctx.settings && ctx.settings.picks) || {};
+        var series = seriesList(ctx.matches);
+        var seriesByLegId = {};
+        series.forEach(function (sr) { sr.legs.forEach(function (l) { seriesByLegId[String(l.id)] = sr; }); });
+        var jobs = [];
+        var changed = false;
+        function setSlot(row, field, val) {
+          if (row[field] === val) return;
+          row[field] = val; changed = true;
+          var upd = {}; upd[field] = val;
+          jobs.push(s.from('kwc_tournament_matches').update(upd).eq('id', row.id));
+        }
+        series.forEach(function (sr) {
+          if (sr.next_match === null || sr.next_match === undefined) return;
+          var target = seriesByLegId[String(sr.next_match)];
+          if (!target) return;
+          var oc = seriesOutcome(sr, picks);
+          var field = sr.slot === 0 ? 'p1' : 'p2';
+          target.legs.forEach(function (l) {
+            var cur = l[field];
+            if (oc.effective) {
+              if (cur !== oc.effective && (cur === null || cur === sr.p1 || cur === sr.p2)) setSlot(l, field, oc.effective);
+            } else if (cur !== null && (cur === sr.p1 || cur === sr.p2)) {
+              setSlot(l, field, null);
+            }
+          });
+        });
+        var third = null;
+        series.forEach(function (x) { if (x.stage === 'thirdplace') third = x; });
+        if (third) {
+          var sfs = series.filter(function (x) { return x.stage === 'knockout' && x.round_label === 'Semi-final'; });
+          if (sfs.length === 2) {
+            var o1 = seriesOutcome(sfs[0], picks), o2 = seriesOutcome(sfs[1], picks);
+            if (o1.effective && o2.effective && sfs[0].p1 && sfs[0].p2 && sfs[1].p1 && sfs[1].p2) {
+              var loser1 = o1.effective === sfs[0].p1 ? sfs[0].p2 : sfs[0].p1;
+              var loser2 = o2.effective === sfs[1].p1 ? sfs[1].p2 : sfs[1].p1;
+              var participants = [sfs[0].p1, sfs[0].p2, sfs[1].p1, sfs[1].p2];
+              var curOk = (third.p1 === null || participants.indexOf(third.p1) !== -1) && (third.p2 === null || participants.indexOf(third.p2) !== -1);
+              if (curOk && (third.p1 !== loser1 || third.p2 !== loser2)) {
+                third.legs.forEach(function (l) { setSlot(l, 'p1', loser1); setSlot(l, 'p2', loser2); });
+              }
+            }
+          }
+        }
+        if (!jobs.length) return Promise.resolve(changed);
+        return Promise.all(jobs).then(function () { return changed; }).catch(function () { return changed; });
+      }
+      function finalSeriesOf(matches) {
+        var ss = seriesList(matches).filter(function (x) { return x.stage === 'knockout'; });
+        var f = null;
+        ss.forEach(function (x) { if (!f || x.round > f.round || (x.round === f.round && x.minSort > f.minSort)) f = x; });
+        return f;
+      }
+      function computeChampion(t, players, matches, picks) {
+        if (t.format === 'league') {
+          if (!matches.length || !matches.every(function (mt) { return mt.played; })) return null;
+          var rows = standingsFor(players.map(function (p) { return p.name; }), matches);
+          return rows.length ? rows[0].name : null;
+        }
+        var f = finalSeriesOf(matches);
+        if (!f) return null;
+        return seriesOutcome(f, picks || {}).effective;
+      }
+      function computeThird(matches, picks) {
+        var th = null;
+        seriesList(matches).forEach(function (x) { if (x.stage === 'thirdplace') th = x; });
+        if (!th) return null;
+        return seriesOutcome(th, picks || {}).effective;
+      }
+      function persistChampion() {
+        var ctx = state.detail; if (!ctx || ctx.owner === false) return;
+        var champ = computeChampion(ctx.t, ctx.players, ctx.matches, ctx.settings ? ctx.settings.picks : {});
+        if (champ && ctx.t.champion !== champ) {
+          ctx.t.champion = champ; ctx.t.status = 'finished';
+          var s = db(); if (!s) return;
+          s.from('kwc_tournaments').update({ champion: champ, status: 'finished' }).eq('id', ctx.t.id)
+            .then(function () { renderCtx(); }).catch(function () {});
+        }
+      }
+      function groupLabelsOf(ctx) {
+        var seen = [];
+        ctx.players.forEach(function (p) { if (p.group_label && seen.indexOf(p.group_label) === -1) seen.push(p.group_label); });
+        if (!seen.length) ctx.matches.forEach(function (mt) { if (mt.stage === 'group' && mt.group_label && seen.indexOf(mt.group_label) === -1) seen.push(mt.group_label); });
+        seen.sort();
+        return seen;
+      }
+
+      /* ---------- Detail rendering (owner + shared, five tabs) ---------- */
+      function renderCtx() {
+        var ctx = currentCtx();
+        if (!ctx) return;
+        body(detailHTML(ctx));
+        if (ctx.tab === 'players' && ctx.owner !== false && !ctx.matches.length) renderPAddOptions();
+        if (ctx.tab === 'matches' && ctx.schedUI === 'manual') validateManual(ctx);
+      }
+      function detailHTML(ctx) {
+        var t = ctx.t, owner = ctx.owner !== false;
+        var picks = ctx.settings ? ctx.settings.picks : {};
+        var champ = t.champion || computeChampion(t, ctx.players, ctx.matches, picks);
+        var third = computeThird(ctx.matches, picks);
+        var h = '';
+        if (owner) {
+          h += '<div class="mk-head-row"><div class="mk-head-title"><h3>' + esc(t.name) + '</h3>' +
+            '<p>' + esc(t.game) + ' · ' + esc(FORMAT_LABEL[t.format] || t.format) + ' · ' + ctx.players.length + ' players</p></div>' +
+            '<button type="button" class="btn btn-glass" data-mk-back>&larr; My Tournaments</button>' +
+            '<button type="button" class="btn btn-glass" data-mk-copy="' + esc(t.id) + '">Copy link</button>' +
+            '<button type="button" class="btn btn-glass" data-mk-delt="' + esc(t.id) + '" data-name="' + esc(t.name) + '" style="color:#ff8089">Delete</button></div>';
+        } else {
+          h += '<div class="mk-head-row"><div class="mk-head-title"><h3>' + esc(t.name) + '</h3>' +
+            '<p>' + esc(t.game) + ' · ' + esc(FORMAT_LABEL[t.format] || t.format) + ' · ' + ctx.players.length + ' players · <span class="mk-badge">Shared · view only</span></p></div></div>';
+        }
+        if (champ) h += '<div class="mk-champ">🏆 Champion — <b>' + esc(champ) + '</b></div>';
+        if (third) h += '<div class="mk-champ">🥉 3rd place — <b>' + esc(third) + '</b></div>';
+        var tabs = [['details', 'Details'], ['players', 'Players'], ['bracket', 'Bracket'], ['matches', 'Matches'], ['stats', 'Stats']];
+        h += '<div class="mk-tabs">' + tabs.map(function (tb) {
+          return '<button type="button" class="mk-tab' + (ctx.tab === tb[0] ? ' active' : '') + '" data-mk-tab="' + tb[0] + '">' + tb[1] + '</button>';
+        }).join('') + '</div>';
+        if (ctx.tab === 'players') h += playersTabHTML(ctx);
+        else if (ctx.tab === 'matches') h += matchesTabHTML(ctx);
+        else if (ctx.tab === 'bracket') h += bracketTabHTML(ctx);
+        else if (ctx.tab === 'stats') h += statsTabHTML(ctx);
+        else h += detailsTabHTML(ctx);
+        return h;
+      }
+
+      /* ----- Details tab ----- */
+      function infoRow(k, vHtml) {
+        return '<div class="mk-info"><span class="mk-info-k">' + esc(k) + '</span><span class="mk-info-v">' + vHtml + '</span></div>';
+      }
+      function setRowHTML(label, key, val, editable, minVal) {
+        if (!editable) return '<div class="mk-set-row"><span>' + esc(label) + '</span><b>' + val + '</b></div>';
+        return '<div class="mk-set-row"><span>' + esc(label) + '</span><span class="mk-stepper">' +
+          '<button type="button" class="mk-step-btn" data-mk-step="-1" data-k="' + key + '" aria-label="Fewer matches for ' + esc(label) + '">−</button>' +
+          '<span class="mk-step-val">' + val + '</span>' +
+          '<button type="button" class="mk-step-btn" data-mk-step="1" data-k="' + key + '" aria-label="More matches for ' + esc(label) + '">+</button></span></div>';
+      }
+      function detailsTabHTML(ctx) {
+        var t = ctx.t, owner = ctx.owner !== false;
+        var picks = ctx.settings ? ctx.settings.picks : {};
+        var champ = t.champion || computeChampion(t, ctx.players, ctx.matches, picks);
+        var third = computeThird(ctx.matches, picks);
+        var hasSchedule = ctx.matches.length > 0;
+        var created = t.created_at ? new Date(t.created_at) : null;
+        var h = '<div class="pf-panel glass"><h3 class="pf-title">Details</h3>';
+        h += infoRow('Game', esc(t.game));
+        h += infoRow('Format', esc(FORMAT_LABEL[t.format] || t.format));
+        h += infoRow('Status', t.status === 'finished' ? 'Finished' : 'Live');
+        h += infoRow('Created', created && !isNaN(created.getTime()) ? esc(created.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })) : '—');
+        h += infoRow('Players', String(ctx.players.length));
+        h += infoRow('Schedule', hasSchedule ? 'Created · ' + ctx.matches.length + ' matches' : 'Not created yet');
+        if (champ) h += infoRow('Champion', '🏆 ' + esc(champ));
+        if (third) h += infoRow('3rd place', '🥉 ' + esc(third));
+        if (owner) {
+          h += '<div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:16px"><button type="button" class="btn btn-glass btn-sm" data-mk-copy="' + esc(t.id) + '">Copy link</button>' +
+            '<button type="button" class="btn btn-glass btn-sm" data-mk-delt="' + esc(t.id) + '" data-name="' + esc(t.name) + '" style="color:#ff8089">Delete tournament</button></div>';
+        }
+        h += '</div>';
+        if (t.format === 'league') {
+          h += '<div class="pf-panel glass" style="margin-top:18px"><h3 class="pf-title">Series settings</h3><p class="pf-note" style="margin-top:0">Leagues play single matches — there are no series to set.</p></div>';
+          return h;
+        }
+        var G = (ctx.settings && ctx.settings.groups) || 2;
+        var B = t.format === 'groups' ? G * 2 : bracketSizeFor(Math.max(2, ctx.players.length));
+        var rounds = koRoundList(B);
+        var legs = (ctx.settings && ctx.settings.legs) || defaultSettings().legs;
+        var editable = owner && !hasSchedule;
+        h += '<div class="pf-panel glass" style="margin-top:18px"><h3 class="pf-title">Number of matches per series</h3>';
+        h += '<p class="pf-note" style="margin:0 0 6px">How many matches each knockout pairing is played over. The winner of most legs advances; a series level on legs is decided on total goals.</p>';
+        if (t.format === 'groups') {
+          if (editable) {
+            h += '<div class="mk-set-row"><span>Number of groups</span><select id="mkGroupsCount" class="mk-select"><option value="2"' + (G === 2 ? ' selected' : '') + '>2 groups</option><option value="4"' + (G === 4 ? ' selected' : '') + '>4 groups</option></select></div>';
+          } else {
+            h += infoRow('Groups', String(G));
+          }
+        }
+        rounds.forEach(function (r) { h += setRowHTML(r.label, r.key, legs[r.key] || 1, editable, 1); });
+        if (B >= 4) h += setRowHTML('Third place', 'third', legs.third || 0, editable, 0);
+        if (hasSchedule) h += '<p class="pf-note">Series settings are locked once a schedule exists. Reset the schedule from the Matches tab to change them.</p>';
+        h += '</div>';
+        return h;
+      }
+
+      /* ----- Players tab ----- */
+      function avatarHTML(ctx, p) {
+        var mm = null;
+        (ctx.members || []).forEach(function (x) { if (String(x.id) === String(p.member_id)) mm = x; });
+        if (mm && mm.avatar_url) return '<img class="mk-ava" src="' + esc(mm.avatar_url) + '" alt="" />';
+        var initial = (String(p.name || '?').trim().charAt(0) || '?').toUpperCase();
+        return '<span class="mk-ava mk-ava-init">' + esc(initial) + '</span>';
+      }
+      function playersTabHTML(ctx) {
+        var owner = ctx.owner !== false;
+        var locked = ctx.matches.length > 0;
+        var h = '';
+        if (owner && !locked) {
+          h += '<div class="pf-panel glass" style="margin-bottom:18px"><h3 class="pf-title">Add a player</h3>' +
+            '<input id="mkPAddSearch" type="text" placeholder="Search members by name…" autocomplete="off" style="width:100%;margin-bottom:8px" />' +
+            '<div style="display:flex;gap:10px;flex-wrap:wrap"><select id="mkPAddSel" class="mk-select" style="flex:1;min-width:180px"><option value="">— pick a registered member —</option></select>' +
+            '<button type="button" class="btn btn-glass btn-sm" data-mk-padd>Add member</button></div>' +
+            '<p class="pf-note" style="margin-top:8px">Registered members only — each member can be added once. The order below is the seeding: use ↑ ↓ to arrange it.</p></div>';
+        }
+        if (locked) h += '<div class="t-note glass" style="margin-bottom:16px"><b>Schedule created — players are locked.</b><p style="margin-top:6px">Reset the schedule from the Matches tab if you need to change the line-up or the seeding.</p></div>';
+        if (!ctx.players.length) h += '<div class="t-note glass"><b>No players yet.</b></div>';
+        h += ctx.players.map(function (p, i) {
+          var ctl = '';
+          if (owner && !locked) {
+            ctl = '<button type="button" class="mk-icon-btn" data-mk-pup="' + p.id + '"' + (i === 0 ? ' disabled' : '') + ' aria-label="Move ' + esc(p.name) + ' up">↑</button>' +
+              '<button type="button" class="mk-icon-btn" data-mk-pdown="' + p.id + '"' + (i === ctx.players.length - 1 ? ' disabled' : '') + ' aria-label="Move ' + esc(p.name) + ' down">↓</button>' +
+              '<button type="button" class="mk-icon-btn" data-mk-prm="' + p.id + '" style="color:#ff8089" aria-label="Remove ' + esc(p.name) + '">✕</button>';
+          }
+          return '<div class="mk-ent-row">' + avatarHTML(ctx, p) + '<span class="mk-ent-seed">#' + (i + 1) + '</span>' +
+            '<span class="mk-ent-name">' + esc(p.name) + (p.group_label ? ' <span class="role-sm">· Group ' + esc(p.group_label) + '</span>' : '') + '</span>' + ctl + '</div>';
+        }).join('');
+        return h;
+      }
+      function renderPAddOptions() {
+        var ctx = state.detail; if (!ctx) return;
+        var sel = $('mkPAddSel'); if (!sel) return;
+        var inp = $('mkPAddSearch');
+        var q = inp ? String(inp.value || '').trim().toLowerCase() : '';
+        var added = {};
+        ctx.players.forEach(function (p) { added[String(p.member_id)] = 1; });
+        var list = (ctx.members || []).filter(function (mm) {
+          return !added[String(mm.id)] && (!q || String(mm.full_name || '').toLowerCase().indexOf(q) !== -1);
+        });
+        if (!list.length) {
+          sel.innerHTML = '<option value="" disabled selected>' + (q ? 'No member matches your search' : 'No more members to add') + '</option>';
+          return;
+        }
+        var h = '';
+        if (list.length !== 1) h += '<option value="">— pick a registered member —</option>';
+        h += list.map(function (mm) { return '<option value="' + mm.id + '">' + esc(mm.full_name) + '</option>'; }).join('');
+        sel.innerHTML = h;
+        if (list.length === 1) sel.value = String(list[0].id);
+      }
+      function playersAdd() {
+        var ctx = state.detail; if (!ctx || ctx.matches.length) return;
+        var sel = $('mkPAddSel'); if (!sel || !sel.value) return;
+        var mm = null;
+        (ctx.members || []).forEach(function (x) { if (String(x.id) === String(sel.value)) mm = x; });
+        if (!mm) return;
+        var s = db(); if (!s) return;
+        s.from('kwc_tournament_players').insert({ tournament_id: ctx.t.id, name: mm.full_name, member_id: mm.id, seed: ctx.players.length + 1 }).select().single()
+          .then(function (res) {
+            if (res.error) { toast('Could not add', 'Please try again.'); return; }
+            ctx.players.push(res.data);
+            renderCtx();
+          })
+          .catch(function () { toast('Could not add', 'Please try again.'); });
+      }
+      function playersRemove(pid) {
+        var ctx = state.detail; if (!ctx || ctx.matches.length) return;
+        var s = db(); if (!s) return;
+        s.from('kwc_tournament_players').delete().eq('id', pid)
+          .then(function (res) {
+            if (res.error) throw res.error;
+            ctx.players = ctx.players.filter(function (p) { return String(p.id) !== String(pid); });
+            var jobs = [];
+            ctx.players.forEach(function (p, i) {
+              if (p.seed !== i + 1) { p.seed = i + 1; jobs.push(s.from('kwc_tournament_players').update({ seed: i + 1 }).eq('id', p.id)); }
+            });
+            return Promise.all(jobs);
+          })
+          .then(function () { renderCtx(); })
+          .catch(function () { toast('Could not remove', 'Please try again.'); renderCtx(); });
+      }
+      function playersMove(pid, dir) {
+        var ctx = state.detail; if (!ctx || ctx.matches.length) return;
+        var s = db(); if (!s) return;
+        var idx = -1;
+        ctx.players.forEach(function (p, i) { if (String(p.id) === String(pid)) idx = i; });
+        var j = idx + dir;
+        if (idx < 0 || j < 0 || j >= ctx.players.length) return;
+        var A = ctx.players[idx], Bp = ctx.players[j];
+        var sa = A.seed, sb = Bp.seed;
+        A.seed = sb; Bp.seed = sa;
+        ctx.players.sort(function (a, b) { return (a.seed || 0) - (b.seed || 0); });
+        renderCtx();
+        Promise.all([
+          s.from('kwc_tournament_players').update({ seed: sb }).eq('id', A.id),
+          s.from('kwc_tournament_players').update({ seed: sa }).eq('id', Bp.id)
+        ]).catch(function () {});
+      }
+
+      /* ----- Matches tab ----- */
+      function legRowHTML(mt, editable, legLabel) {
+        var p1 = mt.p1 ? esc(mt.p1) : '<span class="tbd">TBD</span>';
+        var p2 = mt.p2 ? esc(mt.p2) : '<span class="tbd">TBD</span>';
+        var ctl = '';
+        if (editable && mt.p1 && mt.p2) {
+          ctl = '<input class="mk-score-inp" id="mk-s1-' + mt.id + '" type="number" min="0" step="1" value="' + (mt.played && mt.s1 !== null ? mt.s1 : '') + '" aria-label="Score for ' + esc(mt.p1) + '" />' +
+            '<span class="mk-m-vs">–</span>' +
+            '<input class="mk-score-inp" id="mk-s2-' + mt.id + '" type="number" min="0" step="1" value="' + (mt.played && mt.s2 !== null ? mt.s2 : '') + '" aria-label="Score for ' + esc(mt.p2) + '" />' +
+            '<button type="button" class="btn btn-red btn-sm" data-mk-save="' + mt.id + '">' + (mt.played ? 'Update' : 'Save result') + '</button>';
+        }
+        var mid = playedScore(mt);
+        return '<div class="mk-match">' + (legLabel ? '<span class="mk-leg-tag">' + esc(legLabel) + '</span>' : '') +
+          '<span class="mk-m-names">' + p1 + ' <span class="mk-m-vs">vs</span> ' + p2 + '</span>' +
+          (ctl ? ctl : (mid ? '<span class="mk-m-score">' + mid + '</span>' : '<span class="mk-m-vs">No result</span>')) + '</div>';
+      }
+      /* entries: [{s, idx}] where idx indexes into seriesList(matches)
+         (the pick handler recomputes the same list). */
+      function seriesSectionsHTML(ctx, entries, editable, showHeadings) {
+        var picks = ctx.settings ? ctx.settings.picks : {};
+        var h = '';
+        var curHead = null, inRound = 0;
+        entries.forEach(function (entry) {
+          var s = entry.s;
+          var head = s.stage === 'thirdplace' ? 'Third place' : (s.round_label || ('Round ' + s.round));
+          if (showHeadings && head !== curHead) {
+            curHead = head; inRound = 0;
+            h += '<h4 class="mk-round-h">' + esc(head) + '</h4>';
+          }
+          inRound++;
+          var oc = seriesOutcome(s, picks);
+          var title = s.stage === 'thirdplace' ? 'Third place' : 'Series ' + inRound;
+          var names = (s.p1 ? esc(s.p1) : '<span class="tbd">TBD</span>') + ' <span class="mk-m-vs">vs</span> ' + (s.p2 ? esc(s.p2) : '<span class="tbd">TBD</span>');
+          var status;
+          if (oc.decided) status = '🏆 ' + esc(oc.winner) + ' wins the series' + (oc.total > 1 ? ' · legs ' + oc.w1 + '–' + oc.w2 : '');
+          else if (oc.tied) status = oc.pick ? 'Tied — ' + esc(oc.pick) + ' advances (owner\u2019s pick)' : 'Series tied — level on legs and goals';
+          else if (!s.p1 || !s.p2) status = 'Waiting for earlier rounds';
+          else status = oc.played + ' of ' + oc.total + ' legs played' + (oc.total > 1 ? ' · legs ' + oc.w1 + '–' + oc.w2 + ' · goals ' + oc.g1 + '–' + oc.g2 : '');
+          h += '<div class="mk-series"><div class="mk-series-h"><span class="mk-series-title">' + esc(title) + '</span>' +
+            '<span class="mk-series-names">' + names + '</span><span class="mk-series-status">' + status + '</span></div>';
+          s.legs.forEach(function (l, li) { h += legRowHTML(l, editable, oc.total > 1 ? 'Leg ' + (li + 1) : ''); });
+          if (oc.tied && !oc.pick && editable) {
+            h += '<div class="mk-pick-row"><span class="mk-warn">Series tied — pick who advances:</span>' +
+              '<select id="mk-pick-' + entry.idx + '" class="mk-select"><option value="' + esc(s.p1) + '">' + esc(s.p1) + '</option><option value="' + esc(s.p2) + '">' + esc(s.p2) + '</option></select>' +
+              '<button type="button" class="btn btn-red btn-sm" data-mk-pick="' + entry.idx + '">Advance</button></div>';
+          } else if (oc.tied && !oc.pick && !editable) {
+            h += '<p class="pf-note" style="padding-bottom:8px">This series is tied — the owner will pick who advances.</p>';
+          }
+          h += '</div>';
+        });
+        return h;
+      }
+      function drawChooserHTML(ctx) {
+        function opt(type, title, sub) {
+          return '<button type="button" class="mk-draw-opt" data-mk-draw="' + type + '"><span class="mk-draw-t">' + title + '</span><span class="mk-draw-s">' + sub + '</span></button>';
+        }
+        var what = ctx.t.format === 'league' ? 'fixtures' : ctx.t.format === 'groups' ? 'groups' : 'bracket';
+        return '<div class="mk-dialog"><h3 class="pf-title">Create schedule — select type</h3>' +
+          '<p class="pf-sub">How should the ' + what + ' be drawn?</p>' +
+          opt('random', '🎲 Random', 'Everyone is shuffled before the draw.') +
+          opt('seeded', '🔢 By seeding', 'The player order on the Players tab is the seeding.') +
+          opt('randseed', '🎲🔢 Random by seeding', 'Top seeds are kept apart and drawn randomly; the rest are shuffled in.') +
+          opt('manual', '✏️ Manual', ctx.t.format === 'league' ? 'Use the current player order, exactly as it stands.' : 'You arrange it yourself.') +
+          '<div style="margin-top:12px"><button type="button" class="btn btn-glass btn-sm" data-mk-sched-cancel>Cancel</button></div></div>';
+      }
+      function manSelect(id, selected, names) {
+        var h = '<select id="' + id + '" class="mk-select mk-man-sel" style="flex:1;min-width:150px"><option value="">— Bye —</option>';
+        names.forEach(function (nm) { h += '<option value="' + esc(nm) + '"' + (nm === selected ? ' selected' : '') + '>' + esc(nm) + '</option>'; });
+        return h + '</select>';
+      }
+      function manualHTML(ctx) {
+        var names = ctx.players.map(function (p) { return p.name; });
+        var foot = '<p class="pf-note" id="mkManHint"></p><div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px">' +
+          '<button type="button" class="btn btn-red" id="mkManGen" data-mk-man-gen>Generate schedule</button>' +
+          '<button type="button" class="btn btn-glass" data-mk-sched-cancel>Cancel</button></div></div>';
+        if (ctx.t.format === 'groups') {
+          var G = (ctx.settings && ctx.settings.groups) || 2;
+          var labels = ['A', 'B', 'C', 'D'].slice(0, G);
+          var snake = groupAssign(names, G, 'seeded');
+          var h = '<div class="mk-dialog"><h3 class="pf-title">Manual draw — assign the groups</h3>' +
+            '<p class="pf-sub">Put every player into a group. Sizes must differ by at most 1, with at least 2 players in each group.</p>';
+          ctx.players.forEach(function (p, i) {
+            h += '<div class="mk-man-row"><span class="mk-man-name">' + esc(p.name) + '</span>' +
+              '<select id="mk-man-g-' + i + '" class="mk-select mk-man-sel">' +
+              labels.map(function (L) { return '<option value="' + L + '"' + (snake[p.name] === L ? ' selected' : '') + '>Group ' + L + '</option>'; }).join('') +
+              '</select></div>';
+          });
+          return h + foot;
+        }
+        var N = names.length, B = bracketSizeFor(Math.max(2, N));
+        var slots = bracketSlots(names, 'seeded');
+        var h2 = '<div class="mk-dialog"><h3 class="pf-title">Manual draw — arrange the bracket</h3>' +
+          '<p class="pf-sub">Set each first-round pairing. Every player must be used exactly once; the remaining ' + (B - N) + ' slot' + (B - N === 1 ? '' : 's') + ' stay as byes. Pre-filled with the seeding — rearrange as you like.</p>';
+        for (var i = 0; i < B / 2; i++) {
+          h2 += '<div class="mk-man-row"><span class="mk-leg-tag">Match ' + (i + 1) + '</span>' +
+            manSelect('mk-man-a-' + i, slots[2 * i], names) + '<span class="mk-m-vs">vs</span>' + manSelect('mk-man-b-' + i, slots[2 * i + 1], names) + '</div>';
+        }
+        return h2 + foot;
+      }
+      function manualLeagueHTML() {
+        return '<div class="mk-dialog"><h3 class="pf-title">Manual draw — league</h3>' +
+          '<p class="pf-sub">A league schedule is built from the player order: the fixtures will use the order on the Players tab exactly as it stands. Reorder the players there first if you want a different order.</p>' +
+          '<div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px">' +
+          '<button type="button" class="btn btn-red" data-mk-draw-go>Use current player order</button>' +
+          '<button type="button" class="btn btn-glass" data-mk-sched-cancel>Cancel</button></div></div>';
+      }
+      function validateManual(ctx) {
+        if (!ctx || ctx.schedUI !== 'manual') return false;
+        var hint = $('mkManHint'), gen = $('mkManGen');
+        var ok = false, msg = '';
+        if (ctx.t.format === 'groups') {
+          var G = (ctx.settings && ctx.settings.groups) || 2;
+          var counts = {}, all = true;
+          ctx.players.forEach(function (p, i) {
+            var sel = $('mk-man-g-' + i);
+            var v = sel ? sel.value : '';
+            if (!v) all = false;
+            counts[v] = (counts[v] || 0) + 1;
+          });
+          var sizes = ['A', 'B', 'C', 'D'].slice(0, G).map(function (L) { return counts[L] || 0; });
+          var mn = Math.min.apply(null, sizes), mx = Math.max.apply(null, sizes);
+          ok = all && mn >= 2 && (mx - mn) <= 1;
+          msg = ok ? 'Groups look good — sizes ' + sizes.join(' / ') + '.' :
+            'Group sizes now ' + sizes.join(' / ') + ' — each group needs at least 2 players and sizes may differ by at most 1.';
+        } else {
+          var names = ctx.players.map(function (p) { return p.name; });
+          var N = names.length, B = bracketSizeFor(Math.max(2, N));
+          var seen = {}, placed = 0, dup = false;
+          for (var i = 0; i < B / 2; i++) {
+            ['a', 'b'].forEach(function (side) {
+              var sel = $('mk-man-' + side + '-' + i);
+              var v = sel ? sel.value : '';
+              if (v) { if (seen[v]) dup = true; seen[v] = 1; placed++; }
+            });
+          }
+          ok = !dup && placed === N;
+          msg = dup ? 'A player is picked twice — each player can only be used once.' :
+            (placed === N ? 'All ' + N + ' players placed — ready to generate.' :
+              (N - placed) + ' player' + (N - placed === 1 ? '' : 's') + ' still unplaced.');
+        }
+        if (hint) hint.textContent = msg;
+        if (gen) gen.disabled = !ok;
+        return ok;
+      }
+      function readManual(ctx) {
+        if (ctx.t.format === 'groups') {
+          var assign = {};
+          ctx.players.forEach(function (p, i) {
+            var sel = $('mk-man-g-' + i);
+            assign[p.name] = sel ? sel.value : 'A';
+          });
+          return { assign: assign };
+        }
+        var names = ctx.players.map(function (p) { return p.name; });
+        var B = bracketSizeFor(Math.max(2, names.length)), slots = [];
+        for (var i = 0; i < B / 2; i++) {
+          var a = $('mk-man-a-' + i), b = $('mk-man-b-' + i);
+          slots.push(a && a.value ? a.value : null, b && b.value ? b.value : null);
+        }
+        return { slots: slots };
+      }
+      function matchesTabHTML(ctx) {
+        var t = ctx.t, owner = ctx.owner !== false, matches = ctx.matches;
+        if (!matches.length) {
+          if (!owner) return '<div class="t-note glass"><b>No schedule yet.</b><p style="margin-top:8px">The owner has not created the schedule for this tournament yet.</p></div>';
+          if (ctx.schedUI === 'choose') return drawChooserHTML(ctx);
+          if (ctx.schedUI === 'manual') return manualHTML(ctx);
+          if (ctx.schedUI === 'manualLeague') return manualLeagueHTML();
+          return '<div class="t-note glass" style="text-align:center;padding:34px 22px"><b style="font-size:19px">No schedule yet</b>' +
+            '<p style="margin:10px auto 18px;max-width:470px">The players are set (' + ctx.players.length + '). Create the schedule when you are ready — you will choose how the draw works.</p>' +
+            '<button type="button" class="btn btn-red" data-mk-sched style="font-size:16px;padding:14px 30px">Create Schedule</button></div>';
+        }
+        var h = '';
+        if (owner && matches.every(function (mt) { return !mt.played; })) {
+          h += '<div style="text-align:right;margin-bottom:6px"><button type="button" class="btn btn-glass btn-sm" data-mk-reset style="color:#ff8089">Reset schedule</button></div>';
+        }
+        if (t.format === 'league') {
+          h += fixturesHTML(matches, ['league'], owner, null);
+          return h;
+        }
+        var series = seriesList(matches);
+        if (t.format === 'knockout') {
+          h += seriesSectionsHTML(ctx, series.map(function (s, i) { return { s: s, idx: i }; }), owner, true);
+          return h;
+        }
+        /* groups */
+        groupLabelsOf(ctx).forEach(function (g) {
+          var gMatches = matches.filter(function (mt) { return mt.stage === 'group' && mt.group_label === g; });
+          h += fixturesHTML(gMatches, ['group'], owner, 'Group ' + g + ' — Fixtures');
+        });
+        var koSeries = series.filter(function (s) { return s.stage === 'knockout' || s.stage === 'thirdplace'; });
+        if (koSeries.length) {
+          h += '<h3 class="mk-round-h" style="font-size:18px;margin-top:24px">Knockout Stage</h3>';
+          h += seriesSectionsHTML(ctx, koSeries.map(function (s) { return { s: s, idx: series.indexOf(s) }; }), owner, true);
+        } else {
+          var groupMatches = matches.filter(function (mt) { return mt.stage === 'group'; });
+          var allPlayed = groupMatches.length > 0 && groupMatches.every(function (mt) { return mt.played; });
+          if (allPlayed && owner) {
+            h += '<div class="t-note glass" style="margin-top:18px"><b>Group stage complete.</b><p style="margin:8px 0 14px">The top 2 from each group go through. Generate the knockout bracket now.</p>' +
+              '<button type="button" class="btn btn-red" data-mk-genko>Generate Knockout Stage</button></div>';
+          } else if (allPlayed) {
+            h += '<p class="pf-note" style="margin-top:14px">Group stage complete — the knockout stage has not been generated yet.</p>';
+          }
+        }
+        return h;
+      }
+
+      /* ----- Bracket tab ----- */
+      function bracketRoundsOf(series) {
+        var seen = {}, out = [];
+        series.forEach(function (s) {
+          var k = s.stage + '|' + s.round;
+          if (!seen[k]) {
+            seen[k] = 1;
+            out.push({ stage: s.stage, round: s.round, label: s.stage === 'thirdplace' ? 'Third place' : (s.round_label || ('Round ' + s.round)), key: k });
+          }
+        });
+        return out;
+      }
+      function bracketTreeHTML(ctx, series) {
+        var picks = ctx.settings ? ctx.settings.picks : {};
+        var koOnly = series.filter(function (s) { return s.stage === 'knockout'; });
+        var rounds = bracketRoundsOf(koOnly);
+        var h = '<div class="mk-tree">';
+        rounds.forEach(function (r) {
+          var inRound = koOnly.filter(function (s) { return (s.stage + '|' + s.round) === r.key; });
+          h += '<div class="mk-tcol"><div class="mk-tcol-h">' + esc(r.label) + '</div><div class="mk-tcol-body">';
+          inRound.forEach(function (s) {
+            var oc = seriesOutcome(s, picks);
+            h += '<div class="mk-tcard">' +
+              '<div class="mk-trow"><span>' + (s.p1 ? esc(s.p1) : '<span class="tbd">?</span>') + '</span><span class="sc">' + (oc.played ? oc.w1 : '') + '</span></div>' +
+              '<div class="mk-trow"><span>' + (s.p2 ? esc(s.p2) : '<span class="tbd">?</span>') + '</span><span class="sc">' + (oc.played ? oc.w2 : '') + '</span></div>' +
+              '<div class="mk-tstat">' + (oc.decided ? '🏆 ' + esc(oc.winner) : oc.tied ? (oc.pick ? esc(oc.pick) + ' advances (pick)' : 'Series tied') : oc.played ? 'Legs ' + oc.w1 + '–' + oc.w2 + ' · goals ' + oc.g1 + '–' + oc.g2 : 'No result') + '</div></div>';
+          });
+          h += '</div></div>';
+        });
+        h += '</div>';
+        var th = series.filter(function (s) { return s.stage === 'thirdplace'; });
+        if (th.length) {
+          h += '<h4 class="mk-round-h">Third place</h4>' +
+            seriesSectionsHTML(ctx, th.map(function (s) { return { s: s, idx: series.indexOf(s) }; }), false, false);
+        }
+        return h;
+      }
+      function bracketTabHTML(ctx) {
+        var t = ctx.t;
+        if (t.format === 'league') {
+          return '<div class="pf-panel glass"><h3 class="pf-title">Standings</h3>' +
+            standingsHTML(standingsFor(ctx.players.map(function (p) { return p.name; }), ctx.matches)) + '</div>';
+        }
+        var h = '';
+        if (t.format === 'groups') {
+          var groupsSeen = groupLabelsOf(ctx);
+          if (!groupsSeen.length) {
+            h += '<div class="t-note glass"><b>No groups yet.</b><p style="margin-top:8px">Groups are drawn when the schedule is created from the Matches tab.</p></div>';
+          }
+          groupsSeen.forEach(function (g) {
+            var gNames = ctx.players.filter(function (p) { return p.group_label === g; }).map(function (p) { return p.name; });
+            var gMatches = ctx.matches.filter(function (mt) { return mt.stage === 'group' && mt.group_label === g; });
+            h += '<div class="pf-panel glass" style="margin-bottom:18px"><h3 class="pf-title">Group ' + esc(g) + ' — Standings</h3>' + standingsHTML(standingsFor(gNames, gMatches)) + '</div>';
+          });
+        }
+        var series = seriesList(ctx.matches);
+        var ko = series.filter(function (s) { return s.stage === 'knockout' || s.stage === 'thirdplace'; });
+        if (!ko.length) {
+          if (t.format === 'groups') h += '<p class="pf-note" style="margin-top:14px">The knockout bracket appears here once it is generated from the Matches tab.</p>';
+          else h += '<div class="t-note glass"><b>No bracket yet.</b><p style="margin-top:8px">Create the schedule from the Matches tab and the bracket will appear here.</p></div>';
+          return h;
+        }
+        if (t.format === 'groups') h += '<h3 class="mk-round-h" style="font-size:18px;margin-top:22px">Knockout Stage</h3>';
+        var rounds = bracketRoundsOf(ko);
+        if (!ctx.bracketRound || !rounds.some(function (r) { return r.key === ctx.bracketRound; })) ctx.bracketRound = rounds[0].key;
+        if (!ctx.bracketView) ctx.bracketView = 'list';
+        h += '<div class="mk-bctl"><label>Round <select id="mkBracketRound" class="mk-select">' +
+          rounds.map(function (r) { return '<option value="' + r.key + '"' + (r.key === ctx.bracketRound ? ' selected' : '') + '>' + esc(r.label) + '</option>'; }).join('') +
+          '</select></label><span>' +
+          '<button type="button" class="btn ' + (ctx.bracketView === 'tree' ? 'btn-glass' : 'btn-red') + ' btn-sm" data-mk-bview="list">List</button> ' +
+          '<button type="button" class="btn ' + (ctx.bracketView === 'tree' ? 'btn-red' : 'btn-glass') + ' btn-sm" data-mk-bview="tree">Tree</button></span></div>';
+        if (ctx.bracketView === 'tree') {
+          h += bracketTreeHTML(ctx, series);
+        } else {
+          var sel = ko.filter(function (s) { return (s.stage + '|' + s.round) === ctx.bracketRound; });
+          h += seriesSectionsHTML(ctx, sel.map(function (s) { return { s: s, idx: series.indexOf(s) }; }), false, false);
+        }
+        return h;
+      }
+
+      /* ----- Stats tab ----- */
+      function statsTabHTML(ctx) {
+        var names = ctx.players.map(function (p) { return p.name; });
+        var rows = standingsFor(names, ctx.matches);
+        rows.sort(function (x, y) {
+          if (y.w !== x.w) return y.w - x.w;
+          var gdx = x.gf - x.ga, gdy = y.gf - y.ga;
+          if (gdy !== gdx) return gdy - gdx;
+          if (y.gf !== x.gf) return y.gf - x.gf;
+          return x.name < y.name ? -1 : 1;
+        });
+        var h = '<div class="pf-panel glass"><h3 class="pf-title">Player stats</h3>' +
+          '<p class="pf-note" style="margin:0 0 12px">Every played match counts — league, group and knockout legs alike.</p>' +
+          '<div class="table-wrap"><table class="standings"><thead><tr>' +
+          '<th>#</th><th class="pl">Player</th><th>P</th><th>W</th><th>D</th><th>L</th><th>GF</th><th>GA</th><th>GD</th><th>Win%</th></tr></thead><tbody>';
+        rows.forEach(function (r, i) {
+          var gd = r.gf - r.ga;
+          var wp = r.p ? Math.round(100 * r.w / r.p) : 0;
+          h += '<tr' + (i === 0 ? ' class="top"' : '') + '><td><span class="rank-badge rank-' + (i + 1) + '">' + (i + 1) + '</span></td>' +
+            '<td class="pl">' + esc(r.name) + '</td><td>' + r.p + '</td><td>' + r.w + '</td><td>' + r.d + '</td><td>' + r.l + '</td>' +
+            '<td>' + r.gf + '</td><td>' + r.ga + '</td><td>' + (gd > 0 ? '+' : '') + gd + '</td><td class="pts">' + wp + '%</td></tr>';
+        });
+        return h + '</tbody></table></div></div>';
       }
 
       /* ---------- Owner detail ---------- */
-      function openDetail(tid) {
+      function openDetail(tid, opts) {
+        opts = opts || {};
         var m = me(); if (!m) return;
         var s = db(); if (!s) { setupNote(); return; }
+        if (state.openingId === tid) return;
+        state.openingId = tid;
         state.screen = 'detail';
         setFab(false);
         body('<p class="pf-note">Loading tournament&hellip;</p>');
         s.from('kwc_tournaments').select('*').eq('id', tid).eq('created_by', m.id).single()
           .then(function (res) {
-            if (res.error || !res.data) { loadHome(); return; }
+            if (res.error || !res.data) {
+              state.openingId = null;
+              if (opts.fromRoute) {
+                /* Bad/stale maker link: fall back to the list and
+                   quietly repair the hash. */
+                state.detail = null;
+                try { history.replaceState(null, '', '#maker'); } catch (e) { /* sandboxed iframe */ }
+              }
+              loadHome();
+              return null;
+            }
             var t = res.data;
             return Promise.all([
               s.from('kwc_tournament_players').select('*').eq('tournament_id', tid).order('seed', { ascending: true }),
-              s.from('kwc_tournament_matches').select('*').eq('tournament_id', tid).order('sort', { ascending: true })
+              s.from('kwc_tournament_matches').select('*').eq('tournament_id', tid).order('sort', { ascending: true }),
+              loadMembers(s)
             ]).then(function (rs) {
-              state.detail = { t: t, players: rs[0].data || [], matches: rs[1].data || [] };
-              renderDetail();
-              persistChampion();
+              state.openingId = null;
+              var ctx = {
+                owner: true, t: t,
+                players: rs[0].data || [], matches: rs[1].data || [], members: rs[2] || [],
+                tab: opts.tab || state.openTabOnce || 'details',
+                bracketRound: null, bracketView: 'list', schedUI: null,
+                settings: getSettings(t)
+              };
+              state.openTabOnce = null;
+              state.detail = ctx;
+              state.detailOwner = m.id;
+              if (!opts.fromRoute) pushDetailHash(tid);
+              renderCtx();
+              syncBracket(ctx).then(function (changed) {
+                if (changed) renderCtx();
+                persistChampion();
+              });
             });
           })
-          .catch(function () { loadHome(); });
-      }
-      function renderDetail() {
-        if (!state.detail) return;
-        body(detailHTML(state.detail.t, state.detail.players, state.detail.matches, true));
-      }
-      function persistChampion() {
-        var d = state.detail; if (!d) return;
-        var champ = computeChampion(d.t, d.players, d.matches);
-        if (champ && d.t.champion !== champ) {
-          d.t.champion = champ; d.t.status = 'finished';
-          var s = db(); if (!s) return;
-          s.from('kwc_tournaments').update({ champion: champ, status: 'finished' }).eq('id', d.t.id)
-            .then(function () { renderDetail(); }).catch(function () {});
-        }
+          .catch(function () {
+            state.openingId = null;
+            if (opts.fromRoute) {
+              state.detail = null;
+              try { history.replaceState(null, '', '#maker'); } catch (e) { /* sandboxed iframe */ }
+            }
+            loadHome();
+          });
       }
 
       /* ---------- Shared detail (read-only, via RPC) ---------- */
@@ -7891,7 +8869,14 @@
               body('<div class="t-note glass"><b>Tournament not found.</b><p style="margin-top:8px">This link may be wrong, or the tournament may have been deleted.</p></div>');
               return;
             }
-            body(detailHTML(res.data.tournament, res.data.players || [], res.data.matches || [], false));
+            var t = res.data.tournament;
+            state.shared = {
+              owner: false, t: t,
+              players: res.data.players || [], matches: res.data.matches || [], members: [],
+              tab: 'details', bracketRound: null, bracketView: 'list', schedUI: null,
+              settings: getSettings(t)
+            };
+            renderCtx();
           })
           .catch(function () {
             if (state.mode === 'shared' && state.token === token) body('<div class="t-note glass"><b>Tournament not found.</b></div>');
@@ -7901,7 +8886,7 @@
       /* ---------- Copy link ---------- */
       function copyLinkFor(tid) {
         var t = null;
-        if (state.detail && state.detail.t.id === tid) t = state.detail.t;
+        [state.detail, state.shared].forEach(function (c) { if (c && c.t && c.t.id === tid) t = c.t; });
         if (!t && state.list) state.list.forEach(function (x) { if (x.id === tid) t = x; });
         if (!t || !t.share_token) { toast('Link not ready', 'Open the tournament and try again.'); return; }
         var url = window.location.origin + window.location.pathname + '#maker-shared/' + t.share_token;
@@ -7911,77 +8896,50 @@
         } else { window.prompt('Copy this link:', url); }
       }
 
-      /* ---------- Result entry (creator) ---------- */
+      /* ---------- Result entry (creator) ----------
+         Saving writes the leg's score, then syncBracket recomputes
+         the whole bracket (series winners advance, stale slots clear,
+         third place fills). Emptying both boxes clears the result. */
       function saveResult(mid, btn) {
-        var d = state.detail; if (!d) return;
+        var ctx = state.detail; if (!ctx) return;
         var s = db(); if (!s) return;
         var mt = null;
-        d.matches.forEach(function (x) { if (String(x.id) === String(mid)) mt = x; });
+        ctx.matches.forEach(function (x) { if (String(x.id) === String(mid)) mt = x; });
         if (!mt) return;
         var i1 = $('mk-s1-' + mid), i2 = $('mk-s2-' + mid);
         var v1 = i1 ? i1.value.trim() : '', v2 = i2 ? i2.value.trim() : '';
+        if (v1 === '' && v2 === '') {
+          if (!mt.played) { toast('Enter both scores', 'Scores must be numbers, 0 or more — or clear a saved result by emptying both boxes.'); return; }
+          btn.disabled = true;
+          s.from('kwc_tournament_matches').update({ s1: null, s2: null, played: false }).eq('id', mt.id)
+            .then(function (res) {
+              if (res.error) throw res.error;
+              mt.s1 = null; mt.s2 = null; mt.played = false;
+              return syncBracket(ctx);
+            })
+            .then(function () {
+              toast('Result cleared', mt.p1 + ' vs ' + mt.p2);
+              renderCtx();
+              persistChampion();
+            })
+            .catch(function () { btn.disabled = false; toast('Could not clear', 'Please try again.'); });
+          return;
+        }
         if (v1 === '' || v2 === '' || isNaN(+v1) || isNaN(+v2) || +v1 < 0 || +v2 < 0) { toast('Enter both scores', 'Scores must be numbers, 0 or more.'); return; }
         var s1 = parseInt(v1, 10), s2 = parseInt(v2, 10);
-        var oldWinner = winnerOf(mt);
         btn.disabled = true;
         s.from('kwc_tournament_matches').update({ s1: s1, s2: s2, played: true }).eq('id', mt.id)
           .then(function (res) {
             if (res.error) throw res.error;
             mt.s1 = s1; mt.s2 = s2; mt.played = true;
-            var newWinner = winnerOf(mt);
-            var jobs = [];
-            if (mt.next_match) {
-              var nm = null;
-              d.matches.forEach(function (x) { if (String(x.id) === String(mt.next_match)) nm = x; });
-              if (nm) {
-                var cur = mt.slot === 0 ? nm.p1 : nm.p2;
-                if (cur === oldWinner || cur === null) {
-                  var upd = {}; upd[mt.slot === 0 ? 'p1' : 'p2'] = newWinner;
-                  if (mt.slot === 0) nm.p1 = newWinner; else nm.p2 = newWinner;
-                  jobs.push(s.from('kwc_tournament_matches').update(upd).eq('id', nm.id));
-                }
-              }
-            }
-            return Promise.all(jobs);
+            return syncBracket(ctx);
           })
           .then(function () {
-            if (mt.stage === 'knockout' && s1 === s2) toast('Saved — but a draw', 'Knockout matches need a winner before anyone advances.');
-            else toast('Result saved', mt.p1 + ' ' + s1 + ' – ' + s2 + ' ' + mt.p2);
-            renderDetail();
+            toast('Result saved', mt.p1 + ' ' + s1 + ' – ' + s2 + ' ' + mt.p2);
+            renderCtx();
             persistChampion();
           })
           .catch(function () { btn.disabled = false; toast('Could not save', 'Please try again.'); });
-      }
-
-      /* ---------- Generate knockout from groups (creator) ---------- */
-      function generateKo(btn) {
-        var d = state.detail; if (!d) return;
-        var s = db(); if (!s) return;
-        var t = d.t, players = d.players, matches = d.matches;
-        var groupsSeen = [];
-        players.forEach(function (p) { if (p.group_label && groupsSeen.indexOf(p.group_label) === -1) groupsSeen.push(p.group_label); });
-        groupsSeen.sort();
-        if (groupsSeen.length !== 2 && groupsSeen.length !== 4) { toast('Cannot generate', 'This tournament does not have 2 or 4 groups.'); return; }
-        var top = {};
-        groupsSeen.forEach(function (g) {
-          var gNames = players.filter(function (p) { return p.group_label === g; }).map(function (p) { return p.name; });
-          var gMatches = matches.filter(function (mt) { return mt.stage === 'group' && mt.group_label === g; });
-          var rows = standingsFor(gNames, gMatches);
-          top[g] = [rows[0].name, rows[1].name];
-        });
-        var seeded;
-        if (groupsSeen.length === 2) {
-          seeded = [top.A[0], top.B[1], top.B[0], top.A[1]];
-        } else {
-          seeded = [top.A[0], top.B[1], top.C[0], top.D[1], top.B[0], top.A[1], top.D[0], top.C[1]];
-        }
-        var maxSort = 0;
-        matches.forEach(function (mt) { if ((mt.sort || 0) > maxSort) maxSort = mt.sort || 0; });
-        btn.disabled = true; btn.textContent = 'Generating…';
-        var gen = koGen(t.id, 'knockout', seeded, maxSort + 1);
-        insertMatches(t.id, gen.rows, gen.wiring)
-          .then(function () { toast('Knockout stage ready', 'The bracket has been generated from the group standings.'); openDetail(t.id); })
-          .catch(function () { btn.disabled = false; btn.textContent = 'Generate Knockout Stage'; toast('Could not generate', 'Please try again.'); });
       }
 
       /* ---------- Delete (creator) ---------- */
@@ -7992,7 +8950,10 @@
           .then(function (res) {
             if (res.error) { toast('Could not delete', 'Please try again.'); return; }
             toast('Tournament deleted', name + ' is gone.');
-            state.detail = null;
+            if (state.detail && state.detail.t.id === tid) {
+              state.detail = null;
+              try { history.replaceState(null, '', '#maker'); } catch (e) { /* sandboxed iframe */ }
+            }
             loadHome();
           })
           .catch(function () { toast('Could not delete', 'Please try again.'); });
@@ -8009,7 +8970,40 @@
         var copy = e.target.closest('[data-mk-copy]');
         if (copy) { copyLinkFor(copy.getAttribute('data-mk-copy')); return; }
         if (e.target.closest('[data-mk-create]')) { state.screen = 'wizard'; openWizard(); return; }
-        if (e.target.closest('[data-mk-back]')) { state.detail = null; loadHome(); return; }
+        if (e.target.closest('[data-mk-back]')) {
+          state.detail = null;
+          state.routeKey = null;
+          try { history.pushState(null, '', '#maker'); } catch (err) { /* sandboxed iframe */ }
+          loadHome();
+          return;
+        }
+        var tabBtn = e.target.closest('[data-mk-tab]');
+        if (tabBtn) {
+          var tc = currentCtx();
+          if (tc) {
+            tc.tab = tabBtn.getAttribute('data-mk-tab');
+            if (tc.owner !== false) replaceDetailHash(tc.t.id, tc.tab);
+            renderCtx();
+          }
+          return;
+        }
+        var step = e.target.closest('[data-mk-step]');
+        if (step && state.detail) {
+          var sctx = state.detail;
+          if (!sctx.matches.length && sctx.settings) {
+            var k = step.getAttribute('data-k');
+            var dv = parseInt(step.getAttribute('data-mk-step'), 10) || 0;
+            var cur = k === 'third' ? (sctx.settings.legs.third || 0) : (sctx.settings.legs[k] || 1);
+            var minV = k === 'third' ? 0 : 1;
+            var nv = Math.max(minV, Math.min(9, cur + dv));
+            if (nv !== cur) {
+              sctx.settings.legs[k] = nv;
+              saveSettings(sctx);
+              renderCtx();
+            }
+          }
+          return;
+        }
         if (e.target.closest('[data-mk-add-member]')) {
           var sel = $('mkMemberSel');
           if (sel && sel.value && state.wiz) {
@@ -8023,6 +9017,69 @@
         if (rm && state.wiz) { state.wiz.entrants.splice(parseInt(rm.getAttribute('data-mk-rm'), 10), 1); renderEntrants(); return; }
         var gen = e.target.closest('[data-mk-generate]');
         if (gen) { doCreate(gen); return; }
+        if (e.target.closest('[data-mk-padd]')) { playersAdd(); return; }
+        var prm = e.target.closest('[data-mk-prm]');
+        if (prm) { playersRemove(prm.getAttribute('data-mk-prm')); return; }
+        var pup = e.target.closest('[data-mk-pup]');
+        if (pup) { playersMove(pup.getAttribute('data-mk-pup'), -1); return; }
+        var pdown = e.target.closest('[data-mk-pdown]');
+        if (pdown) { playersMove(pdown.getAttribute('data-mk-pdown'), 1); return; }
+        if (e.target.closest('[data-mk-sched]') && state.detail) {
+          state.detail.schedUI = 'choose';
+          state.detail.tab = 'matches';
+          renderCtx();
+          return;
+        }
+        if (e.target.closest('[data-mk-sched-cancel]') && state.detail) {
+          state.detail.schedUI = null;
+          renderCtx();
+          return;
+        }
+        var drawBtn = e.target.closest('[data-mk-draw]');
+        if (drawBtn && state.detail) {
+          var type = drawBtn.getAttribute('data-mk-draw');
+          if (type === 'manual') {
+            state.detail.schedUI = state.detail.t.format === 'league' ? 'manualLeague' : 'manual';
+            renderCtx();
+            return;
+          }
+          runSchedule(type, null);
+          return;
+        }
+        if (e.target.closest('[data-mk-draw-go]') && state.detail) { runSchedule('manual', null); return; }
+        var manGen = e.target.closest('[data-mk-man-gen]');
+        if (manGen && state.detail) {
+          if (!validateManual(state.detail)) { toast('Draw not ready', 'Check the note under the pairings.'); return; }
+          runSchedule('manual', readManual(state.detail));
+          return;
+        }
+        var rst = e.target.closest('[data-mk-reset]');
+        if (rst) { resetSchedule(); return; }
+        var pickBtn = e.target.closest('[data-mk-pick]');
+        if (pickBtn && state.detail) {
+          var pctx = state.detail;
+          var idx = parseInt(pickBtn.getAttribute('data-mk-pick'), 10);
+          var psel = $('mk-pick-' + idx);
+          var sr = seriesList(pctx.matches)[idx];
+          if (sr && psel && psel.value) {
+            pctx.settings.picks[sr.key] = psel.value;
+            pickBtn.disabled = true;
+            saveSettings(pctx)
+              .then(function () { return syncBracket(pctx); })
+              .then(function () {
+                toast('Advancing', psel.value + ' goes through.');
+                renderCtx();
+                persistChampion();
+              });
+          }
+          return;
+        }
+        var bv = e.target.closest('[data-mk-bview]');
+        if (bv) {
+          var bc = currentCtx();
+          if (bc) { bc.bracketView = bv.getAttribute('data-mk-bview'); renderCtx(); }
+          return;
+        }
         var save = e.target.closest('[data-mk-save]');
         if (save) { saveResult(save.getAttribute('data-mk-save'), save); return; }
         var gko = e.target.closest('[data-mk-genko]');
@@ -8032,11 +9089,34 @@
       });
       document.addEventListener('input', function (e) {
         if (e.target && e.target.id === 'mkMemberSearch') renderMemberOptions();
+        if (e.target && e.target.id === 'mkPAddSearch') renderPAddOptions();
       });
       document.addEventListener('change', function (e) {
         if (e.target && e.target.id === 'mkFormat') {
           var row = $('mkGroupsRow');
           if (row) row.hidden = e.target.value !== 'groups';
+          return;
+        }
+        if (e.target && e.target.id === 'mkGroupsCount' && state.detail) {
+          var gctx = state.detail;
+          var v = parseInt(e.target.value, 10) || 2;
+          if (gctx.players.length < 2 * v) {
+            toast('Not enough players', 'With ' + v + ' groups you need at least ' + (2 * v) + ' players — 2 per group.');
+            renderCtx();
+            return;
+          }
+          gctx.settings.groups = v;
+          saveSettings(gctx);
+          renderCtx();
+          return;
+        }
+        if (e.target && e.target.id === 'mkBracketRound') {
+          var bc = currentCtx();
+          if (bc) { bc.bracketRound = e.target.value; renderCtx(); }
+          return;
+        }
+        if (e.target && e.target.classList && e.target.classList.contains('mk-man-sel') && state.detail) {
+          validateManual(state.detail);
         }
       });
       document.addEventListener('keydown', function (e) {
@@ -8045,6 +9125,12 @@
           openDetail(e.target.getAttribute('data-mk-open'));
         }
       });
+      /* Route changes (Back/Forward, pasted links): the main router
+         runs first and may select home for maker hashes — re-assert
+         the maker route straight away; the 1s tick is the backstop. */
+      window.addEventListener('popstate', tick);
+      window.addEventListener('hashchange', tick);
+      tick();
     })();
   </script>
 </body>
