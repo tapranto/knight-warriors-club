@@ -9535,7 +9535,8 @@
       /* call = { id, kind:'voice'|'video', role:'caller'|'callee',
                   partner:{id, name, avatar_url}, state, pc, chan,
                   localStream, iceQueue:[], answered, startedAt,
-                  ringTimer, uiTimer, discTimer, logged, speakerOn } */
+                  ringTimer, uiTimer, discTimer, logged, speakerOn,
+                  speakerApplied, routeLocked, routeToastShown } */
 
       /* ---------------- personal channel (invites) ---------------- */
       var personalChan = null, personalFor = null;
@@ -9648,7 +9649,7 @@
             if (c.discTimer) { clearTimeout(c.discTimer); c.discTimer = null; }
             if (!c.answered) {
               c.answered = true; c.startedAt = Date.now(); c.state = 'in-call';
-              ringStop();
+              stopRing();
               paintCall();
               /* Default output for this call kind: earpiece for voice,
                  loudspeaker for video (silently kept as-is if the
@@ -9693,7 +9694,18 @@
          Speaker button flips it mid-call. Devices are enumerated at
          call-connect time, when mic permission is already granted and
          device labels are readable. Any routing failure leaves the
-         audio exactly as it was and never breaks the call. */
+         audio exactly as it was and never breaks the call.
+
+         State semantics: speakerOn is the REQUESTED route; the button's
+         active look follows speakerApplied — true only after a
+         successful setSinkId() to the speaker device — so speaker-off
+         renders neutral, never "alert" red. The non-speaker target is
+         NEVER a speaker-labelled device: an earpiece/receiver/phone
+         label wins, then the 'default' device when it is not the
+         speaker device, then any other non-speaker output. If every
+         output IS the speaker (single-output phone), routing cannot
+         change: routeLocked is set for the call and a toggle attempt
+         explains that once. */
       function remoteAudioEl(c) {
         return c.kind === 'video' ? $('kwcRemoteVideo') : $('kwcRemoteAudio');
       }
@@ -9703,28 +9715,59 @@
           if (!silent) toast("Speaker switching isn't available in this browser.", '');
           if (call === c) paintCall();
         }
+        function locked() {
+          c.routeLocked = true;
+          if (!silent && !c.routeToastShown) {
+            c.routeToastShown = true;
+            toast("Speaker switching isn't available in this browser.", '');
+          }
+          if (call === c) paintCall();
+        }
         if (!el || typeof el.setSinkId !== 'function' ||
             !navigator.mediaDevices || typeof navigator.mediaDevices.enumerateDevices !== 'function') { revert(); return; }
         navigator.mediaDevices.enumerateDevices().then(function (devices) {
           if (call !== c) return;
           var outs = (devices || []).filter(function (d) { return d.kind === 'audiooutput'; });
+          function isSpeakerDev(d) { return /speaker/i.test(d.label || ''); }
           var speaker = null, ear = null, i, d;
           for (i = 0; i < outs.length; i++) {
             d = outs[i];
-            if (!speaker && /speaker/i.test(d.label || '')) speaker = d;
-            if (!ear && d.deviceId === 'default') ear = d;
+            if (!speaker && isSpeakerDev(d)) speaker = d;
           }
-          if (!ear) {
+          var target;
+          if (on) {
+            if (!speaker) { revert(); return; }
+            target = speaker.deviceId;
+          } else {
+            /* (a) an earpiece / receiver / phone output that is not
+                   itself speaker-labelled ("Speakerphone" must not
+                   qualify as the "phone" target); */
             for (i = 0; i < outs.length; i++) {
               d = outs[i];
-              if (/earpiece|phone/i.test(d.label || '')) { ear = d; break; }
+              if (d !== speaker && !isSpeakerDev(d) && /earpiece|receiver|phone/i.test(d.label || '')) { ear = d; break; }
             }
+            /* (b) the 'default' device, when it is not the speaker device; */
+            if (!ear) {
+              for (i = 0; i < outs.length; i++) {
+                d = outs[i];
+                if (d.deviceId === 'default' && d !== speaker && !isSpeakerDev(d)) { ear = d; break; }
+              }
+            }
+            /* (c) any remaining output that is not the speaker device. */
+            if (!ear) {
+              for (i = 0; i < outs.length; i++) {
+                d = outs[i];
+                if (d !== speaker && !isSpeakerDev(d)) { ear = d; break; }
+              }
+            }
+            /* (d) every output is the speaker: no real alternative. */
+            if (!ear) { locked(); return; }
+            target = ear.deviceId;
           }
-          var target = on ? (speaker ? speaker.deviceId : null) : (ear ? ear.deviceId : '');
-          if (target === null) { revert(); return; }
           el.setSinkId(target).then(function () {
             if (call !== c) return;
             c.speakerOn = on;
+            c.speakerApplied = !!on;
             paintCall();
           }).catch(function () { revert(); });
         }).catch(function () { revert(); });
@@ -9748,9 +9791,10 @@
               kind: kind, role: 'caller', partner: partner, state: 'outgoing',
               pc: null, chan: null, localStream: stream, iceQueue: [],
               answered: false, startedAt: 0, ringTimer: null, uiTimer: null, discTimer: null, logged: false,
-              speakerOn: kind === 'video'
+              speakerOn: kind === 'video', speakerApplied: false, routeLocked: false, routeToastShown: false
             };
             paintCall(); showOverlay(true); attachLocal(c);
+            startRing('out');
             joinCallChannel(c, function () {
               sendPersonal(partnerId, 'invite', {
                 callId: c.id, kind: kind,
@@ -9792,14 +9836,14 @@
           partner: { id: p.from.id, name: p.from.name || 'Member', avatar_url: p.from.avatar_url || null },
           state: 'ringing', pc: null, chan: null, localStream: null, iceQueue: [],
           answered: false, startedAt: 0, ringTimer: null, uiTimer: null, discTimer: null, logged: false,
-          speakerOn: p.kind === 'video'
+          speakerOn: p.kind === 'video', speakerApplied: false, routeLocked: false, routeToastShown: false
         };
-        paintCall(); showOverlay(true); ringStart();
+        paintCall(); showOverlay(true); startRing('in');
         call.ringTimer = setTimeout(function () { if (call && call.state === 'ringing') endCall('gone', { silent: true }); }, CALLEE_RING_MS);
       }
       function acceptCall() {
         var c = call; if (!c || c.role !== 'callee' || c.state !== 'ringing') return;
-        ringStop();
+        stopRing();
         if (c.ringTimer) { clearTimeout(c.ringTimer); c.ringTimer = null; }
         navigator.mediaDevices.getUserMedia(c.kind === 'video' ? { audio: true, video: true } : { audio: true })
           .then(function (stream) {
@@ -9847,7 +9891,7 @@
         var c = call; if (!c) return;
         opts = opts || {};
         call = null;
-        ringStop();
+        stopRing();
         if (c.ringTimer) clearTimeout(c.ringTimer);
         if (c.uiTimer) clearInterval(c.uiTimer);
         if (c.discTimer) clearTimeout(c.discTimer);
@@ -9898,6 +9942,7 @@
         '.kwc-cbtn.green{background:#1faa55;border-color:#1faa55}',
         '.kwc-cbtn.red{background:#c8102e;border-color:#c8102e}',
         '.kwc-cbtn.off{background:#c8102e;border-color:#c8102e;opacity:.85}',
+        '.kwc-cbtn.on{background:#1faa55;border-color:#1faa55}',
         '.kwc-cbtn svg{width:24px;height:24px}',
         '.kwc-cwrap{display:flex;flex-direction:column;align-items:center;gap:5px}',
         '.kwc-clab{font-size:10px;line-height:1;letter-spacing:.05em;text-transform:uppercase;opacity:.7}'
@@ -9965,7 +10010,11 @@
         $('kwcBtnCam').parentNode.style.display = (c.kind === 'video' && c.state !== 'ringing') ? '' : 'none';
         var muted = c.localStream && c.localStream.getAudioTracks().some(function (t) { return !t.enabled; });
         $('kwcBtnMute').classList.toggle('off', !!muted);
-        $('kwcBtnSpeaker').classList.toggle('off', !c.speakerOn);
+        /* Speaker button: neutral at rest; the active (.on) look
+           follows speakerApplied — speaker output truly applied —
+           never the red .off treatment used for Mute/Camera. */
+        $('kwcBtnSpeaker').classList.remove('off');
+        $('kwcBtnSpeaker').classList.toggle('on', !!c.speakerApplied);
         var camOff = c.localStream && c.localStream.getVideoTracks().some(function (t) { return !t.enabled; });
         $('kwcBtnCam').classList.toggle('off', !!camOff);
       }
@@ -9974,34 +10023,135 @@
         c.uiTimer = setInterval(function () { if (call === c && c.state === 'in-call') paintCall(); }, 500);
       }
 
-      /* Ringtone: gentle WebAudio two-beep loop; fully guarded. */
-      var ringCtx = null, ringTimer = null;
-      function ringStart() {
+      /* ---------------- ring audio: ringback + ringtone + vibration -------
+         One shared, lazily-created AudioContext serves both ring
+         directions. Browsers only let an AudioContext actually sound
+         after the user has interacted with the page, so the context is
+         created + resume()d on the FIRST pointer/key/touch interaction
+         with the site (ringUnlock below) — long before any call — and
+         resume() is re-attempted defensively at every ring start. The
+         old code created its context inside the invite handler (a
+         websocket event, not a gesture), so it stayed suspended and
+         the ring was silently swallowed; the caller had no ringback
+         tone at all. Everything here is guarded: audio or vibration
+         failure must never affect a call.
+
+         startRing('out') — caller ringback: classic dual-tone
+         440Hz + 480Hz, 2s on / 4s off, looping while the outgoing
+         call waits to be answered.
+         startRing('in')  — callee ringtone: the established gentle
+         two-beep (440Hz, at 0s and 0.35s) every 2.2s, looping for the
+         whole ringing state, plus a matching vibration pattern on
+         devices that support it.
+         stopRing()       — the ONLY way rings end; every call-state
+         transition that leaves a ringing state calls it. */
+      var ringCtx = null;        /* shared AudioContext, once created */
+      var ringMode = null;       /* 'in' | 'out' | null */
+      var ringCycleTimer = null; /* interval driving the pattern loop */
+      var ringNodes = [];        /* live oscillators, stopped by stopRing */
+      var vibeTimer = null;      /* incoming-call vibration loop */
+
+      function ringCtxGet() {
         try {
           var AC = window.AudioContext || window.webkitAudioContext;
-          if (!AC) return;
+          if (!AC) return null;
           if (!ringCtx) ringCtx = new AC();
-          if (ringCtx.state === 'suspended') { var r = ringCtx.resume(); if (r && r.catch) r.catch(function () {}); }
-          var beep = function () {
-            try {
-              if (!ringCtx) return;
-              var t = ringCtx.currentTime;
-              [0, 0.35].forEach(function (off) {
-                var o = ringCtx.createOscillator(), g = ringCtx.createGain();
-                o.type = 'sine'; o.frequency.value = 440;
-                g.gain.setValueAtTime(0.0001, t + off);
-                g.gain.exponentialRampToValueAtTime(0.07, t + off + 0.03);
-                g.gain.exponentialRampToValueAtTime(0.0001, t + off + 0.28);
-                o.connect(g); g.connect(ringCtx.destination);
-                o.start(t + off); o.stop(t + off + 0.3);
-              });
-            } catch (e) {}
-          };
-          beep();
-          ringTimer = setInterval(beep, 2200);
+          if (ringCtx.state === 'suspended') {
+            var r = ringCtx.resume();
+            if (r && r.catch) r.catch(function () {});
+          }
+          return ringCtx;
+        } catch (e) { return null; }
+      }
+
+      /* Unlock the shared context on the user's first interaction
+         with the site, so rings are allowed to play later. */
+      var ringUnlocked = false;
+      function ringUnlock() {
+        if (ringUnlocked) return;
+        ringUnlocked = true;
+        ringCtxGet();
+        try {
+          window.removeEventListener('pointerdown', ringUnlock);
+          window.removeEventListener('keydown', ringUnlock);
+          window.removeEventListener('touchstart', ringUnlock);
         } catch (e) {}
       }
-      function ringStop() { if (ringTimer) { clearInterval(ringTimer); ringTimer = null; } }
+      try {
+        window.addEventListener('pointerdown', ringUnlock, { passive: true });
+        window.addEventListener('keydown', ringUnlock);
+        window.addEventListener('touchstart', ringUnlock, { passive: true });
+      } catch (e) {}
+
+      /* Schedule one sine tone on the shared context; fully guarded. */
+      function ringTone(freq, at, dur, vol) {
+        var ctx = ringCtx; if (!ctx) return;
+        try {
+          var o = ctx.createOscillator(), g = ctx.createGain();
+          o.type = 'sine'; o.frequency.value = freq;
+          g.gain.setValueAtTime(0.0001, at);
+          g.gain.exponentialRampToValueAtTime(vol, at + 0.03);
+          if (dur > 0.12) g.gain.setValueAtTime(vol, at + Math.max(0.04, dur - 0.06));
+          g.gain.exponentialRampToValueAtTime(0.0001, at + dur);
+          o.connect(g); g.connect(ctx.destination);
+          o.onended = function () {
+            var i = ringNodes.indexOf(o);
+            if (i >= 0) ringNodes.splice(i, 1);
+          };
+          ringNodes.push(o);
+          o.start(at); o.stop(at + dur + 0.05);
+        } catch (e) {}
+      }
+      function ringCycleIn() {
+        var ctx = ringCtxGet();
+        if (!ctx || ringMode !== 'in') return;
+        var t = ctx.currentTime + 0.02;
+        ringTone(440, t, 0.3, 0.07);
+        ringTone(440, t + 0.35, 0.3, 0.07);
+      }
+      function ringCycleOut() {
+        var ctx = ringCtxGet();
+        if (!ctx || ringMode !== 'out') return;
+        var t = ctx.currentTime + 0.02;
+        ringTone(440, t, 2.0, 0.08);
+        ringTone(480, t, 2.0, 0.08);
+      }
+      function vibeStart() {
+        try {
+          if (!navigator.vibrate) return;
+          var pulse = function () { try { navigator.vibrate([400, 200, 400]); } catch (e) {} };
+          pulse();
+          vibeTimer = setInterval(pulse, 2200);
+        } catch (e) {}
+      }
+      function vibeStop() {
+        if (vibeTimer) { clearInterval(vibeTimer); vibeTimer = null; }
+        try { if (navigator.vibrate) navigator.vibrate(0); } catch (e) {}
+      }
+      function startRing(mode) {
+        stopRing();
+        ringMode = mode;
+        ringCtxGet(); /* defensive resume at every ring start */
+        try {
+          if (mode === 'in') {
+            ringCycleIn();
+            ringCycleTimer = setInterval(ringCycleIn, 2200);
+            vibeStart();
+          } else if (mode === 'out') {
+            ringCycleOut();
+            ringCycleTimer = setInterval(ringCycleOut, 6000);
+          }
+        } catch (e) {}
+      }
+      function stopRing() {
+        ringMode = null;
+        if (ringCycleTimer) { clearInterval(ringCycleTimer); ringCycleTimer = null; }
+        ringNodes.splice(0).forEach(function (o) {
+          try { o.stop(); } catch (e) {}
+          try { o.disconnect(); } catch (e) {}
+        });
+        vibeStop();
+      }
 
       /* ---------------- wiring ---------------- */
       document.addEventListener('click', function (e) {
@@ -10045,6 +10195,7 @@
       });
       window.addEventListener('beforeunload', function () {
         if (!call) return;
+        stopRing();
         chanSend(call, 'bye', {});
         if (call.localStream) call.localStream.getTracks().forEach(function (t) { try { t.stop(); } catch (e) {} });
       });
