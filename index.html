@@ -9651,8 +9651,9 @@
               c.answered = true; c.startedAt = Date.now(); c.state = 'in-call';
               stopRing();
               paintCall();
-              /* Default output for this call kind: earpiece for voice,
-                 loudspeaker for video (silently kept as-is if the
+              /* Web calls are speaker-first for every call kind:
+                 apply the requested route (speakerOn starts true for
+                 both voice and video; silently kept as-is if the
                  browser cannot switch outputs). */
               applySpeaker(c, c.speakerOn, true);
             }
@@ -9688,24 +9689,32 @@
       /* ---------------- speaker / earpiece routing ----------------
          The remote stream plays through kwcRemoteVideo (video calls) or
          kwcRemoteAudio (voice calls) — the same element attachRemote()
-         feeds. Where the browser supports output-device selection
-         (HTMLMediaElement.setSinkId), a connected VOICE call defaults
-         to the earpiece and a VIDEO call to the loudspeaker; the
-         Speaker button flips it mid-call. Devices are enumerated at
-         call-connect time, when mic permission is already granted and
-         device labels are readable. Any routing failure leaves the
+         feeds. WEB CALLS ARE SPEAKER-FIRST: most phones hand a web
+         page only the loudspeaker anyway, so speakerOn starts TRUE for
+         voice and video alike, and the connect-time application below
+         routes to the speaker where the browser supports output-device
+         selection (HTMLMediaElement.setSinkId). Devices are enumerated
+         at call-connect time, when mic permission is already granted
+         and device labels are readable. Any routing failure leaves the
          audio exactly as it was and never breaks the call.
 
          State semantics: speakerOn is the REQUESTED route; the button's
-         active look follows speakerApplied — true only after a
-         successful setSinkId() to the speaker device — so speaker-off
-         renders neutral, never "alert" red. The non-speaker target is
+         active look follows speakerApplied, so speaker-off renders
+         neutral, never "alert" red. speakerApplied is set after a
+         successful setSinkId() to the speaker device — AND on devices
+         that offer no other route at all (no setSinkId support, or
+         enumeration yields only the single default output): there the
+         sound really is coming out of that only/default route, so
+         claiming "speaker on" is the honest state. But when a genuine
+         non-speaker alternative output exists and the switch to the
+         speaker device fails, speakerApplied stays false — the audio
+         may really be on that other output. The non-speaker target is
          NEVER a speaker-labelled device: an earpiece/receiver/phone
          label wins, then the 'default' device when it is not the
-         speaker device, then any other non-speaker output. If every
-         output IS the speaker (single-output phone), routing cannot
-         change: routeLocked is set for the call and a toggle attempt
-         explains that once. */
+         speaker device, then any other non-speaker output. When no
+         non-speaker output exists, the call is routeLocked: the
+         Speaker button stays on and a tap explains once per call that
+         the speaker is always on for web calls. */
       function remoteAudioEl(c) {
         return c.kind === 'video' ? $('kwcRemoteVideo') : $('kwcRemoteAudio');
       }
@@ -9719,12 +9728,35 @@
           c.routeLocked = true;
           if (!silent && !c.routeToastShown) {
             c.routeToastShown = true;
-            toast("Speaker switching isn't available in this browser.", '');
+            toast('Speaker is always on for web calls.', '');
           }
           if (call === c) paintCall();
         }
-        if (!el || typeof el.setSinkId !== 'function' ||
-            !navigator.mediaDevices || typeof navigator.mediaDevices.enumerateDevices !== 'function') { revert(); return; }
+        if (!el) { revert(); return; }
+        /* Speaker tap while the route is locked (no non-speaker output
+           exists on this device): the call stays on the speaker; say
+           so once per call. */
+        if (!on && c.routeLocked) {
+          if (!silent && !c.routeToastShown) {
+            c.routeToastShown = true;
+            toast('Speaker is always on for web calls.', '');
+          }
+          if (call === c) paintCall();
+          return;
+        }
+        if (typeof el.setSinkId !== 'function' ||
+            !navigator.mediaDevices || typeof navigator.mediaDevices.enumerateDevices !== 'function') {
+          /* No output selection exists in this browser at all: audio
+             can only ever play on the default route. When the speaker
+             is what's wanted, that route IS the applied one — mark it
+             applied and locked rather than pretending a switch (or a
+             switch failure) happened. */
+          if (on) {
+            c.speakerOn = true; c.speakerApplied = true; c.routeLocked = true;
+            if (call === c) paintCall();
+          } else revert();
+          return;
+        }
         navigator.mediaDevices.enumerateDevices().then(function (devices) {
           if (call !== c) return;
           var outs = (devices || []).filter(function (d) { return d.kind === 'audiooutput'; });
@@ -9736,7 +9768,18 @@
           }
           var target;
           if (on) {
-            if (!speaker) { revert(); return; }
+            if (!speaker) {
+              /* No distinct speaker-labelled output. If enumeration
+                 found only the single default route, the sound is
+                 already coming out of that only route — applied and
+                 locked. With several unlabelled outputs we cannot
+                 tell which one is actually playing, so stay honest. */
+              if (outs.length === 1) {
+                c.speakerOn = true; c.speakerApplied = true; c.routeLocked = true;
+                paintCall();
+              } else revert();
+              return;
+            }
             target = speaker.deviceId;
           } else {
             /* (a) an earpiece / receiver / phone output that is not
@@ -9769,7 +9812,27 @@
             c.speakerOn = on;
             c.speakerApplied = !!on;
             paintCall();
-          }).catch(function () { revert(); });
+          }).catch(function () {
+            if (call !== c) return;
+            if (on) {
+              /* The switch to the speaker device was rejected. If a
+                 genuine non-speaker alternative output exists, the
+                 audio may really be playing there — honest failure,
+                 speakerApplied stays false. If none exists, the
+                 sound is necessarily on the only/speaker route:
+                 applied, and locked (there is nothing to switch to). */
+              var alt = false, j;
+              for (j = 0; j < outs.length; j++) {
+                if (outs[j] !== speaker && !isSpeakerDev(outs[j])) { alt = true; break; }
+              }
+              if (!alt) {
+                c.speakerOn = true; c.speakerApplied = true; c.routeLocked = true;
+                paintCall();
+                return;
+              }
+            }
+            revert();
+          });
         }).catch(function () { revert(); });
       }
 
@@ -9791,7 +9854,7 @@
               kind: kind, role: 'caller', partner: partner, state: 'outgoing',
               pc: null, chan: null, localStream: stream, iceQueue: [],
               answered: false, startedAt: 0, ringTimer: null, uiTimer: null, discTimer: null, logged: false,
-              speakerOn: kind === 'video', speakerApplied: false, routeLocked: false, routeToastShown: false
+              speakerOn: true, speakerApplied: false, routeLocked: false, routeToastShown: false
             };
             paintCall(); showOverlay(true); attachLocal(c);
             startRing('out');
@@ -9836,7 +9899,7 @@
           partner: { id: p.from.id, name: p.from.name || 'Member', avatar_url: p.from.avatar_url || null },
           state: 'ringing', pc: null, chan: null, localStream: null, iceQueue: [],
           answered: false, startedAt: 0, ringTimer: null, uiTimer: null, discTimer: null, logged: false,
-          speakerOn: p.kind === 'video', speakerApplied: false, routeLocked: false, routeToastShown: false
+          speakerOn: true, speakerApplied: false, routeLocked: false, routeToastShown: false
         };
         paintCall(); showOverlay(true); startRing('in');
         call.ringTimer = setTimeout(function () { if (call && call.state === 'ringing') endCall('gone', { silent: true }); }, CALLEE_RING_MS);
