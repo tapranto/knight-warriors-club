@@ -1409,6 +1409,10 @@
       .mk-select option { color: #111; }
       .mk-ava { width: 38px; height: 38px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
       .mk-ava-init { display: grid; place-items: center; background: rgba(225,29,46,0.16); border: 1px solid var(--glass-border-red); color: #ffd7db; font-weight: 800; font-size: 16px; }
+      .mk-chip { display: inline-flex; align-items: center; gap: 8px; vertical-align: middle; min-width: 0; }
+      .mk-chip .mk-ava { object-fit: cover; }
+      .mk-chip-name { min-width: 0; }
+      .mk-ava-unknown { display: grid; place-items: center; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.18); color: var(--faint); font-weight: 800; }
       .mk-icon-btn { width: 34px; height: 34px; border-radius: 50%; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.05); color: #fff; font-size: 15px; cursor: pointer; display: grid; place-items: center; flex-shrink: 0; }
       .mk-icon-btn:hover:not(:disabled) { background: rgba(225,29,46,0.22); border-color: var(--red); }
       .mk-icon-btn:disabled { opacity: 0.35; cursor: default; }
@@ -8082,21 +8086,21 @@
         });
         return rows;
       }
-      function standingsHTML(rows) {
+      function standingsHTML(rows, ctx) {
         var h = '<div class="table-wrap"><table class="standings"><thead><tr>' +
           '<th>#</th><th class="pl">Player</th><th>P</th><th>W</th><th>D</th><th>L</th><th>GF</th><th>GA</th><th>GD</th><th>Pts</th></tr></thead><tbody>';
         rows.forEach(function (r, i) {
           var gd = r.gf - r.ga;
           h += '<tr' + (i === 0 ? ' class="top"' : '') + '><td><span class="rank-badge rank-' + (i + 1) + '">' + (i + 1) + '</span></td>' +
-            '<td class="pl">' + esc(r.name) + '</td><td>' + r.p + '</td><td>' + r.w + '</td><td>' + r.d + '</td><td>' + r.l + '</td>' +
+            '<td class="pl">' + playerChip(ctx, r.name, 30) + '</td><td>' + r.p + '</td><td>' + r.w + '</td><td>' + r.d + '</td><td>' + r.l + '</td>' +
             '<td>' + r.gf + '</td><td>' + r.ga + '</td><td>' + (gd > 0 ? '+' : '') + gd + '</td><td class="pts">' + r.pts + '</td></tr>';
         });
         return h + '</tbody></table></div>';
       }
       function playedScore(mt) { return (mt.played && mt.s1 !== null && mt.s2 !== null) ? mt.s1 + ' – ' + mt.s2 : ''; }
-      function matchRowHTML(mt, editable) {
-        var p1 = mt.p1 ? esc(mt.p1) : '<span class="tbd">TBD</span>';
-        var p2 = mt.p2 ? esc(mt.p2) : '<span class="tbd">TBD</span>';
+      function matchRowHTML(ctx, mt, editable) {
+        var p1 = playerChip(ctx, mt.p1, 30, 'TBD');
+        var p2 = playerChip(ctx, mt.p2, 30, 'TBD');
         var mid = playedScore(mt);
         var ctl = '';
         if (editable && mt.p1 && mt.p2) {
@@ -8108,7 +8112,7 @@
         return '<div class="mk-match"><span class="mk-m-names">' + p1 + ' <span class="mk-m-vs">vs</span> ' + p2 + '</span>' +
           (ctl ? ctl : (mid ? '<span class="mk-m-score">' + mid + '</span>' : '<span class="mk-m-vs">No result</span>')) + '</div>';
       }
-      function fixturesHTML(matches, stages, owner, title) {
+      function fixturesHTML(ctx, matches, stages, owner, title) {
         var ms = matches.filter(function (mt) { return stages.indexOf(mt.stage) !== -1; });
         if (!ms.length) return '';
         var byRound = {}, order = [];
@@ -8117,7 +8121,7 @@
         var h = '<div style="margin-top:20px">' + (title ? '<h3 class="mk-round-h" style="font-size:18px">' + esc(title) + '</h3>' : '');
         order.forEach(function (k) {
           var label = byRound[k][0].round_label || ('Round ' + k);
-          h += '<h4 class="mk-round-h">' + esc(label) + '</h4>' + byRound[k].map(function (mt) { return matchRowHTML(mt, owner); }).join('');
+          h += '<h4 class="mk-round-h">' + esc(label) + '</h4>' + byRound[k].map(function (mt) { return matchRowHTML(ctx, mt, owner); }).join('');
         });
         return h + '</div>';
       }
@@ -8307,8 +8311,8 @@
           h += '<div class="mk-head-row"><div class="mk-head-title"><h3>' + esc(t.name) + '</h3>' +
             '<p>' + esc(t.game) + ' · ' + esc(FORMAT_LABEL[t.format] || t.format) + ' · ' + ctx.players.length + ' players · <span class="mk-badge">Shared · view only</span></p></div></div>';
         }
-        if (champ) h += '<div class="mk-champ">🏆 Champion — <b>' + esc(champ) + '</b></div>';
-        if (third) h += '<div class="mk-champ">🥉 3rd place — <b>' + esc(third) + '</b></div>';
+        if (champ) h += '<div class="mk-champ">🏆 Champion — <b>' + playerChip(ctx, champ, 32) + '</b></div>';
+        if (third) h += '<div class="mk-champ">🥉 3rd place — <b>' + playerChip(ctx, third, 32) + '</b></div>';
         var tabs = [['details', 'Details'], ['players', 'Players'], ['bracket', 'Bracket'], ['matches', 'Matches'], ['stats', 'Stats']];
         h += '<div class="mk-tabs">' + tabs.map(function (tb) {
           return '<button type="button" class="mk-tab' + (ctx.tab === tb[0] ? ' active' : '') + '" data-mk-tab="' + tb[0] + '">' + tb[1] + '</button>';
@@ -8346,8 +8350,8 @@
         h += infoRow('Created', created && !isNaN(created.getTime()) ? esc(created.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })) : '—');
         h += infoRow('Players', String(ctx.players.length));
         h += infoRow('Schedule', hasSchedule ? 'Created · ' + ctx.matches.length + ' matches' : 'Not created yet');
-        if (champ) h += infoRow('Champion', '🏆 ' + esc(champ));
-        if (third) h += infoRow('3rd place', '🥉 ' + esc(third));
+        if (champ) h += infoRow('Champion', '🏆 ' + playerChip(ctx, champ, 30));
+        if (third) h += infoRow('3rd place', '🥉 ' + playerChip(ctx, third, 30));
         if (owner) {
           h += '<div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:16px"><button type="button" class="btn btn-glass btn-sm" data-mk-copy="' + esc(t.id) + '">Copy link</button>' +
             '<button type="button" class="btn btn-glass btn-sm" data-mk-delt="' + esc(t.id) + '" data-name="' + esc(t.name) + '" style="color:#ff8089">Delete tournament</button></div>';
@@ -8379,6 +8383,40 @@
       }
 
       /* ----- Players tab ----- */
+      /* Match rows store participant names only, so resolve photos by
+         joining the tournament players (member_id + name) to the member
+         rows already held on the context. The map is rebuilt if the
+         player/member sets change (notably when the shared view's
+         guest avatar lookup returns). */
+      function avatarMapFor(ctx) {
+        if (!ctx) return {};
+        var stamp = (ctx.players || []).length + ':' + (ctx.members || []).length;
+        if (ctx._avatarMap && ctx._avatarStamp === stamp) return ctx._avatarMap;
+        var byMemberId = {};
+        (ctx.members || []).forEach(function (mm) {
+          if (mm && mm.id !== null && mm.id !== undefined) byMemberId[String(mm.id)] = mm.avatar_url || null;
+        });
+        var map = {};
+        (ctx.players || []).forEach(function (p) {
+          if (p && p.name && map[p.name] === undefined) map[p.name] = (p.member_id !== null && p.member_id !== undefined) ? (byMemberId[String(p.member_id)] || null) : null;
+        });
+        ctx._avatarMap = map;
+        ctx._avatarStamp = stamp;
+        return map;
+      }
+      function playerChip(ctx, name, sizePx, unknownLabel) {
+        var size = Math.max(20, Math.round(sizePx || 30));
+        var style = 'width:' + size + 'px;height:' + size + 'px;font-size:' + Math.max(11, Math.round(size * 0.45)) + 'px;';
+        if (!name) {
+          return '<span class="mk-chip"><span class="mk-ava mk-ava-unknown" style="' + style + '" aria-hidden="true">?</span>' +
+            (unknownLabel ? '<span class="mk-chip-name tbd">' + esc(unknownLabel) + '</span>' : '') + '</span>';
+        }
+        var url = avatarMapFor(ctx)[name];
+        var avatar = url
+          ? '<img class="mk-ava" src="' + esc(url) + '" alt="" style="' + style + '" />'
+          : '<span class="mk-ava mk-ava-init" style="' + style + '">' + esc((String(name).trim().charAt(0) || '?').toUpperCase()) + '</span>';
+        return '<span class="mk-chip">' + avatar + '<span class="mk-chip-name">' + esc(name) + '</span></span>';
+      }
       function avatarHTML(ctx, p) {
         var mm = null;
         (ctx.members || []).forEach(function (x) { if (String(x.id) === String(p.member_id)) mm = x; });
@@ -8481,9 +8519,9 @@
       }
 
       /* ----- Matches tab ----- */
-      function legRowHTML(mt, editable, legLabel) {
-        var p1 = mt.p1 ? esc(mt.p1) : '<span class="tbd">TBD</span>';
-        var p2 = mt.p2 ? esc(mt.p2) : '<span class="tbd">TBD</span>';
+      function legRowHTML(ctx, mt, editable, legLabel) {
+        var p1 = playerChip(ctx, mt.p1, 30, 'TBD');
+        var p2 = playerChip(ctx, mt.p2, 30, 'TBD');
         var ctl = '';
         if (editable && mt.p1 && mt.p2) {
           ctl = '<input class="mk-score-inp" id="mk-s1-' + mt.id + '" type="number" min="0" step="1" value="' + (mt.played && mt.s1 !== null ? mt.s1 : '') + '" aria-label="Score for ' + esc(mt.p1) + '" />' +
@@ -8512,15 +8550,15 @@
           inRound++;
           var oc = seriesOutcome(s, picks);
           var title = s.stage === 'thirdplace' ? 'Third place' : 'Series ' + inRound;
-          var names = (s.p1 ? esc(s.p1) : '<span class="tbd">TBD</span>') + ' <span class="mk-m-vs">vs</span> ' + (s.p2 ? esc(s.p2) : '<span class="tbd">TBD</span>');
+          var names = playerChip(ctx, s.p1, 32, 'TBD') + ' <span class="mk-m-vs">vs</span> ' + playerChip(ctx, s.p2, 32, 'TBD');
           var status;
-          if (oc.decided) status = '🏆 ' + esc(oc.winner) + ' wins the series' + (oc.total > 1 ? ' · legs ' + oc.w1 + '–' + oc.w2 : '');
-          else if (oc.tied) status = oc.pick ? 'Tied — ' + esc(oc.pick) + ' advances (owner\u2019s pick)' : 'Series tied — level on legs and goals';
+          if (oc.decided) status = '🏆 ' + playerChip(ctx, oc.winner, 26) + ' wins the series' + (oc.total > 1 ? ' · legs ' + oc.w1 + '–' + oc.w2 : '');
+          else if (oc.tied) status = oc.pick ? 'Tied — ' + playerChip(ctx, oc.pick, 26) + ' advances (owner\u2019s pick)' : 'Series tied — level on legs and goals';
           else if (!s.p1 || !s.p2) status = 'Waiting for earlier rounds';
           else status = oc.played + ' of ' + oc.total + ' legs played' + (oc.total > 1 ? ' · legs ' + oc.w1 + '–' + oc.w2 + ' · goals ' + oc.g1 + '–' + oc.g2 : '');
           h += '<div class="mk-series"><div class="mk-series-h"><span class="mk-series-title">' + esc(title) + '</span>' +
             '<span class="mk-series-names">' + names + '</span><span class="mk-series-status">' + status + '</span></div>';
-          s.legs.forEach(function (l, li) { h += legRowHTML(l, editable, oc.total > 1 ? 'Leg ' + (li + 1) : ''); });
+          s.legs.forEach(function (l, li) { h += legRowHTML(ctx, l, editable, oc.total > 1 ? 'Leg ' + (li + 1) : ''); });
           if (oc.tied && !oc.pick && editable) {
             h += '<div class="mk-pick-row"><span class="mk-warn">Series tied — pick who advances:</span>' +
               '<select id="mk-pick-' + entry.idx + '" class="mk-select"><option value="' + esc(s.p1) + '">' + esc(s.p1) + '</option><option value="' + esc(s.p2) + '">' + esc(s.p2) + '</option></select>' +
@@ -8657,7 +8695,7 @@
           h += '<div style="text-align:right;margin-bottom:6px"><button type="button" class="btn btn-glass btn-sm" data-mk-reset style="color:#ff8089">Reset schedule</button></div>';
         }
         if (t.format === 'league') {
-          h += fixturesHTML(matches, ['league'], owner, null);
+          h += fixturesHTML(ctx, matches, ['league'], owner, null);
           return h;
         }
         var series = seriesList(matches);
@@ -8668,7 +8706,7 @@
         /* groups */
         groupLabelsOf(ctx).forEach(function (g) {
           var gMatches = matches.filter(function (mt) { return mt.stage === 'group' && mt.group_label === g; });
-          h += fixturesHTML(gMatches, ['group'], owner, 'Group ' + g + ' — Fixtures');
+          h += fixturesHTML(ctx, gMatches, ['group'], owner, 'Group ' + g + ' — Fixtures');
         });
         var koSeries = series.filter(function (s) { return s.stage === 'knockout' || s.stage === 'thirdplace'; });
         if (koSeries.length) {
@@ -8710,9 +8748,9 @@
           inRound.forEach(function (s) {
             var oc = seriesOutcome(s, picks);
             h += '<div class="mk-tcard">' +
-              '<div class="mk-trow"><span>' + (s.p1 ? esc(s.p1) : '<span class="tbd">?</span>') + '</span><span class="sc">' + (oc.played ? oc.w1 : '') + '</span></div>' +
-              '<div class="mk-trow"><span>' + (s.p2 ? esc(s.p2) : '<span class="tbd">?</span>') + '</span><span class="sc">' + (oc.played ? oc.w2 : '') + '</span></div>' +
-              '<div class="mk-tstat">' + (oc.decided ? '🏆 ' + esc(oc.winner) : oc.tied ? (oc.pick ? esc(oc.pick) + ' advances (pick)' : 'Series tied') : oc.played ? 'Legs ' + oc.w1 + '–' + oc.w2 + ' · goals ' + oc.g1 + '–' + oc.g2 : 'No result') + '</div></div>';
+              '<div class="mk-trow"><span>' + playerChip(ctx, s.p1, 28) + '</span><span class="sc">' + (oc.played ? oc.w1 : '') + '</span></div>' +
+              '<div class="mk-trow"><span>' + playerChip(ctx, s.p2, 28) + '</span><span class="sc">' + (oc.played ? oc.w2 : '') + '</span></div>' +
+              '<div class="mk-tstat">' + (oc.decided ? '🏆 ' + playerChip(ctx, oc.winner, 24) : oc.tied ? (oc.pick ? playerChip(ctx, oc.pick, 24) + ' advances (pick)' : 'Series tied') : oc.played ? 'Legs ' + oc.w1 + '–' + oc.w2 + ' · goals ' + oc.g1 + '–' + oc.g2 : 'No result') + '</div></div>';
           });
           h += '</div></div>';
         });
@@ -8728,7 +8766,7 @@
         var t = ctx.t;
         if (t.format === 'league') {
           return '<div class="pf-panel glass"><h3 class="pf-title">Standings</h3>' +
-            standingsHTML(standingsFor(ctx.players.map(function (p) { return p.name; }), ctx.matches)) + '</div>';
+            standingsHTML(standingsFor(ctx.players.map(function (p) { return p.name; }), ctx.matches), ctx) + '</div>';
         }
         var h = '';
         if (t.format === 'groups') {
@@ -8739,7 +8777,7 @@
           groupsSeen.forEach(function (g) {
             var gNames = ctx.players.filter(function (p) { return p.group_label === g; }).map(function (p) { return p.name; });
             var gMatches = ctx.matches.filter(function (mt) { return mt.stage === 'group' && mt.group_label === g; });
-            h += '<div class="pf-panel glass" style="margin-bottom:18px"><h3 class="pf-title">Group ' + esc(g) + ' — Standings</h3>' + standingsHTML(standingsFor(gNames, gMatches)) + '</div>';
+            h += '<div class="pf-panel glass" style="margin-bottom:18px"><h3 class="pf-title">Group ' + esc(g) + ' — Standings</h3>' + standingsHTML(standingsFor(gNames, gMatches), ctx) + '</div>';
           });
         }
         var series = seriesList(ctx.matches);
@@ -8786,7 +8824,7 @@
           var gd = r.gf - r.ga;
           var wp = r.p ? Math.round(100 * r.w / r.p) : 0;
           h += '<tr' + (i === 0 ? ' class="top"' : '') + '><td><span class="rank-badge rank-' + (i + 1) + '">' + (i + 1) + '</span></td>' +
-            '<td class="pl">' + esc(r.name) + '</td><td>' + r.p + '</td><td>' + r.w + '</td><td>' + r.d + '</td><td>' + r.l + '</td>' +
+            '<td class="pl">' + playerChip(ctx, r.name, 30) + '</td><td>' + r.p + '</td><td>' + r.w + '</td><td>' + r.d + '</td><td>' + r.l + '</td>' +
             '<td>' + r.gf + '</td><td>' + r.ga + '</td><td>' + (gd > 0 ? '+' : '') + gd + '</td><td class="pts">' + wp + '%</td></tr>';
         });
         return h + '</tbody></table></div></div>';
@@ -8851,6 +8889,29 @@
       }
 
       /* ---------- Shared detail (read-only, via RPC) ---------- */
+      /* The RPC gives the players' member ids but not their photos.
+         Look up just those members' avatar URLs; the club's public
+         member rows are readable by guests. Any failure simply leaves
+         the initial-letter circles in place. */
+      function loadSharedAvatars(ctx) {
+        var s = db(); if (!s || !ctx) return;
+        var ids = [], seen = {};
+        (ctx.players || []).forEach(function (p) {
+          if (p && p.member_id !== null && p.member_id !== undefined && !seen[String(p.member_id)]) {
+            seen[String(p.member_id)] = 1;
+            ids.push(p.member_id);
+          }
+        });
+        if (!ids.length) return;
+        s.from('members').select('id, avatar_url').in('id', ids)
+          .then(function (res) {
+            if (state.shared !== ctx || res.error) return;
+            ctx.members = res.data || [];
+            ctx._avatarStamp = null;
+            renderCtx();
+          })
+          .catch(function () { /* initials remain as the fallback */ });
+      }
       function loadShared(token) {
         setFab(false);
         body('<p class="pf-note">Loading tournament&hellip;</p>');
@@ -8871,6 +8932,7 @@
               settings: getSettings(t)
             };
             renderCtx();
+            loadSharedAvatars(state.shared);
           })
           .catch(function () {
             if (state.mode === 'shared' && state.token === token) body('<div class="t-note glass"><b>Tournament not found.</b></div>');
