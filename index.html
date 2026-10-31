@@ -8,6 +8,8 @@
     <link rel="icon" type="image/x-icon" href="favicon.ico" />
     <link rel="icon" type="image/png" sizes="192x192" href="favicon-192.png" />
     <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#0a101c" />
     <title>Knight Warriors Club</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -1273,7 +1275,8 @@
         font-family: var(--font-body); font-size: 11.5px; font-weight: 700; line-height: 15px; text-align: center;
       }
       .avatar-badge[hidden] { display: none; }
-      .bell-wrap { position: relative; flex: 0 0 auto; }
+      .bell-wrap { position: relative; flex: 0 0 auto; display: flex; align-items: center; gap: 10px; }
+      @media (max-width: 640px) { .bell-wrap { gap: 6px; } }
       .bell-wrap[hidden] { display: none; }
       .bell-btn { position: relative; width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.18); cursor: pointer; }
       .bell-btn svg { width: 20px; height: 20px; stroke: #ececf2; }
@@ -1638,6 +1641,7 @@
           </label>
       <button type="button" class="head-search-btn" id="playerSearchBtn" aria-label="Search registered players"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></button>
       <div class="bell-wrap" id="bellWrap" hidden>
+        <button type="button" class="bell-btn" id="inboxBtn" aria-label="Inbox"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><path d="m22 6-10 7L2 6"/></svg><span class="bell-badge" id="inboxBtnBadge" hidden></span></button>
         <button type="button" class="bell-btn" id="bellBtn" aria-label="Notifications" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg><span class="bell-badge" id="bellBadge" hidden></span></button>
         <div class="bell-panel" id="bellPanel" hidden></div>
       </div>
@@ -4106,7 +4110,7 @@
       var inboxMenuLink = document.getElementById('inboxMenuLink');
       if (inboxMenuLink) {
         inboxMenuLink.addEventListener('click', function () {
-          ['inboxBadge', 'inboxBadge2'].forEach(function (id) {
+          ['inboxBadge', 'inboxBadge2', 'inboxBtnBadge'].forEach(function (id) {
             var b = document.getElementById(id);
             if (b) b.hidden = true;
           });
@@ -5300,7 +5304,7 @@
 
       /* ---------- Badges ---------- */
       function updateBadges(count) {
-        ['inboxBadge', 'inboxBadge2', 'pfInboxBadge'].forEach(function (id) {
+        ['inboxBadge', 'inboxBadge2', 'pfInboxBadge', 'inboxBtnBadge'].forEach(function (id) {
           var b = $(id); if (!b) return;
           b.textContent = count > 0 ? String(count) : '';
           b.hidden = !(count > 0);
@@ -6151,7 +6155,7 @@
         var m = me(); if (!m || !sb) return;
         var total = 0; var pending = 2;
         function done() { if (--pending > 0) return;
-          ['inboxBadge', 'inboxBadge2'].forEach(function (id) {
+          ['inboxBadge', 'inboxBadge2', 'inboxBtnBadge'].forEach(function (id) {
             var b = $(id); if (!b) return;
             b.textContent = total > 0 ? String(total) : '';
             b.hidden = !(total > 0);
@@ -6881,6 +6885,18 @@
         });
         e.panel.addEventListener('click', function (ev) { ev.stopPropagation(); });
         document.addEventListener('click', function () { closeBell(); });
+      })();
+      /* ---------- Header inbox button (beside the bell) ---------- */
+      (function wireInboxBtn() {
+        var b = $('inboxBtn'); if (!b) return;
+        b.addEventListener('click', function () {
+          /* Same as the account menu's Inbox item: clear the inbox badges
+             and take the #inbox route. */
+          ['inboxBadge', 'inboxBadge2', 'inboxBtnBadge'].forEach(function (id) {
+            var x = $(id); if (x) x.hidden = true;
+          });
+          window.location.hash = '#inbox';
+        });
       })();
       var bellRtStarted = false;
       function bellSubscribe() {
