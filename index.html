@@ -7412,7 +7412,7 @@
 
       /* ---------- Series settings (kwc_tournaments.settings, Part 8) ----------
          Shape: { legs: {final, sf, qf, r16, r32, r64, r128, r256, third},
-                  groups: 2|4, picks: { <seriesKey>: <winner name> } }
+                  groups: 1-8, picks: { <seriesKey>: <winner name> } }
          legs keys are by round SIZE: final = 2 players left, sf = 4,
          qf = 8, r16/r32/... = Round of 16/32/...; third = third-place
          series (0 = no third-place match). Until the settings column
@@ -7426,7 +7426,7 @@
         var s = (t && t.settings && typeof t.settings === 'object') ? t.settings : null;
         if (s) {
           if (s.legs && typeof s.legs === 'object') LEG_KEYS.forEach(function (k) { if (typeof s.legs[k] === 'number' && isFinite(s.legs[k])) d.legs[k] = Math.max(0, Math.min(9, Math.round(s.legs[k]))); });
-          if (s.groups === 2 || s.groups === 4) d.groups = s.groups;
+          if (typeof s.groups === 'number' && isFinite(s.groups)) { var gv = Math.round(s.groups); if (gv >= 1 && gv <= 8) d.groups = gv; }
           if (s.picks && typeof s.picks === 'object') d.picks = s.picks;
         }
         return d;
@@ -7479,6 +7479,14 @@
 
       /* ---------- Round helpers ---------- */
       function bracketSizeFor(n) { var B = 2; while (B < n) B *= 2; return B; }
+      /* Group counts run 1–8 (letters A–H) across the whole Maker. */
+      var GROUP_LETTERS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
+      function groupLetters(G) { return GROUP_LETTERS.slice(0, Math.max(1, Math.min(8, G || 2))); }
+      function groupCountOptions(sel) {
+        var h = '';
+        for (var n = 1; n <= 8; n++) h += '<option value="' + n + '"' + (n === sel ? ' selected' : '') + '>' + n + (n === 1 ? ' group' : ' groups') + '</option>';
+        return h;
+      }
       function legsKeyForTeams(teams) { return teams === 2 ? 'final' : teams === 4 ? 'sf' : teams === 8 ? 'qf' : 'r' + teams; }
       function roundLabelForTeams(teams) { return teams === 2 ? 'Final' : teams === 4 ? 'Semi-final' : teams === 8 ? 'Quarter-final' : 'Round of ' + teams; }
       function koRoundList(B) {
@@ -7657,7 +7665,7 @@
           '<option value="knockout">Knockout — single elimination bracket</option>' +
           '<option value="groups">Groups + Knockout — group stage, then a bracket</option>' +
           '</select></div>' +
-          '<div class="field" id="mkGroupsRow" hidden><label for="mkGroups">Number of groups</label><select id="mkGroups"><option value="2">2 groups</option><option value="4">4 groups</option></select></div>' +
+          '<div class="field" id="mkGroupsRow" hidden><label for="mkGroups">Number of groups</label><select id="mkGroups">' + groupCountOptions(2) + '</select></div>' +
           '<div class="field"><label>Entrants <span id="mkCount" style="color:var(--faint)">(0)</span></label>' +
           '<p style="font-size:13.5px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#ff97a1;margin-bottom:8px">Pick from registered members</p>' +
           '<input id="mkMemberSearch" type="text" placeholder="Search members by name…" autocomplete="off" style="width:100%;margin-bottom:8px" />' +
@@ -7923,7 +7931,7 @@
         return shuffle(names.slice(0, half)).concat(shuffle(names.slice(half)));
       }
       function groupAssign(names, G, drawType) {
-        var labels = ['A', 'B', 'C', 'D'].slice(0, G);
+        var labels = groupLetters(G);
         var assign = {};
         if (drawType === 'seeded') {
           names.forEach(function (nm, i) {
@@ -7973,7 +7981,7 @@
         });
         return Promise.all(jobs).then(function () {
           var grows = [], gsort = 0;
-          ['A', 'B', 'C', 'D'].slice(0, G).forEach(function (g) {
+          groupLetters(G).forEach(function (g) {
             var gNames = names.filter(function (nm) { return assign[nm] === g; });
             rrRounds(gNames).forEach(function (pairs, r) {
               pairs.forEach(function (pr) { grows.push({ tournament_id: tid, stage: 'group', round: r + 1, round_label: 'Round ' + (r + 1), group_label: g, p1: pr[0], p2: pr[1], sort: gsort++ }); });
@@ -8028,6 +8036,23 @@
           .catch(function () { toast('Could not reset', 'Please try again.'); });
       }
 
+      /* Advancer list for the knockout stage, in PAIRING order — the
+         flat [winner, runner-up, winner, runner-up, …] sequence that
+         buildKoSeries pairs off adjacently. 1 group: the single final
+         A1–A2. 2 and 4 groups keep the club's traditional crosses.
+         Every other count (3, 5–8) uses the cyclic rotation: winner of
+         group i meets runner-up of group i+1, wrapping to A at the end
+         (A1–B2, B1–C2, C1–D2, …). */
+      function koAdvancers(groupsSeen, top) {
+        var G = groupsSeen.length;
+        if (G === 1) return [top[groupsSeen[0]][0], top[groupsSeen[0]][1]];
+        if (G === 2) return [top.A[0], top.B[1], top.B[0], top.A[1]];
+        if (G === 4) return [top.A[0], top.B[1], top.C[0], top.D[1], top.B[0], top.A[1], top.D[0], top.C[1]];
+        var out = [];
+        groupsSeen.forEach(function (g, i) { out.push(top[g][0], top[groupsSeen[(i + 1) % G]][1]); });
+        return out;
+      }
+
       /* ---------- Generate knockout from groups (creator) ---------- */
       function generateKo(btn) {
         var ctx = state.detail; if (!ctx) return;
@@ -8036,7 +8061,7 @@
         var groupsSeen = [];
         players.forEach(function (p) { if (p.group_label && groupsSeen.indexOf(p.group_label) === -1) groupsSeen.push(p.group_label); });
         groupsSeen.sort();
-        if (groupsSeen.length !== 2 && groupsSeen.length !== 4) { toast('Cannot generate', 'This tournament does not have 2 or 4 groups.'); return; }
+        if (!groupsSeen.length || groupsSeen.length > 8) { toast('Cannot generate', 'This tournament does not have a valid number of groups (1 to 8).'); return; }
         var top = {};
         groupsSeen.forEach(function (g) {
           var gNames = players.filter(function (p) { return p.group_label === g; }).map(function (p) { return p.name; });
@@ -8044,12 +8069,12 @@
           var rows = standingsFor(gNames, gMatches);
           top[g] = [rows[0].name, rows[1].name];
         });
-        var seeded;
-        if (groupsSeen.length === 2) {
-          seeded = [top.A[0], top.B[1], top.B[0], top.A[1]];
-        } else {
-          seeded = [top.A[0], top.B[1], top.C[0], top.D[1], top.B[0], top.A[1], top.D[0], top.C[1]];
-        }
+        var seeded = koAdvancers(groupsSeen, top);
+        /* buildKoSeries needs a power-of-two slot list: pad with byes.
+           The listed pairings stay adjacent, so empty pairs land at the
+           end and walk over (6 advancers from 3 groups → bracket of 8). */
+        var treeSize = bracketSizeFor(Math.max(2, seeded.length));
+        while (seeded.length < treeSize) seeded.push(null);
         var maxSort = 0;
         matches.forEach(function (mt) { if ((mt.sort || 0) > maxSort) maxSort = mt.sort || 0; });
         btn.disabled = true; btn.textContent = 'Generating…';
@@ -8365,7 +8390,7 @@
           return h;
         }
         var G = (ctx.settings && ctx.settings.groups) || 2;
-        var B = t.format === 'groups' ? G * 2 : bracketSizeFor(Math.max(2, ctx.players.length));
+        var B = t.format === 'groups' ? bracketSizeFor(Math.max(2, G * 2)) : bracketSizeFor(Math.max(2, ctx.players.length));
         var rounds = koRoundList(B);
         var legs = (ctx.settings && ctx.settings.legs) || defaultSettings().legs;
         var editable = owner && !hasSchedule;
@@ -8373,7 +8398,7 @@
         h += '<p class="pf-note" style="margin:0 0 6px">How many matches each knockout pairing is played over. The winner of most legs advances; a series level on legs is decided on total goals.</p>';
         if (t.format === 'groups') {
           if (editable) {
-            h += '<div class="mk-set-row"><span>Number of groups</span><select id="mkGroupsCount" class="mk-select"><option value="2"' + (G === 2 ? ' selected' : '') + '>2 groups</option><option value="4"' + (G === 4 ? ' selected' : '') + '>4 groups</option></select></div>';
+            h += '<div class="mk-set-row"><span>Number of groups</span><select id="mkGroupsCount" class="mk-select">' + groupCountOptions(G) + '</select></div>';
           } else {
             h += infoRow('Groups', String(G));
           }
@@ -8599,7 +8624,7 @@
           '<button type="button" class="btn btn-glass" data-mk-sched-cancel>Cancel</button></div></div>';
         if (ctx.t.format === 'groups') {
           var G = (ctx.settings && ctx.settings.groups) || 2;
-          var labels = ['A', 'B', 'C', 'D'].slice(0, G);
+          var labels = groupLetters(G);
           var snake = groupAssign(names, G, 'seeded');
           var h = '<div class="mk-dialog"><h3 class="pf-title">Manual draw — assign the groups</h3>' +
             '<p class="pf-sub">Put every player into a group. Sizes must differ by at most 1, with at least 2 players in each group.</p>';
@@ -8641,7 +8666,7 @@
             if (!v) all = false;
             counts[v] = (counts[v] || 0) + 1;
           });
-          var sizes = ['A', 'B', 'C', 'D'].slice(0, G).map(function (L) { return counts[L] || 0; });
+          var sizes = groupLetters(G).map(function (L) { return counts[L] || 0; });
           var mn = Math.min.apply(null, sizes), mx = Math.max.apply(null, sizes);
           ok = all && mn >= 2 && (mx - mn) <= 1;
           msg = ok ? 'Groups look good — sizes ' + sizes.join(' / ') + '.' :
