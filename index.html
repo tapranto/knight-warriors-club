@@ -1285,6 +1285,8 @@
       .bell-panel { position: absolute; right: 0; top: 52px; width: min(360px, calc(100vw - 24px)); max-height: 70vh; overflow-y: auto; padding: 12px; background: rgba(10, 10, 17, 0.97); border: 1px solid var(--glass-border); border-radius: 14px; box-shadow: var(--shadow); z-index: 130; }
       .bell-panel[hidden] { display: none; }
       .bell-foot { display: block; text-align: center; padding: 10px; margin-top: 6px; border-top: 1px solid rgba(255,255,255,0.09); color: #ececf2; text-decoration: none; font-weight: 700; }
+      .msg-row { cursor: pointer; }
+      .msg-snip { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
       .account-menu {
         position: absolute; right: 0; top: 54px; width: 236px; padding: 10px;
         background: rgba(10, 10, 17, 0.97); border: 1px solid var(--glass-border); border-radius: 14px;
@@ -1641,9 +1643,10 @@
           </label>
       <button type="button" class="head-search-btn" id="playerSearchBtn" aria-label="Search registered players"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></button>
       <div class="bell-wrap" id="bellWrap" hidden>
-        <button type="button" class="bell-btn" id="inboxBtn" aria-label="Inbox"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><path d="m22 6-10 7L2 6"/></svg><span class="bell-badge" id="inboxBtnBadge" hidden></span></button>
+        <button type="button" class="bell-btn" id="inboxBtn" aria-label="Inbox" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><path d="m22 6-10 7L2 6"/></svg><span class="bell-badge" id="inboxBtnBadge" hidden></span></button>
         <button type="button" class="bell-btn" id="bellBtn" aria-label="Notifications" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg><span class="bell-badge" id="bellBadge" hidden></span></button>
         <div class="bell-panel" id="bellPanel" hidden></div>
+        <div class="bell-panel" id="msgPanel" hidden></div>
       </div>
       <!-- Logged-in state: the member's round avatar replaces Log in / Register -->
       <div class="head-account" id="headAccount" hidden>
@@ -6661,7 +6664,12 @@
         var m = me(); if (!m || !partnerId) return;
         var partner = nameCache[partnerId];
         var title = partner ? partner.full_name : 'Conversation';
-        pane.innerHTML = paneHead(title) + '<div class="ib-scroll" id="dmScroll"><p class="pf-note">Loading…</p></div>' +
+        /* Layer 7 call buttons — behaviour lives in the Layer 7 script,
+           which delegates clicks on [data-kwc-call]. */
+        var callBtns = '<span class="dm-call-actions" style="display:inline-flex;gap:6px">' +
+          '<button class="btn btn-glass btn-sm" type="button" data-kwc-call="voice" data-partner="' + partnerId + '" title="Voice call" aria-label="Start a voice call"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:block"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg></button>' +
+          '<button class="btn btn-glass btn-sm" type="button" data-kwc-call="video" data-partner="' + partnerId + '" title="Video call" aria-label="Start a video call"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:block"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg></button></span>';
+        pane.innerHTML = paneHead(title, callBtns) + '<div class="ib-scroll" id="dmScroll"><p class="pf-note">Loading…</p></div>' +
           '<form class="ib-compose" id="dmForm"><input id="dmInput" type="text" placeholder="Write a message…" autocomplete="off" maxlength="2000" /><button class="btn btn-red" type="submit">Send</button></form>';
         wireBack();
         if (!partner) {
@@ -6825,7 +6833,7 @@
                 (n.body ? '<p style="margin:2px 0 0">' + esc(n.body) + '</p>' : '') +
                 '<p class="dm-meta">' + esc(fmtTime(n.created_at)) + '</p></div></div>';
             }).join('') : '<p class="pf-note">No notifications yet.</p>';
-            h += '<a class="bell-foot" href="#inbox">Open Inbox \u2192</a>';
+            h += '<a class="bell-foot" href="#inbox" data-opennotif="1">Open Notifications \u2192</a>';
             e.panel.innerHTML = h;
             wireBellActions(e.panel);
             sb.from('notifications').update({ is_read: true }).eq('member_id', m.id).eq('is_read', false)
@@ -6875,28 +6883,118 @@
         });
         var foot = panel.querySelector('.bell-foot');
         if (foot) foot.addEventListener('click', closeBell);
+        var nfoot = panel.querySelector('[data-opennotif]');
+        if (nfoot) nfoot.addEventListener('click', function (ev) {
+          /* Bell footer: open the Inbox with the pinned Notifications
+             conversation selected (closeBell above closes the panel). */
+          ev.preventDefault();
+          openInboxThread('notif', null);
+        });
       }
       (function wireBell() {
         var e = bellEls(); if (!e.btn) return;
         e.btn.addEventListener('click', function (ev) {
           ev.stopPropagation();
-          if (e.panel.hidden) { renderBellPanel(); e.panel.hidden = false; e.btn.setAttribute('aria-expanded', 'true'); }
+          if (e.panel.hidden) { closeMsgPanel(); renderBellPanel(); e.panel.hidden = false; e.btn.setAttribute('aria-expanded', 'true'); }
           else closeBell();
         });
         e.panel.addEventListener('click', function (ev) { ev.stopPropagation(); });
         document.addEventListener('click', function () { closeBell(); });
       })();
-      /* ---------- Header inbox button (beside the bell) ---------- */
-      (function wireInboxBtn() {
-        var b = $('inboxBtn'); if (!b) return;
-        b.addEventListener('click', function () {
-          /* Same as the account menu's Inbox item: clear the inbox badges
-             and take the #inbox route. */
-          ['inboxBadge', 'inboxBadge2', 'inboxBtnBadge'].forEach(function (id) {
-            var x = $(id); if (x) x.hidden = true;
+      /* ---------- Header messages dropdown (envelope button) ---------- */
+      function msgEls() { return { btn: $('inboxBtn'), badge: $('inboxBtnBadge'), panel: $('msgPanel') }; }
+      function closeMsgPanel() { var e = msgEls(); if (e.panel) e.panel.hidden = true; if (e.btn) e.btn.setAttribute('aria-expanded', 'false'); }
+      function renderMsgPanel() {
+        var e = msgEls(); var m = me(); if (!e.panel || !m) return;
+        e.panel.innerHTML = '<p class="pf-note">Loading\u2026</p>';
+        Promise.all([
+          sb.from('squad_members').select('squad_id, squads(id, name, game)').eq('member_id', m.id).then(function (r) { return r.error ? [] : (r.data || []); }).catch(function () { return []; }),
+          sb.from('direct_messages').select('sender_member_id, recipient_member_id, body, created_at, is_read').or('sender_member_id.eq.' + m.id + ',recipient_member_id.eq.' + m.id).order('created_at', { ascending: false }).limit(120).then(function (r) { return r.error ? null : (r.data || []); }).catch(function () { return null; }),
+          sb.from('squad_messages').select('squad_id, sender_member_id, body, created_at').order('created_at', { ascending: false }).limit(200).then(function (r) { return r.error ? [] : (r.data || []); }).catch(function () { return []; })
+        ]).then(function (rs) {
+          var mySquads = rs[0].filter(function (x) { return x.squads; });
+          var dmErr = rs[1] === null;
+          var dms = rs[1] || [];
+          var sqMsgs = rs[2] || [];
+          var convos = [];
+          var byPartner = {};
+          dms.forEach(function (d) {
+            var other = d.sender_member_id === m.id ? d.recipient_member_id : d.sender_member_id;
+            var c = byPartner[other];
+            if (!c) {
+              c = byPartner[other] = { kind: 'dm', id: other, at: d.created_at, snip: (d.sender_member_id === m.id ? 'You: ' : '') + (d.body || ''), unread: 0 };
+              convos.push(c);
+            }
+            if (d.recipient_member_id === m.id && !d.is_read) c.unread++;
           });
-          window.location.hash = '#inbox';
+          var sqById = {};
+          mySquads.forEach(function (x) { sqById[x.squads.id] = x.squads; });
+          var sqSeen = {};
+          sqMsgs.forEach(function (x) {
+            if (!sqById[x.squad_id] || sqSeen[x.squad_id]) return;
+            sqSeen[x.squad_id] = true;
+            convos.push({ kind: 'squad', id: x.squad_id, name: sqById[x.squad_id].name, at: x.created_at, snip: x.body || '', unread: 0 });
+          });
+          convos.sort(function (a, b) { return a.at < b.at ? 1 : (a.at > b.at ? -1 : 0); });
+          convos = convos.slice(0, 8);
+          var finish = function () {
+            var h = '<p class="inbox-group">MESSAGES</p>';
+            if (convos.length) {
+              h += convos.map(function (c) {
+                var av, nm;
+                if (c.kind === 'dm') { var p = nameCache[c.id] || { full_name: 'Member' }; av = avatarFor(p); nm = p.full_name; }
+                else { av = '<span class="mini-avatar">' + esc(initials(c.name)) + '</span>'; nm = c.name; }
+                return '<div class="notif-row msg-row' + (c.unread ? ' unread' : '') + '" data-msgtype="' + c.kind + '" data-msgid="' + c.id + '">' +
+                  av + '<div style="flex:1;min-width:0">' +
+                  '<p class="msg-snip" style="margin:0"><b>' + esc(nm) + '</b></p>' +
+                  '<p class="msg-snip" style="margin:2px 0 0">' + esc(c.snip) + '</p>' +
+                  '<p class="dm-meta">' + esc(fmtTime(c.at)) + '</p></div>' +
+                  (c.unread ? '<span class="ib-unread">' + c.unread + '</span>' : '') + '</div>';
+              }).join('');
+            } else {
+              h += '<p class="pf-note">' + (dmErr ? SETUP_NOTE : 'No messages yet.') + '</p>';
+            }
+            h += '<a class="bell-foot" href="#inbox">Open Inbox \u2192</a>';
+            e.panel.innerHTML = h;
+            wireMsgActions(e.panel);
+          };
+          var ids = convos.filter(function (c) { return c.kind === 'dm'; }).map(function (c) { return c.id; });
+          if (ids.length) {
+            sb.from('members').select('id, full_name, username, avatar_url').in('id', ids)
+              .then(function (r) { cacheNames(r.data); finish(); }).catch(finish);
+          } else finish();
         });
+      }
+      function wireMsgActions(panel) {
+        panel.querySelectorAll('[data-msgtype]').forEach(function (row) {
+          row.addEventListener('click', function () {
+            closeMsgPanel();
+            openInboxThread(row.getAttribute('data-msgtype'), parseInt(row.getAttribute('data-msgid'), 10));
+          });
+        });
+        var foot = panel.querySelector('.bell-foot');
+        if (foot) foot.addEventListener('click', closeMsgPanel);
+      }
+      (function wireMsgBtn() {
+        var b = $('inboxBtn'); if (!b) return;
+        b.addEventListener('click', function (ev) {
+          ev.stopPropagation();
+          var e = msgEls(); if (!e.panel) return;
+          if (e.panel.hidden) {
+            closeBell();
+            /* Same badge clearing as the account-menu Inbox path and the
+               old button: hide the inbox badges once messages are opened. */
+            ['inboxBadge', 'inboxBadge2', 'inboxBtnBadge'].forEach(function (id) {
+              var x = $(id); if (x) x.hidden = true;
+            });
+            renderMsgPanel();
+            e.panel.hidden = false;
+            b.setAttribute('aria-expanded', 'true');
+          } else closeMsgPanel();
+        });
+        var p = $('msgPanel');
+        if (p) p.addEventListener('click', function (ev) { ev.stopPropagation(); });
+        document.addEventListener('click', function () { closeMsgPanel(); });
       })();
       var bellRtStarted = false;
       function bellSubscribe() {
@@ -9234,6 +9332,513 @@
       window.addEventListener('popstate', tick);
       window.addEventListener('hashchange', tick);
       tick();
+    })();
+  </script>
+<script>
+    /* ===== Layer 7: 1-to-1 voice + video calls inside DM chats =====
+       WebRTC media, peer to peer. Signalling rides on Supabase Realtime
+       BROADCAST channels only — no database tables, rows or policies:
+         kwc-call-user-<memberId>  personal channel: invites land here;
+                                   'declined' / 'busy' / 'cancel' replies
+                                   for a callId also arrive here.
+         kwc-call-<callId>         per-call channel: 'ready', 'offer',
+                                   'answer', 'ice', 'bye'.
+       Call history in the chat is written by the CALLER as one ordinary
+       direct_messages row (same fields as a normal send), so both sides
+       see it through the existing realtime message flow. */
+    (function () {
+      function $(id) { return document.getElementById(id); }
+      function me() { return (typeof kwc !== 'undefined' && kwc.member) ? kwc.member : null; }
+      function sb() { return (typeof window !== 'undefined' && window.sb) ? window.sb : null; }
+      function esc(s) {
+        return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+          return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+        });
+      }
+      function initials(name) { return String(name || '?').split(/\s+/).map(function (w) { return w.charAt(0); }).join('').slice(0, 2).toUpperCase(); }
+      function toast(title, body) { if (window.kwcToast) window.kwcToast(title, body); }
+
+      /* ICE_SERVERS — STUN plus the free Open Relay TURN service for
+         NAT traversal. Replace the openrelayproject TURN entries with
+         the club's own TURN credentials here when available; nothing
+         else in this layer needs to change. */
+      var ICE_SERVERS = [
+        { urls: 'stun:stun.l.google.com:19302' },
+        { urls: 'stun:stun1.l.google.com:19302' },
+        { urls: 'turn:openrelay.metered.ca:80', username: 'openrelayproject', credential: 'openrelayproject' },
+        { urls: 'turn:openrelay.metered.ca:443', username: 'openrelayproject', credential: 'openrelayproject' },
+        { urls: 'turn:openrelay.metered.ca:443?transport=tcp', username: 'openrelayproject', credential: 'openrelayproject' }
+      ];
+
+      var RING_MS = 30000;          /* caller rings this long, then auto-cancels (missed) */
+      var CALLEE_RING_MS = 40000;   /* callee-side safety: dismiss a stale ringing card */
+      var DISCONNECT_GRACE_MS = 6000;
+
+      function callSupported() {
+        return !!(window.RTCPeerConnection && navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
+      }
+      function fmtDur(ms) {
+        var s = Math.max(0, Math.round(ms / 1000));
+        var m = Math.floor(s / 60), ss = s % 60;
+        return m + ':' + (ss < 10 ? '0' : '') + ss;
+      }
+
+      /* ---------------- call state (one call at a time) ---------------- */
+      var call = null;
+      /* call = { id, kind:'voice'|'video', role:'caller'|'callee',
+                  partner:{id, name, avatar_url}, state, pc, chan,
+                  localStream, iceQueue:[], answered, startedAt,
+                  ringTimer, uiTimer, discTimer, logged } */
+
+      /* ---------------- personal channel (invites) ---------------- */
+      var personalChan = null, personalFor = null;
+
+      function syncPersonal() {
+        var s = sb(), m = me();
+        if (!s) return;
+        if (m && personalFor !== m.id) {
+          dropPersonal();
+          personalFor = m.id;
+          try {
+            personalChan = s.channel('kwc-call-user-' + m.id)
+              .on('broadcast', { event: 'invite' }, function (msg) { onInvite(msg && msg.payload); })
+              .on('broadcast', { event: 'declined' }, function (msg) { onDeclined(msg && msg.payload); })
+              .on('broadcast', { event: 'busy' }, function (msg) { onBusy(msg && msg.payload); })
+              .on('broadcast', { event: 'cancel' }, function (msg) { onCancel(msg && msg.payload); });
+            personalChan.subscribe();
+          } catch (e) { personalChan = null; personalFor = null; }
+        } else if (!m && personalFor !== null) {
+          dropPersonal();
+          if (call) endCall('gone', { silent: true });
+        }
+      }
+      function dropPersonal() {
+        if (personalChan && sb()) { try { sb().removeChannel(personalChan); } catch (e) {} }
+        personalChan = null; personalFor = null;
+      }
+      var __prevCallReady = window.__onMemberReady;
+      window.__onMemberReady = function () { if (__prevCallReady) __prevCallReady(); syncPersonal(); };
+      setInterval(syncPersonal, 1500);
+      syncPersonal();
+
+      /* Send one broadcast to another member's personal channel. The
+         channel is joined just long enough to deliver, then removed. */
+      var txPool = {};
+      function sendPersonal(memberId, event, payload) {
+        var s = sb(); if (!s || !memberId) return;
+        var m = me(); if (m && memberId === m.id) return;
+        var name = 'kwc-call-user-' + memberId;
+        var tx = txPool[name];
+        if (!tx) {
+          tx = txPool[name] = { ch: null, ready: false, queue: [], kill: null };
+          try {
+            tx.ch = s.channel(name);
+            tx.ch.subscribe(function (status) {
+              if (status === 'SUBSCRIBED') {
+                tx.ready = true;
+                tx.queue.splice(0).forEach(function (q) { txSend(name, q.event, q.payload); });
+              } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
+                txCleanup(name);
+              }
+            });
+          } catch (e) { delete txPool[name]; return; }
+        }
+        if (tx.ready) txSend(name, event, payload);
+        else tx.queue.push({ event: event, payload: payload });
+      }
+      function txSend(name, event, payload) {
+        var tx = txPool[name]; if (!tx || !tx.ch) return;
+        try {
+          var p = tx.ch.send({ type: 'broadcast', event: event, payload: payload });
+          if (p && p.catch) p.catch(function () {});
+        } catch (e) {}
+        if (tx.kill) clearTimeout(tx.kill);
+        tx.kill = setTimeout(function () { txCleanup(name); }, 1500);
+      }
+      function txCleanup(name) {
+        var tx = txPool[name]; if (!tx) return;
+        delete txPool[name];
+        if (tx.kill) clearTimeout(tx.kill);
+        if (tx.ch && sb()) { try { sb().removeChannel(tx.ch); } catch (e) {} }
+      }
+
+      /* ---------------- call channel ---------------- */
+      function joinCallChannel(c, onReady) {
+        var s = sb(); if (!s) return;
+        try {
+          c.chan = s.channel('kwc-call-' + c.id)
+            .on('broadcast', { event: 'ready' }, function () { if (call === c && c.role === 'caller') callerOnReady(c); })
+            .on('broadcast', { event: 'offer' }, function (msg) { if (call === c && c.role === 'callee') calleeOnOffer(c, msg && msg.payload); })
+            .on('broadcast', { event: 'answer' }, function (msg) { if (call === c && c.role === 'caller') onAnswer(c, msg && msg.payload); })
+            .on('broadcast', { event: 'ice' }, function (msg) { if (call === c) onIce(c, msg && msg.payload); })
+            .on('broadcast', { event: 'bye' }, function () { if (call === c) endCall('remote-bye', { fromRemote: true }); });
+          c.chan.subscribe(function (status) { if (status === 'SUBSCRIBED' && call === c && onReady) onReady(); });
+        } catch (e) {}
+      }
+      function chanSend(c, event, payload) {
+        if (!c.chan) return;
+        try {
+          var p = c.chan.send({ type: 'broadcast', event: event, payload: payload });
+          if (p && p.catch) p.catch(function () {});
+        } catch (e) {}
+      }
+
+      /* ---------------- peer connection ---------------- */
+      function buildPC(c) {
+        var pc = new window.RTCPeerConnection({ iceServers: ICE_SERVERS });
+        c.pc = pc;
+        if (c.localStream) c.localStream.getTracks().forEach(function (t) { try { pc.addTrack(t, c.localStream); } catch (e) {} });
+        pc.onicecandidate = function (e) { if (e.candidate) chanSend(c, 'ice', { candidate: e.candidate.toJSON ? e.candidate.toJSON() : e.candidate }); };
+        pc.ontrack = function (e) {
+          var stream = (e.streams && e.streams[0]) || null;
+          if (!stream) { stream = new MediaStream(); stream.addTrack(e.track); }
+          attachRemote(c, stream);
+        };
+        pc.onconnectionstatechange = function () {
+          if (call !== c) return;
+          var st = pc.connectionState;
+          if (st === 'connected') {
+            if (c.discTimer) { clearTimeout(c.discTimer); c.discTimer = null; }
+            if (!c.answered) {
+              c.answered = true; c.startedAt = Date.now(); c.state = 'in-call';
+              ringStop();
+              paintCall();
+            }
+          } else if (st === 'failed') {
+            endCall('failed');
+          } else if (st === 'disconnected') {
+            if (!c.discTimer) c.discTimer = setTimeout(function () { if (call === c) endCall('failed'); }, DISCONNECT_GRACE_MS);
+          }
+        };
+        return pc;
+      }
+      function onIce(c, p) {
+        if (!p || !p.candidate) return;
+        if (c.pc && c.pc.remoteDescription) {
+          try { c.pc.addIceCandidate(new RTCIceCandidate(p.candidate)).catch(function () {}); } catch (e) {}
+        } else c.iceQueue.push(p.candidate);
+      }
+      function flushIce(c) {
+        if (!c.pc) return;
+        c.iceQueue.splice(0).forEach(function (cand) {
+          try { c.pc.addIceCandidate(new RTCIceCandidate(cand)).catch(function () {}); } catch (e) {}
+        });
+      }
+      function attachRemote(c, stream) {
+        var v = $('kwcRemoteVideo'), a = $('kwcRemoteAudio');
+        var el = c.kind === 'video' ? v : a;
+        if (el && el.srcObject !== stream) {
+          el.srcObject = stream;
+          var pr = el.play && el.play(); if (pr && pr.catch) pr.catch(function () {});
+        }
+      }
+
+      /* ---------------- caller flow ---------------- */
+      function startCall(partnerId, kind, knownName) {
+        var m = me();
+        if (!m || !sb()) return;
+        if (call) { toast('Already in a call', 'End your current call before starting another.'); return; }
+        if (!callSupported()) { toast("Calling isn't supported in this browser", 'Try the latest Chrome, Edge or Safari to make club calls.'); return; }
+        var partner = { id: partnerId, name: knownName || 'Member', avatar_url: null };
+        sb().from('members').select('id, full_name, avatar_url').eq('id', partnerId).maybeSingle()
+          .then(function (r) { if (r.data) { partner.name = r.data.full_name || partner.name; partner.avatar_url = r.data.avatar_url || null; if (call && call.partner.id === partnerId) paintCall(); } })
+          .catch(function () {});
+        navigator.mediaDevices.getUserMedia(kind === 'video' ? { audio: true, video: true } : { audio: true })
+          .then(function (stream) {
+            if (call) { stream.getTracks().forEach(function (t) { t.stop(); }); return; }
+            var c = call = {
+              id: Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 10),
+              kind: kind, role: 'caller', partner: partner, state: 'outgoing',
+              pc: null, chan: null, localStream: stream, iceQueue: [],
+              answered: false, startedAt: 0, ringTimer: null, uiTimer: null, discTimer: null, logged: false
+            };
+            paintCall(); showOverlay(true); attachLocal(c);
+            joinCallChannel(c, function () {
+              sendPersonal(partnerId, 'invite', {
+                callId: c.id, kind: kind,
+                from: { id: m.id, name: m.full_name, avatar_url: m.avatar_url || null }
+              });
+              c.ringTimer = setTimeout(function () { if (call === c && !c.answered) endCall('timeout'); }, RING_MS);
+            });
+            startUiTimer(c);
+          })
+          .catch(function (err) {
+            if (err && (err.name === 'NotAllowedError' || err.name === 'SecurityError')) toast('Allow microphone/camera access to call', 'Your browser blocked access — allow it in the address bar, then try again.');
+            else toast("Calling isn't supported in this browser", 'No usable microphone/camera was found for this call.');
+          });
+      }
+      function callerOnReady(c) {
+        if (c.pc) return;
+        c.state = 'connecting'; paintCall();
+        var pc = buildPC(c);
+        pc.createOffer()
+          .then(function (offer) { return pc.setLocalDescription(offer); })
+          .then(function () { chanSend(c, 'offer', { sdp: { type: pc.localDescription.type, sdp: pc.localDescription.sdp } }); })
+          .catch(function () { endCall('failed'); });
+      }
+      function onAnswer(c, p) {
+        if (!c.pc || !p || !p.sdp) return;
+        c.pc.setRemoteDescription(new RTCSessionDescription(p.sdp))
+          .then(function () { flushIce(c); })
+          .catch(function () {});
+      }
+
+      /* ---------------- callee flow ---------------- */
+      function onInvite(p) {
+        var m = me(); if (!m || !p || !p.callId || !p.from || !p.from.id) return;
+        if (p.from.id === m.id) return;
+        if (call) { sendPersonal(p.from.id, 'busy', { callId: p.callId }); return; }
+        if (!callSupported()) { sendPersonal(p.from.id, 'declined', { callId: p.callId }); return; }
+        call = {
+          id: p.callId, kind: p.kind === 'video' ? 'video' : 'voice', role: 'callee',
+          partner: { id: p.from.id, name: p.from.name || 'Member', avatar_url: p.from.avatar_url || null },
+          state: 'ringing', pc: null, chan: null, localStream: null, iceQueue: [],
+          answered: false, startedAt: 0, ringTimer: null, uiTimer: null, discTimer: null, logged: false
+        };
+        paintCall(); showOverlay(true); ringStart();
+        call.ringTimer = setTimeout(function () { if (call && call.state === 'ringing') endCall('gone', { silent: true }); }, CALLEE_RING_MS);
+      }
+      function acceptCall() {
+        var c = call; if (!c || c.role !== 'callee' || c.state !== 'ringing') return;
+        ringStop();
+        if (c.ringTimer) { clearTimeout(c.ringTimer); c.ringTimer = null; }
+        navigator.mediaDevices.getUserMedia(c.kind === 'video' ? { audio: true, video: true } : { audio: true })
+          .then(function (stream) {
+            if (call !== c) { stream.getTracks().forEach(function (t) { t.stop(); }); return; }
+            c.localStream = stream; c.state = 'connecting';
+            paintCall(); attachLocal(c); startUiTimer(c);
+            joinCallChannel(c, function () { chanSend(c, 'ready', {}); });
+          })
+          .catch(function () {
+            toast('Allow microphone/camera access to call', 'Your browser blocked access — the call was declined.');
+            sendPersonal(c.partner.id, 'declined', { callId: c.id });
+            endCall('gone', { silent: true });
+          });
+      }
+      function calleeOnOffer(c, p) {
+        if (!p || !p.sdp) return;
+        var pc = c.pc || buildPC(c);
+        pc.setRemoteDescription(new RTCSessionDescription(p.sdp))
+          .then(function () { flushIce(c); return pc.createAnswer(); })
+          .then(function (ans) { return pc.setLocalDescription(ans); })
+          .then(function () { chanSend(c, 'answer', { sdp: { type: pc.localDescription.type, sdp: pc.localDescription.sdp } }); })
+          .catch(function () {});
+      }
+      function onDeclined(p) {
+        if (call && call.role === 'caller' && p && p.callId === call.id && !call.answered) endCall('declined');
+      }
+      function onBusy(p) {
+        if (call && call.role === 'caller' && p && p.callId === call.id && !call.answered) {
+          toast('Busy', call.partner.name + ' is on another call right now.');
+          endCall('busy');
+        }
+      }
+      function onCancel(p) {
+        if (call && call.role === 'callee' && p && p.callId === call.id && call.state === 'ringing') endCall('gone', { silent: true });
+      }
+
+      /* ---------------- ending + chat log ---------------- */
+      function logText(c, reason) {
+        var label = c.kind === 'video' ? 'Video' : 'Voice';
+        if (c.answered) return '📞 ' + label + ' call · ' + fmtDur(Date.now() - c.startedAt);
+        if (reason === 'declined') return '📞 Call declined';
+        return '📞 Missed ' + label.toLowerCase() + ' call';
+      }
+      function endCall(reason, opts) {
+        var c = call; if (!c) return;
+        opts = opts || {};
+        call = null;
+        ringStop();
+        if (c.ringTimer) clearTimeout(c.ringTimer);
+        if (c.uiTimer) clearInterval(c.uiTimer);
+        if (c.discTimer) clearTimeout(c.discTimer);
+        /* Tell the other side, unless they told us first. */
+        if (!opts.fromRemote) {
+          if (c.role === 'caller' && reason === 'cancelled' && !c.answered) sendPersonal(c.partner.id, 'cancel', { callId: c.id });
+          chanSend(c, 'bye', {});
+        }
+        /* Caller writes the chat log — one ordinary DM row. */
+        var m = me(), s = sb();
+        if (c.role === 'caller' && !c.logged && m && s) {
+          c.logged = true;
+          try {
+            s.from('direct_messages').insert({ sender_member_id: m.id, recipient_member_id: c.partner.id, body: logText(c, reason) })
+              .then(function () {}).catch(function () {});
+          } catch (e) {}
+        }
+        if (reason === 'declined') toast('Call declined', c.partner.name + ' declined the call.');
+        else if (reason === 'timeout') toast('No answer', c.partner.name + ' did not pick up.');
+        else if (reason === 'failed') toast('Call connection failed', 'The call could not connect — check your connection and try again.');
+        if (c.pc) { try { c.pc.onicecandidate = null; c.pc.ontrack = null; c.pc.onconnectionstatechange = null; c.pc.close(); } catch (e) {} }
+        if (c.localStream) c.localStream.getTracks().forEach(function (t) { try { t.stop(); } catch (e) {} });
+        var chan = c.chan;
+        if (chan) setTimeout(function () { if (sb()) { try { sb().removeChannel(chan); } catch (e) {} } }, 350);
+        var lv = $('kwcLocalVideo'), rv = $('kwcRemoteVideo'), ra = $('kwcRemoteAudio');
+        if (lv) lv.srcObject = null;
+        if (rv) rv.srcObject = null;
+        if (ra) ra.srcObject = null;
+        showOverlay(false);
+      }
+
+      /* ---------------- overlay UI ---------------- */
+      var css = [
+        '#kwcCall{position:fixed;inset:0;z-index:10050;display:flex;align-items:center;justify-content:center;background:rgba(5,5,10,.72);backdrop-filter:blur(3px)}',
+        '#kwcCall[hidden]{display:none}',
+        '.kwc-call-card{background:#17171f;border:1px solid rgba(255,255,255,.14);border-radius:20px;box-shadow:0 24px 70px rgba(0,0,0,.6);width:min(92vw,380px);padding:22px 20px 20px;text-align:center;color:#fff}',
+        '.kwc-call-media{position:relative;width:100%;aspect-ratio:3/4;max-height:46vh;border-radius:14px;overflow:hidden;background:#0c0c13;margin-bottom:14px}',
+        '.kwc-call-media video.rv{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}',
+        '.kwc-call-media video.lv{position:absolute;right:10px;bottom:10px;width:28%;aspect-ratio:3/4;object-fit:cover;border-radius:10px;border:2px solid rgba(255,255,255,.35);background:#000}',
+        '.kwc-call-av{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}',
+        '.kwc-call-av img{width:112px;height:112px;border-radius:50%;object-fit:cover;border:3px solid rgba(255,255,255,.25)}',
+        '.kwc-call-av span{width:112px;height:112px;border-radius:50%;background:#262633;display:flex;align-items:center;justify-content:center;font-size:38px;font-weight:700;color:#ff97a1;border:3px solid rgba(255,255,255,.18)}',
+        '.kwc-call-name{font-size:19px;font-weight:700;margin:0 0 2px}',
+        '.kwc-call-status{font-size:14px;opacity:.8;margin:0 0 18px;min-height:20px}',
+        '.kwc-call-actions{display:flex;justify-content:center;gap:14px;flex-wrap:wrap}',
+        '.kwc-cbtn{width:54px;height:54px;border-radius:50%;border:1px solid rgba(255,255,255,.2);background:#262633;color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer}',
+        '.kwc-cbtn:active{transform:scale(.94)}',
+        '.kwc-cbtn.green{background:#1faa55;border-color:#1faa55}',
+        '.kwc-cbtn.red{background:#c8102e;border-color:#c8102e}',
+        '.kwc-cbtn.off{background:#c8102e;border-color:#c8102e;opacity:.85}',
+        '.kwc-cbtn svg{width:24px;height:24px}'
+      ].join('\n');
+      var styleEl = document.createElement('style');
+      styleEl.textContent = css;
+      document.head.appendChild(styleEl);
+
+      var PHONE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>';
+      var PHONE_DOWN = '<svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 9c-1.6 0-3.22.25-4.75.72v3.1c0 .39-.23.74-.56.9-.98.49-1.96 1.12-2.66 1.85-.87.91-2.27.82-2.94-.19C.36 13.84 0 12.44 0 11.08 0 10.47.4 9.95.97 9.8 3.57 9.13 7.6 8.5 12 8.5s8.43.63 11.03 1.3c.57.15.97.67.97 1.28 0 1.36-.36 2.76-1.09 4.3-.67 1.01-2.07 1.1-2.94.19-.7-.73-1.68-1.36-2.66-1.85-.33-.16-.56-.51-.56-.9v-3.1C15.22 9.25 13.6 9 12 9z" transform="translate(0,2)"/></svg>';
+      var MIC = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>';
+      var CAM = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>';
+
+      var overlay = document.createElement('div');
+      overlay.id = 'kwcCall';
+      overlay.hidden = true;
+      overlay.innerHTML =
+        '<div class="kwc-call-card">' +
+          '<div class="kwc-call-media">' +
+            '<video class="rv" id="kwcRemoteVideo" autoplay playsinline></video>' +
+            '<audio id="kwcRemoteAudio" autoplay></audio>' +
+            '<div class="kwc-call-av" id="kwcCallAv"></div>' +
+            '<video class="lv" id="kwcLocalVideo" autoplay playsinline muted></video>' +
+          '</div>' +
+          '<p class="kwc-call-name" id="kwcCallName"></p>' +
+          '<p class="kwc-call-status" id="kwcCallStatus"></p>' +
+          '<div class="kwc-call-actions">' +
+            '<button type="button" class="kwc-cbtn" id="kwcBtnMute" title="Mute" aria-label="Toggle microphone">' + MIC + '</button>' +
+            '<button type="button" class="kwc-cbtn" id="kwcBtnCam" title="Camera" aria-label="Toggle camera">' + CAM + '</button>' +
+            '<button type="button" class="kwc-cbtn green" id="kwcBtnAccept" title="Accept" aria-label="Accept call">' + PHONE + '</button>' +
+            '<button type="button" class="kwc-cbtn red" id="kwcBtnEnd" title="End call" aria-label="End or decline call">' + PHONE_DOWN + '</button>' +
+          '</div>' +
+        '</div>';
+      document.body.appendChild(overlay);
+
+      function showOverlay(on) { overlay.hidden = !on; }
+      function attachLocal(c) {
+        var lv = $('kwcLocalVideo');
+        if (lv && c.localStream) { lv.srcObject = c.localStream; var pr = lv.play && lv.play(); if (pr && pr.catch) pr.catch(function () {}); }
+        paintCall();
+      }
+      function paintCall() {
+        var c = call; if (!c) return;
+        var av = $('kwcCallAv');
+        av.innerHTML = c.partner.avatar_url
+          ? '<img src="' + esc(c.partner.avatar_url) + '" alt="" />'
+          : '<span>' + esc(initials(c.partner.name)) + '</span>';
+        $('kwcCallName').textContent = c.partner.name;
+        var rv = $('kwcRemoteVideo'), lv = $('kwcLocalVideo');
+        var hasRemote = !!(rv && rv.srcObject);
+        rv.style.display = (c.kind === 'video' && (hasRemote || c.answered)) ? '' : 'none';
+        av.style.display = (c.kind === 'video' && (hasRemote || c.answered)) ? 'none' : '';
+        lv.style.display = (c.kind === 'video' && c.localStream) ? '' : 'none';
+        var status;
+        if (c.state === 'ringing') status = c.kind === 'video' ? 'Incoming video call…' : 'Incoming voice call…';
+        else if (c.state === 'outgoing') status = 'Calling…';
+        else if (c.state === 'connecting') status = 'Connecting…';
+        else status = fmtDur(Date.now() - c.startedAt);
+        var st = $('kwcCallStatus'); if (st) st.textContent = status;
+        $('kwcBtnAccept').style.display = c.state === 'ringing' ? '' : 'none';
+        $('kwcBtnMute').style.display = c.state === 'ringing' ? 'none' : '';
+        $('kwcBtnCam').style.display = (c.kind === 'video' && c.state !== 'ringing') ? '' : 'none';
+        var muted = c.localStream && c.localStream.getAudioTracks().some(function (t) { return !t.enabled; });
+        $('kwcBtnMute').classList.toggle('off', !!muted);
+        var camOff = c.localStream && c.localStream.getVideoTracks().some(function (t) { return !t.enabled; });
+        $('kwcBtnCam').classList.toggle('off', !!camOff);
+      }
+      function startUiTimer(c) {
+        if (c.uiTimer) clearInterval(c.uiTimer);
+        c.uiTimer = setInterval(function () { if (call === c && c.state === 'in-call') paintCall(); }, 500);
+      }
+
+      /* Ringtone: gentle WebAudio two-beep loop; fully guarded. */
+      var ringCtx = null, ringTimer = null;
+      function ringStart() {
+        try {
+          var AC = window.AudioContext || window.webkitAudioContext;
+          if (!AC) return;
+          if (!ringCtx) ringCtx = new AC();
+          if (ringCtx.state === 'suspended') { var r = ringCtx.resume(); if (r && r.catch) r.catch(function () {}); }
+          var beep = function () {
+            try {
+              if (!ringCtx) return;
+              var t = ringCtx.currentTime;
+              [0, 0.35].forEach(function (off) {
+                var o = ringCtx.createOscillator(), g = ringCtx.createGain();
+                o.type = 'sine'; o.frequency.value = 440;
+                g.gain.setValueAtTime(0.0001, t + off);
+                g.gain.exponentialRampToValueAtTime(0.07, t + off + 0.03);
+                g.gain.exponentialRampToValueAtTime(0.0001, t + off + 0.28);
+                o.connect(g); g.connect(ringCtx.destination);
+                o.start(t + off); o.stop(t + off + 0.3);
+              });
+            } catch (e) {}
+          };
+          beep();
+          ringTimer = setInterval(beep, 2200);
+        } catch (e) {}
+      }
+      function ringStop() { if (ringTimer) { clearInterval(ringTimer); ringTimer = null; } }
+
+      /* ---------------- wiring ---------------- */
+      document.addEventListener('click', function (e) {
+        var b = e.target && e.target.closest ? e.target.closest('[data-kwc-call]') : null;
+        if (!b) return;
+        var partnerId = parseInt(b.getAttribute('data-partner'), 10);
+        if (!partnerId) return;
+        var head = b.closest('.ib-pane-head');
+        var name = head && head.querySelector('h3') ? head.querySelector('h3').textContent : null;
+        startCall(partnerId, b.getAttribute('data-kwc-call') === 'video' ? 'video' : 'voice', name);
+      });
+      $('kwcBtnAccept').addEventListener('click', acceptCall);
+      $('kwcBtnEnd').addEventListener('click', function () {
+        var c = call; if (!c) return;
+        if (c.role === 'callee' && c.state === 'ringing') {
+          sendPersonal(c.partner.id, 'declined', { callId: c.id });
+          endCall('gone', { silent: true });
+        } else if (c.role === 'caller' && !c.answered) {
+          endCall('cancelled');
+        } else {
+          endCall('ended');
+        }
+      });
+      $('kwcBtnMute').addEventListener('click', function () {
+        var c = call; if (!c || !c.localStream) return;
+        var tracks = c.localStream.getAudioTracks(); if (!tracks.length) return;
+        var turnOff = tracks.some(function (t) { return t.enabled; });
+        tracks.forEach(function (t) { t.enabled = !turnOff; });
+        paintCall();
+      });
+      $('kwcBtnCam').addEventListener('click', function () {
+        var c = call; if (!c || !c.localStream) return;
+        var tracks = c.localStream.getVideoTracks(); if (!tracks.length) return;
+        var turnOff = tracks.some(function (t) { return t.enabled; });
+        tracks.forEach(function (t) { t.enabled = !turnOff; });
+        paintCall();
+      });
+      window.addEventListener('beforeunload', function () {
+        if (!call) return;
+        chanSend(call, 'bye', {});
+        if (call.localStream) call.localStream.getTracks().forEach(function (t) { try { t.stop(); } catch (e) {} });
+      });
     })();
   </script>
 </body>
