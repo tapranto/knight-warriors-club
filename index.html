@@ -714,6 +714,11 @@
       }
       .field select option { background: #13131a; color: #fff; }
       .field input:focus, .field select:focus, .field textarea:focus { border-color: var(--red); background: rgba(255,255,255,0.09); }
+      /* Password visibility eye (Pranto's request, 2026-11-01) */
+      .pw-wrap { position: relative; display: block; }
+      .pw-wrap > input { padding-right: 46px !important; }
+      .pw-eye { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: none; border: 0; cursor: pointer; font-size: 16px; line-height: 1; padding: 6px; opacity: 0.85; }
+      .pw-eye:hover { opacity: 1; }
       .field textarea { resize: vertical; min-height: 92px; }
       .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
       .app-output { display: none; margin-top: 22px; }
@@ -10078,6 +10083,33 @@
         stopRing();
         chanSend(call, 'bye', {});
         if (call.localStream) call.localStream.getTracks().forEach(function (t) { try { t.stop(); } catch (e) {} });
+      });
+    })();
+  </script>
+  <script>
+    /* Password visibility toggles (Pranto's request, 2026-11-01):
+       an eye button inside every password field on the auth forms. */
+    (function () {
+      ['lPassword', 'rPassword', 'rConfirm', 'npPassword', 'npConfirm'].forEach(function (id) {
+        var input = document.getElementById(id);
+        if (!input || input.getAttribute('data-eye-ready')) return;
+        input.setAttribute('data-eye-ready', '1');
+        var wrap = document.createElement('span');
+        wrap.className = 'pw-wrap';
+        input.parentNode.insertBefore(wrap, input);
+        wrap.appendChild(input);
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'pw-eye';
+        btn.setAttribute('aria-label', 'Show password');
+        btn.textContent = '👁';
+        btn.addEventListener('click', function () {
+          var show = input.type === 'password';
+          input.type = show ? 'text' : 'password';
+          btn.textContent = show ? '🙈' : '👁';
+          btn.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
+        });
+        wrap.appendChild(btn);
       });
     })();
   </script>
