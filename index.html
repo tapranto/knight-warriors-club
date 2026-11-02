@@ -5586,7 +5586,7 @@
       function loadSquadsInto(memberId, isGuestView) {
         var box = $('profileSquadsList'); if (!box) return;
         var cb = document.querySelector('#profileSquads a[data-nav="createsquad"]');
-        if (cb) cb.style.display = (!isGuestView && me() && (me().can_create_squad || isPres())) ? '' : 'none';
+        if (cb) cb.style.display = (!isGuestView && me()) ? '' : 'none';
         if (!sb) { box.innerHTML = '<p class="pf-note">Squads are unavailable right now.</p>'; return; }
         box.innerHTML = '<p class="pf-note">Loading…</p>';
         sb.from('squad_members').select('squad_id, role, squads(id, name, game, captain_member_id)').eq('member_id', memberId)
@@ -5620,27 +5620,33 @@
           csForm.querySelector('[data-field="squadName"]').classList.toggle('invalid', !name);
           csForm.querySelector('[data-field="squadGame"]').classList.toggle('invalid', !game);
           if (!name || !game) return;
-          if (!(m.can_create_squad || m.role === 'President')) {
-            window.kwcToast('Permission needed', 'Squad creation is switched on by the President. Ask for an invite.');
-            return;
-          }
-          sb.from('squads').insert({ name: name, game: game, captain_member_id: m.id }).select().single()
-            .then(function (res) {
-              if (res.error) {
-                if (tableMissing(res.error)) window.kwcToast('Not switched on yet', 'Squads arrive with the Part 2 database setup.');
-                else window.kwcToast('Could not create the squad', 'Please try again.');
+          /* Open creation + one owned squad per member (Pranto, 2026-11-02):
+             anyone may create; the database also enforces one-per-captain. */
+          sb.from('squads').select('id').eq('captain_member_id', m.id).limit(1)
+            .then(function (own) {
+              if (own.data && own.data.length) {
+                window.kwcToast('You already lead a squad', 'One squad per captain — disband your current squad before creating another.');
                 return;
               }
-              var sq = res.data;
-              sb.from('squad_members').insert({ squad_id: sq.id, member_id: m.id, role: 'Captain' })
-                .then(function () {
-                  $('csSuccessName').textContent = name;
-                  $('csSuccessGame').textContent = game;
-                  csForm.style.display = 'none';
-                  var success = $('csSuccess');
-                  success.classList.add('show');
-                  success.focus();
-                  loadSquadsInto(m.id, false);
+              sb.from('squads').insert({ name: name, game: game, captain_member_id: m.id }).select().single()
+                .then(function (res) {
+                  if (res.error) {
+                    if (res.error.code === '23505') window.kwcToast('You already lead a squad', 'One squad per captain — disband your current squad before creating another.');
+                    else if (tableMissing(res.error)) window.kwcToast('Not switched on yet', 'Squads arrive with the Part 2 database setup.');
+                    else window.kwcToast('Could not create the squad', 'Please try again.');
+                    return;
+                  }
+                  var sq = res.data;
+                  sb.from('squad_members').insert({ squad_id: sq.id, member_id: m.id, role: 'Captain' })
+                    .then(function () {
+                      $('csSuccessName').textContent = name;
+                      $('csSuccessGame').textContent = game;
+                      csForm.style.display = 'none';
+                      var success = $('csSuccess');
+                      success.classList.add('show');
+                      success.focus();
+                      loadSquadsInto(m.id, false);
+                    });
                 });
             });
         }, true);
