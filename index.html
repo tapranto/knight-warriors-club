@@ -6688,8 +6688,26 @@
         if (b) ibLoadOlder();
       });
 
+      /* Focus preservation (Pranto, 2026-11-02): the pane re-renders
+         when new messages arrive — including the echo of your own —
+         and a rebuilt composer used to steal keyboard focus after
+         every send. Capture focus + draft before a rebuild, restore
+         them after it. */
+      function ibFocusState(inputId) {
+        var a = document.activeElement;
+        return (a && a.id === inputId) ? { draft: a.value } : null;
+      }
+      function ibFocusRestore(inputId, st) {
+        if (!st) return;
+        var i = $(inputId);
+        if (!i) return;
+        if (st.draft && !i.value) i.value = st.draft;
+        i.focus();
+      }
+
       /* ----- Personal messages pane ----- */
       function renderDMPane(pane, partnerId) {
+        var keepFocus = ibFocusState('dmInput');
         var m = me(); if (!m || !partnerId) return;
         var partner = nameCache[partnerId];
         var title = partner ? partner.full_name : 'Conversation';
@@ -6709,7 +6727,7 @@
         $('dmForm').addEventListener('submit', function (e) {
           e.preventDefault();
           var inp = $('dmInput'); var text = inp.value.trim(); if (!text) return;
-          inp.value = '';
+          inp.value = ''; inp.focus();
           sb.from('direct_messages').insert({ sender_member_id: m.id, recipient_member_id: partnerId, body: text })
             .then(function (r) {
               if (r.error) {
@@ -6727,6 +6745,7 @@
               } catch (e) {}
             });
         });
+        ibFocusRestore('dmInput', keepFocus);
       }
       function loadDMThread(partnerId, opts) {
         var m = me(); var sc = $('dmScroll'); if (!m || !sc) return;
@@ -6766,6 +6785,7 @@
 
       /* ----- Squad chat pane ----- */
       function renderSquadPane(pane, squadId) {
+        var keepFocus = ibFocusState('sqInput');
         var m = me(); if (!m || !squadId) return;
         pane.innerHTML = paneHead('Squad chat') + '<div class="ib-scroll"><p class="pf-note">Loading…</p></div>';
         wireBack();
@@ -6785,6 +6805,7 @@
             }
             pane.innerHTML = h;
             wireBack();
+            ibFocusRestore('sqInput', keepFocus);
             var ib2 = $('paneInviteBtn');
             if (ib2) ib2.addEventListener('click', function () { squadOpenInvite = true; window.__routeSquad(String(sq.id)); });
             loadSquadThread(squadId);
@@ -6792,7 +6813,7 @@
             if (form) form.addEventListener('submit', function (e) {
               e.preventDefault();
               var inp = $('sqInput'); var text = inp.value.trim(); if (!text) return;
-              inp.value = '';
+              inp.value = ''; inp.focus();
               sb.from('squad_messages').insert({ squad_id: squadId, sender_member_id: m.id, body: text })
                 .then(function (r) {
                   if (r.error) {
