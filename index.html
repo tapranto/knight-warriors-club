@@ -6719,6 +6719,12 @@
               }
               ibQueueBottom('dm', partnerId);
               renderInboxList();
+              /* Phase 3.1+: knock the recipient's phone (FCM). */
+              try {
+                sb.functions.invoke('send-message-push', {
+                  body: { chat_kind: 'dm', recipient_member_id: partnerId, preview: text }
+                }).then(function () {}).catch(function () {});
+              } catch (e) {}
             });
         });
       }
@@ -6795,6 +6801,12 @@
                     return;
                   }
                   loadSquadThread(squadId, { forceBottom: true });
+                  /* Phase 3.1+: knock the other members' phones (FCM). */
+                  try {
+                    sb.functions.invoke('send-message-push', {
+                      body: { chat_kind: 'squad', squad_id: squadId, preview: text }
+                    }).then(function () {}).catch(function () {});
+                  } catch (e) {}
                 });
             });
           });
@@ -9815,6 +9827,15 @@
           try {
             s.from('direct_messages').insert({ sender_member_id: m.id, recipient_member_id: c.partner.id, body: logText(c, reason) })
               .then(function () {}).catch(function () {});
+          } catch (e) {}
+        }
+        /* Phase 3.1+: unanswered outgoing call → leave a missed-call
+           notification on the callee's phone. */
+        if (c.role === 'caller' && !c.answered && (reason === 'timeout' || reason === 'cancelled')) {
+          try {
+            s.functions.invoke('send-call-push', {
+              body: { callee_member_id: c.partner.id, call_id: c.id, kind: c.kind, event: 'missed' }
+            }).then(function () {}).catch(function () {});
           } catch (e) {}
         }
         if (reason === 'declined') toast('Call declined', c.partner.name + ' declined the call.');
