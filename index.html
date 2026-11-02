@@ -9347,6 +9347,7 @@
 
       var RING_MS = 30000;          /* caller rings this long, then auto-cancels (missed) */
       var CALLEE_RING_MS = 40000;   /* callee-side safety: dismiss a stale ringing card */
+      var CONNECT_MS = 20000;       /* max time in Connecting… before the call fails cleanly */
       var DISCONNECT_GRACE_MS = 6000;
 
       function callSupported() {
@@ -9459,6 +9460,13 @@
         } catch (e) {}
       }
 
+      /* Connecting… must never hang forever (2026-11-02): if the voice
+         path has not opened within CONNECT_MS, fail the call cleanly. */
+      function armConnectWatchdog(c) {
+        if (c.connectTimer) clearTimeout(c.connectTimer);
+        c.connectTimer = setTimeout(function () { if (call === c && c.state === 'connecting') endCall('connect-failed'); }, CONNECT_MS);
+      }
+
       /* ---------------- peer connection ---------------- */
       function buildPC(c) {
         var pc = new window.RTCPeerConnection({ iceServers: ICE_SERVERS });
@@ -9475,6 +9483,7 @@
           var st = pc.connectionState;
           if (st === 'connected') {
             if (c.discTimer) { clearTimeout(c.discTimer); c.discTimer = null; }
+            if (c.connectTimer) { clearTimeout(c.connectTimer); c.connectTimer = null; }
             if (!c.answered) {
               c.answered = true; c.startedAt = Date.now(); c.state = 'in-call';
               stopRing();
@@ -9702,7 +9711,7 @@
       }
       function callerOnReady(c) {
         if (c.pc) return;
-        c.state = 'connecting'; paintCall();
+        c.state = 'connecting'; paintCall(); armConnectWatchdog(c);
         var pc = buildPC(c);
         pc.createOffer()
           .then(function (offer) { return pc.setLocalDescription(offer); })
@@ -9739,7 +9748,7 @@
         navigator.mediaDevices.getUserMedia(c.kind === 'video' ? { audio: true, video: true } : { audio: true })
           .then(function (stream) {
             if (call !== c) { stream.getTracks().forEach(function (t) { t.stop(); }); return; }
-            c.localStream = stream; c.state = 'connecting';
+            c.localStream = stream; c.state = 'connecting'; armConnectWatchdog(c);
             paintCall(); attachLocal(c); startUiTimer(c);
             joinCallChannel(c, function () { chanSend(c, 'ready', {}); });
           })
@@ -9786,6 +9795,7 @@
         if (c.ringTimer) clearTimeout(c.ringTimer);
         if (c.uiTimer) clearInterval(c.uiTimer);
         if (c.discTimer) clearTimeout(c.discTimer);
+        if (c.connectTimer) clearTimeout(c.connectTimer);
         /* Tell the other side, unless they told us first. */
         if (!opts.fromRemote) {
           if (c.role === 'caller' && reason === 'cancelled' && !c.answered) sendPersonal(c.partner.id, 'cancel', { callId: c.id });
@@ -9802,6 +9812,7 @@
         }
         if (reason === 'declined') toast('Call declined', c.partner.name + ' declined the call.');
         else if (reason === 'timeout') toast('No answer', c.partner.name + ' did not pick up.');
+        else if (reason === 'connect-failed') toast("Couldn't connect", 'The voice path could not open between the two networks.');
         else if (reason === 'failed') toast('Call connection failed', 'The call could not connect — check your connection and try again.');
         if (c.pc) { try { c.pc.onicecandidate = null; c.pc.ontrack = null; c.pc.onconnectionstatechange = null; c.pc.close(); } catch (e) {} }
         if (c.localStream) c.localStream.getTracks().forEach(function (t) { try { t.stop(); } catch (e) {} });
