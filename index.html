@@ -2412,6 +2412,39 @@
         </section>
       </div>
 
+      <!-- ==================== VIEW: CONFIRMED (email link landing) ==================== -->
+      <div class="view" id="view-confirmed">
+        <section>
+          <div class="wrap">
+            <div class="sec-head center reveal">
+              <p class="kicker">Knight Warriors Club</p>
+              <h2 id="confirmedTitle">Email Confirmed</h2>
+              <p id="confirmedSub">Your account is ready.</p>
+            </div>
+            <div class="auth-card glass reveal" style="text-align:center">
+              <div id="confirmedPending">
+                <h3 style="margin-bottom:10px">Confirming your account&hellip;</h3>
+                <p class="auth-sub">One moment — we are finishing your sign-in.</p>
+              </div>
+              <div id="confirmedOk" style="display:none">
+                <div class="rs-icon" style="margin:0 auto 14px"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></div>
+                <h3 style="margin-bottom:10px">Welcome to the club!</h3>
+                <p class="auth-sub">Your email is confirmed, your account is active and you are signed in. Your member profile was created automatically — add your game IDs any time from your profile.</p>
+                <a class="btn btn-red" href="#home" data-nav="home" style="width:100%;justify-content:center">Start exploring</a>
+              </div>
+              <div id="confirmedErr" style="display:none">
+                <h3 style="margin-bottom:10px">That confirmation link didn&rsquo;t work</h3>
+                <p class="auth-sub">Confirmation links work only once and expire after a while. If you already clicked it, your account may already be confirmed — try logging in. Otherwise, enter your email and we will send a fresh one.</p>
+                <div class="field" style="text-align:left"><label for="cfEmail">Email address</label><input id="cfEmail" type="email" placeholder="you@example.com" autocomplete="email" /></div>
+                <button class="btn btn-red" type="button" id="cfResendBtn" style="width:100%;justify-content:center">Send a fresh confirmation email</button>
+                <p class="form-ok" id="cfResendNote" aria-live="polite"></p>
+                <p class="auth-alt" style="margin-top:16px">Already confirmed? <a href="#login" data-nav="login">Go to Log In</a></p>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+
       <!-- ==================== VIEW: LOG IN ==================== -->
       <div class="view" id="view-login">
         <section>
@@ -2900,7 +2933,7 @@
 
     <script>
       /* ---------- View router ---------- */
-      var VIEWS = ['home', 'about', 'community', 'games', 'news', 'article', 'events', 'tournament', 'leaderboard', 'maker', 'rules', 'register', 'login', 'checkemail', 'profile', 'squad', 'createsquad', 'console', 'inbox', 'completeprofile', 'resetpassword', 'setpassword'];
+      var VIEWS = ['home', 'about', 'community', 'games', 'news', 'article', 'events', 'tournament', 'leaderboard', 'maker', 'rules', 'register', 'login', 'checkemail', 'confirmed', 'profile', 'squad', 'createsquad', 'console', 'inbox', 'completeprofile', 'resetpassword', 'setpassword'];
       var HASH_ALIAS = {
         top: 'home', committee: 'community', members: 'community',
         provide: 'about', membership: 'about', practice: 'about',
@@ -2963,7 +2996,45 @@
           }, 70);
         }
       });
-      showView(window.location.hash || 'home', false);
+      /* Email-link landing capture (Pranto, 2026-11-02): confirmation
+         links land on the site root with auth parameters in the hash
+         (#access_token=...&type=signup, or #error=... when the link is
+         dead). The old behaviour dropped members silently on Home with
+         no word on whether confirmation worked. Capture the landing
+         here — before the router and before the Supabase client can
+         consume the hash — and divert to the dedicated confirmed view;
+         Layer 2 resolves it once the session state is known. */
+      (function () {
+        try {
+          var h = (window.location.hash || '').replace(/^#/, '');
+          if (h.indexOf('access_token=') === -1 && h.indexOf('error=') === -1) return;
+          var p = {};
+          h.split('&').forEach(function (kv) {
+            var i = kv.indexOf('=');
+            if (i > 0) p[kv.slice(0, i)] = decodeURIComponent(kv.slice(i + 1).replace(/\+/g, ' '));
+          });
+          if (p.error || p.error_code) {
+            window.__authLanding = { kind: 'error' };
+          } else if (p.type === 'signup') {
+            window.__authLanding = { kind: 'signup' };
+          }
+        } catch (e) { /* not an auth landing — carry on */ }
+      })();
+      if (window.__authLanding) {
+        showView('confirmed', false);
+        if (window.__authLanding.kind === 'error') {
+          var ce = document.getElementById('confirmedErr');
+          var cp = document.getElementById('confirmedPending');
+          var ct = document.getElementById('confirmedTitle');
+          var cs = document.getElementById('confirmedSub');
+          if (ce) ce.style.display = '';
+          if (cp) cp.style.display = 'none';
+          if (ct) ct.textContent = 'Confirmation Link Problem';
+          if (cs) cs.textContent = 'That link is invalid or has expired.';
+        }
+      } else {
+        showView(window.location.hash || 'home', false);
+      }
 
       /* Browser/phone Back & Forward: in-site navigation pushes a history
          entry per view, so replay the entry's hash here — without pushing
@@ -4614,6 +4685,50 @@
             });
         }
 
+        /* ---------- Email-link landing resolution ---------- */
+        function setConfirmedMode(mode) {
+          var p = el('confirmedPending'), ok = el('confirmedOk'), er = el('confirmedErr');
+          var t = el('confirmedTitle'), su = el('confirmedSub');
+          if (p) p.style.display = mode === 'pending' ? '' : 'none';
+          if (ok) ok.style.display = mode === 'ok' ? '' : 'none';
+          if (er) er.style.display = mode === 'error' ? '' : 'none';
+          if (mode === 'ok') {
+            if (t) t.textContent = 'Email Confirmed';
+            if (su) su.textContent = 'Your account is ready.';
+          } else if (mode === 'error') {
+            if (t) t.textContent = 'Confirmation Link Problem';
+            if (su) su.textContent = 'That link is invalid or has expired.';
+          }
+        }
+        function resolveAuthLanding(session) {
+          var land = window.__authLanding;
+          if (!land) return;
+          if (land.kind === 'error') {
+            window.__authLanding = null;
+            setConfirmedMode('error');
+            showView('confirmed', true);
+            return;
+          }
+          if (land.kind === 'signup' && session && session.user) {
+            window.__authLanding = null;
+            setConfirmedMode('ok');
+            showView('confirmed', true);
+          }
+        }
+        var cfResendBtn = el('cfResendBtn');
+        if (cfResendBtn) {
+          cfResendBtn.addEventListener('click', function () {
+            var em = (el('cfEmail').value || '').trim();
+            var note = el('cfResendNote');
+            if (!sb || !em) { if (note) note.textContent = 'Enter the email you registered with first.'; return; }
+            setBusy(cfResendBtn, true);
+            sb.auth.resend({ type: 'signup', email: em }).then(function (res) {
+              setBusy(cfResendBtn, false);
+              if (note) note.textContent = res.error ? 'Could not resend just now — wait a minute and try again.' : 'Sent — check your inbox (and spam folder).';
+            });
+          });
+        }
+
         /* ---------- Session: restore on load, follow auth changes ---------- */
         if (sb) {
           /* Until a real session is confirmed, the header is the visitor's. */
@@ -4621,9 +4736,20 @@
           try {
           sb.auth.getSession().then(function (res) {
             var session = res && res.data ? res.data.session : null;
+            resolveAuthLanding(session);
             if (session && session.user) loadMember(session.user);
             else if (window.__pfPainted) window.__pfPainted();
           }).catch(function () { if (window.__pfPainted) window.__pfPainted(); });
+          /* A signup landing that produced no session within a few
+             seconds means the link was dead: show the error state
+             instead of leaving the member on the pending card. */
+          setTimeout(function () {
+            if (window.__authLanding && window.__authLanding.kind === 'signup') {
+              window.__authLanding = null;
+              setConfirmedMode('error');
+              showView('confirmed', true);
+            }
+          }, 4000);
           setTimeout(function () { if (window.__pfPainted) window.__pfPainted(); }, 3500);
           sb.auth.onAuthStateChange(function (event, session) {
             if (event === 'PASSWORD_RECOVERY') {
@@ -4635,6 +4761,7 @@
               return;
             }
             if (session && session.user) {
+              resolveAuthLanding(session);
               if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION') loadMember(session.user);
             } else if (event === 'SIGNED_OUT') {
               kwc.user = null; kwc.member = null; kwc.priv = null; kwc.games = []; kwc.loadedFor = null;
