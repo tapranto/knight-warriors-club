@@ -9700,6 +9700,13 @@
                 callId: c.id, kind: kind,
                 from: { id: m.id, name: m.full_name, avatar_url: m.avatar_url || null }
               });
+              /* Phase 3.1: also knock via FCM so the callee's app rings
+                 even when closed (send-call-push Edge Function). */
+              try {
+                sb().functions.invoke('send-call-push', {
+                  body: { callee_member_id: partnerId, call_id: c.id, kind: kind }
+                }).then(function () {}).catch(function () {});
+              } catch (e) {}
               c.ringTimer = setTimeout(function () { if (call === c && !c.answered) endCall('timeout'); }, RING_MS);
             });
             startUiTimer(c);
