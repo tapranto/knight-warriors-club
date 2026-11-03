@@ -1,6 +1,6 @@
 {
-  "versionCode": 60,
-  "versionName": "0.7.0-beta55",
+  "versionCode": 62,
+  "versionName": "0.7.2-beta57",
   "apkUrl": "https://github.com/tapranto/knight-warriors-club-app/releases",
-  "notes": "Chat heads get a Messenger-style switch in Settings (plus the bubble channel fix)."
+  "notes": "Poll creation fixed: the options box accepts multiple lines and shows how many options you have; password-manager autofill added."
 }
