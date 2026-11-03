@@ -2642,7 +2642,7 @@
                 <p class="pf-sub">The squads you fight with. Tap a squad to open its page — its messages live in your Inbox.</p>
                 <div id="profileSquadsList"></div>
                 <a class="btn btn-red" href="#createsquad" data-nav="createsquad">+ Create Squad</a>
-                <p class="pf-note">Squad creation is switched on for your account by the President.</p>
+                <p class="pf-note">One squad per Warrior — if you're in a squad, creating stays off until you leave it.</p>
               </div>
 
               <!-- Settings -->
@@ -5823,17 +5823,22 @@
       function loadSquadsInto(memberId, isGuestView) {
         var box = $('profileSquadsList'); if (!box) return;
         var cb = document.querySelector('#profileSquads a[data-nav="createsquad"]');
-        if (cb) cb.style.display = (!isGuestView && me()) ? '' : 'none';
+        if (cb) cb.style.display = 'none'; /* decided once the rows land */
         if (!sb) { box.innerHTML = '<p class="pf-note">Squads are unavailable right now.</p>'; return; }
         box.innerHTML = '<p class="pf-note">Loading…</p>';
-        sb.from('squad_members').select('squad_id, role, squads(id, name, game, captain_member_id)').eq('member_id', memberId)
+        sb.from('squad_members').select('squad_id, role, squads(id, name, game, captain_member_id, avatar_url)').eq('member_id', memberId)
           .then(function (res) {
             if (res.error) throw res.error;
             var rows = (res.data || []).filter(function (r) { return r.squads; });
+            /* One squad per Warrior (Pranto, 2026-11-03): Create shows only
+               when the member belongs to no squad at all. */
+            if (cb) cb.style.display = (!isGuestView && me() && !rows.length) ? '' : 'none';
             if (!rows.length) { box.innerHTML = '<p class="pf-note">No squads yet — squads you join or captain appear here.</p>'; return; }
             box.innerHTML = rows.map(function (r) {
               var sq = r.squads;
-              var inner = '<span class="squad-crest">' + esc(initialsOf(sq.name)) + '</span>' +
+              var inner = (sq.avatar_url
+                ? '<img class="squad-crest" src="' + esc(sq.avatar_url) + '" alt="" style="object-fit:cover" />'
+                : '<span class="squad-crest">' + esc(initialsOf(sq.name)) + '</span>') +
                 '<span class="sq-main"><span class="sq-name">' + esc(sq.name) + '</span>' +
                 '<span class="sq-meta">' + esc(sq.game || '') + ' <span class="role-sm">· ' + esc(r.role || 'Member') + '</span></span></span>';
               return isGuestView
@@ -5857,18 +5862,19 @@
           csForm.querySelector('[data-field="squadName"]').classList.toggle('invalid', !name);
           csForm.querySelector('[data-field="squadGame"]').classList.toggle('invalid', !game);
           if (!name || !game) return;
-          /* Open creation + one owned squad per member (Pranto, 2026-11-02):
-             anyone may create; the database also enforces one-per-captain. */
-          sb.from('squads').select('id').eq('captain_member_id', m.id).limit(1)
+          /* One squad per Warrior (Pranto, 2026-11-03): belonging to ANY
+             squad — as captain or member — blocks creating another. The
+             database still enforces one-per-captain underneath. */
+          sb.from('squad_members').select('id').eq('member_id', m.id).limit(1)
             .then(function (own) {
               if (own.data && own.data.length) {
-                window.kwcToast('You already lead a squad', 'One squad per captain — disband your current squad before creating another.');
+                window.kwcToast('You are already in a squad', 'One squad per Warrior — leave your current squad before creating another.');
                 return;
               }
               sb.from('squads').insert({ name: name, game: game, captain_member_id: m.id }).select().single()
                 .then(function (res) {
                   if (res.error) {
-                    if (res.error.code === '23505') window.kwcToast('You already lead a squad', 'One squad per captain — disband your current squad before creating another.');
+                    if (res.error.code === '23505') window.kwcToast('You already lead a squad', 'One squad per Warrior — disband your current squad before creating another.');
                     else if (tableMissing(res.error)) window.kwcToast('Not switched on yet', 'Squads arrive with the Part 2 database setup.');
                     else window.kwcToast('Could not create the squad', 'Please try again.');
                     return;
