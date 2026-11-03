@@ -1,6 +1,6 @@
 {
-  "versionCode": 62,
-  "versionName": "0.7.2-beta57",
+  "versionCode": 63,
+  "versionName": "0.7.3-beta58",
   "apkUrl": "https://github.com/tapranto/knight-warriors-club-app/releases",
-  "notes": "Poll creation fixed: the options box accepts multiple lines and shows how many options you have; password-manager autofill added."
+  "notes": "MVP ballots: the President now picks the nominees; members vote among them only."
 }
