@@ -9954,10 +9954,9 @@
       function initials(name) { return String(name || '?').split(/\s+/).map(function (w) { return w.charAt(0); }).join('').slice(0, 2).toUpperCase(); }
       function toast(title, body) { if (window.kwcToast) window.kwcToast(title, body); }
 
-      /* ICE_SERVERS — STUN plus the free Open Relay TURN service for
-         NAT traversal. Replace the openrelayproject TURN entries with
-         the club's own TURN credentials here when available; nothing
-         else in this layer needs to change. */
+      /* ICE_SERVERS — fallback list: STUN plus the free Open Relay TURN
+         service. The club's own Metered relay (kwc-turn Edge Function)
+         is fetched lazily and cached in iceCache; buildPC prefers it. */
       var ICE_SERVERS = [
         { urls: 'stun:stun.l.google.com:19302' },
         { urls: 'stun:stun1.l.google.com:19302' },
@@ -9965,6 +9964,20 @@
         { urls: 'turn:openrelay.metered.ca:443', username: 'openrelayproject', credential: 'openrelayproject' },
         { urls: 'turn:openrelay.metered.ca:443?transport=tcp', username: 'openrelayproject', credential: 'openrelayproject' }
       ];
+      var iceCache = null;
+      var iceFetching = false;
+      function refreshIceServers() {
+        var s = (typeof sb === 'function') ? sb() : null;
+        if (iceFetching || !s || !s.functions) return;
+        iceFetching = true;
+        s.functions.invoke('kwc-turn', { body: {} }).then(function (r) {
+          iceFetching = false;
+          if (!r.error && r.data && r.data.iceServers && r.data.iceServers.length) {
+            iceCache = r.data.iceServers;
+          }
+        }).catch(function () { iceFetching = false; });
+      }
+      function activeIceServers() { return iceCache || ICE_SERVERS; }
 
       var RING_MS = 30000;          /* caller rings this long, then auto-cancels (missed) */
       var CALLEE_RING_MS = 40000;   /* callee-side safety: dismiss a stale ringing card */
@@ -10090,7 +10103,8 @@
 
       /* ---------------- peer connection ---------------- */
       function buildPC(c) {
-        var pc = new window.RTCPeerConnection({ iceServers: ICE_SERVERS });
+        refreshIceServers();
+        var pc = new window.RTCPeerConnection({ iceServers: activeIceServers() });
         c.pc = pc;
         if (c.localStream) c.localStream.getTracks().forEach(function (t) { try { pc.addTrack(t, c.localStream); } catch (e) {} });
         pc.onicecandidate = function (e) { if (e.candidate) chanSend(c, 'ice', { candidate: e.candidate.toJSON ? e.candidate.toJSON() : e.candidate }); };
@@ -10298,6 +10312,7 @@
       function startCall(partnerId, kind, knownName) {
         var m = me();
         if (!m || !sb()) return;
+        refreshIceServers();
         if (call) { toast('Already in a call', 'End your current call before starting another.'); return; }
         if (!callSupported()) { toast("Calling isn't supported in this browser", 'Try the latest Chrome, Edge or Safari to make club calls.'); return; }
         var partner = { id: partnerId, name: knownName || 'Member', avatar_url: null };
@@ -10371,6 +10386,7 @@
       }
       function acceptCall() {
         var c = call; if (!c || c.role !== 'callee' || c.state !== 'ringing') return;
+        refreshIceServers();
         stopRing();
         if (c.ringTimer) { clearTimeout(c.ringTimer); c.ringTimer = null; }
         navigator.mediaDevices.getUserMedia(c.kind === 'video' ? { audio: true, video: true } : { audio: true })
