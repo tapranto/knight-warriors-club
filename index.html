@@ -6248,6 +6248,8 @@
                 return;
               }
               $('bcTitle').value = ''; $('bcBody').value = '';
+              // beta49: buzz members' phones too (announcement push)
+              try { sb.functions.invoke('send-announce-push', { body: { title: title, body: body } }); } catch (e) {}
               var ok = $('bcOk'); ok.classList.add('show');
               setTimeout(function () { ok.classList.remove('show'); }, 4000);
               window.kwcToast('Broadcast sent', 'Every member will see it in their Inbox — and as a pop-up.');
@@ -7175,6 +7177,8 @@
               err.textContent = '';
               sb.from('broadcasts').insert({ sender_member_id: me().id, title: t, body: bd }).then(function (r) {
                 if (r.error) { err.textContent = 'That broadcast could not be sent.'; return; }
+                // beta49: buzz members' phones too (announcement push)
+                try { sb.functions.invoke('send-announce-push', { body: { title: t, body: bd } }); } catch (e) {}
                 toast('Broadcast sent', 'Every member has it in their Inbox.');
                 renderCastPane(pane);
               });
