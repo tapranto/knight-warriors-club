@@ -135,6 +135,8 @@
       .dm-row.mine .dm-bubble { background: #c8102e; }
       .dm-bubble p { margin: 0; line-height: 1.45; word-break: break-word; }
       .dm-meta { font-size: 11px; opacity: .65; margin-top: 3px; }
+      .dm-ticks { font-size: 10px; letter-spacing: -1px; }
+      .dm-ticks.read { color: #ffd34d; }
       .notif-row { display: flex; gap: 11px; padding: 11px 4px; border-bottom: 1px solid rgba(255,255,255,.06); align-items: flex-start; }
       .notif-row.unread { background: rgba(200,16,46,.08); border-radius: 10px; padding-left: 10px; padding-right: 10px; }
       @media (max-width: 760px) {
@@ -6940,6 +6942,10 @@
         if (gate) gate.hidden = true;
         if (shell) shell.style.display = '';
         var m = me();
+        /* Opening the inbox = messages reached this device (app parity). */
+        sb.from('direct_messages').update({ delivered_at: new Date().toISOString() })
+          .eq('recipient_member_id', m.id).is('delivered_at', null)
+          .then(function () {}).catch(function () {});
         if (ibPending) { ibSel = { type: ibPending.type, id: ibPending.id }; ibPending = null; }
         var jobs = [
           sb.from('notifications').select('id', { count: 'exact', head: true }).eq('member_id', m.id).eq('is_read', false).then(function (r) { return r.error ? 0 : (r.count || 0); }).catch(function () { return 0; }),
@@ -7197,9 +7203,17 @@
         return '<div class="ib-prev-wrap" style="text-align:center;margin:0 0 14px"><button class="btn btn-glass btn-sm" type="button" data-ib-prev="1"' +
           (hist.loading ? ' disabled' : '') + '>' + (hist.loading ? 'Loading…' : IB_PREV_LABEL) + '</button></div>';
       }
+      /* Message ticks (2026-11-03, app parity): \u2713 sent, \u2713\u2713
+         delivered, gold \u2713\u2713 read \u2014 driven by is_read +
+         delivered_at (Part 13), the same fields the app uses. */
+      function ibTicksHTML(x) {
+        if (x.is_read) return ' <span class="dm-ticks read" title="Read">\u2713\u2713</span>';
+        if (x.delivered_at) return ' <span class="dm-ticks" title="Delivered">\u2713\u2713</span>';
+        return ' <span class="dm-ticks" title="Sent">\u2713</span>';
+      }
       function ibDMRowHTML(x, myId) {
         var mine = x.sender_member_id === myId;
-        return '<div class="dm-row' + (mine ? ' mine' : '') + '"><div class="dm-bubble"><p>' + esc(x.body) + '</p><p class="dm-meta">' + esc(fmtTime(x.created_at)) + '</p></div></div>';
+        return '<div class="dm-row' + (mine ? ' mine' : '') + '"><div class="dm-bubble"><p>' + esc(x.body) + '</p><p class="dm-meta">' + esc(fmtTime(x.created_at)) + (mine ? ibTicksHTML(x) : '') + '</p></div></div>';
       }
       function ibSquadRowHTML(x) {
         var mine = me() && x.sender_member_id === me().id;
@@ -7368,6 +7382,9 @@
             sb.from('direct_messages').update({ is_read: true })
               .eq('sender_member_id', partnerId).eq('recipient_member_id', m.id).eq('is_read', false)
               .then(function () { refreshBadges3(); }).catch(function () {});
+            sb.from('direct_messages').update({ delivered_at: new Date().toISOString() })
+              .eq('sender_member_id', partnerId).eq('recipient_member_id', m.id).is('delivered_at', null)
+              .then(function () {}).catch(function () {});
           });
       }
 
@@ -7621,6 +7638,14 @@
               if (document.body.getAttribute('data-view') === 'inbox') {
                 if (ibSel.type === 'dm' && (ibSel.id === n.sender_member_id || ibSel.id === n.recipient_member_id)) loadDMThread(ibSel.id, { forceBottom: n.sender_member_id === m.id });
                 else if (n.recipient_member_id === m.id) toast('New message', memberName(n.sender_member_id) + ' sent you a message.', 'inbox');
+              }
+            })
+            .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'direct_messages' }, function (pl) {
+              var n = pl.new; var m = me(); if (!n || !m) return;
+              if (n.sender_member_id !== m.id && n.recipient_member_id !== m.id) return;
+              if (document.body.getAttribute('data-view') === 'inbox' &&
+                  ibSel.type === 'dm' && (ibSel.id === n.sender_member_id || ibSel.id === n.recipient_member_id)) {
+                loadDMThread(ibSel.id);
               }
             })
             .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'squad_messages' }, function (pl) {
