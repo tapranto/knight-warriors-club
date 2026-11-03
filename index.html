@@ -2826,7 +2826,12 @@
           <div class="wrap">
             <div class="sec-head reveal">
               <p class="kicker">Squad</p>
+              <div style="display:flex;justify-content:center;margin-bottom:14px">
+                <img id="squadAvatarImg" alt="" style="display:none;width:92px;height:92px;border-radius:50%;object-fit:cover;border:2px solid #f5c451" />
+                <span id="squadAvatarInit" class="mini-avatar" style="display:none;width:92px;height:92px;font-size:32px;border-radius:50%;align-items:center;justify-content:center"></span>
+              </div>
               <h2 id="squadName">Squad</h2>
+              <p id="squadMotto" style="display:none;color:#f5c451;font-style:italic"></p>
               <p id="squadMeta">Loading…</p>
             </div>
             <div id="squadActions" style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px"></div>
@@ -2836,6 +2841,8 @@
               <div class="roster" id="squadRoster"><p class="pf-note">Loading…</p></div>
             </div>
             <div id="squadInviteBox" style="margin-top:18px"></div>
+            <div id="squadEditBox" style="margin-top:18px"></div>
+            <input type="file" id="squadAvatarFile" accept="image/*" hidden />
             <p style="margin-top:22px"><a class="btn btn-glass" href="#profile" data-pftab="squads">← Back to My Profile</a></p>
           </div>
         </section>
@@ -6389,6 +6396,7 @@
         meta.textContent = 'Loading…';
         roster.innerHTML = '<p class="pf-note">Loading…</p>';
         actions.innerHTML = ''; inviteBox.innerHTML = '';
+        var editBox0 = $('squadEditBox'); if (editBox0) editBox0.innerHTML = '';
         if (!sb) { meta.textContent = 'Squads are unavailable right now.'; return; }
         sb.from('squads').select('*').eq('id', sid).maybeSingle().then(function (sres) {
           if (sres.error || !sres.data) { meta.textContent = 'This squad could not be found.'; roster.innerHTML = ''; return null; }
@@ -6409,6 +6417,18 @@
                 isCaptain: !!(me() && sq.captain_member_id === me().id) };
               var captain = byId[sq.captain_member_id];
               nameEl.textContent = sq.name;
+              var avImg = $('squadAvatarImg'), avInit = $('squadAvatarInit'), moEl = $('squadMotto');
+              if (sq.avatar_url) {
+                if (avImg) { avImg.src = sq.avatar_url; avImg.style.display = ''; }
+                if (avInit) avInit.style.display = 'none';
+              } else {
+                if (avImg) avImg.style.display = 'none';
+                if (avInit) { avInit.textContent = initials(sq.name); avInit.style.display = 'inline-flex'; }
+              }
+              if (moEl) {
+                if (sq.motto) { moEl.textContent = '“' + sq.motto + '”'; moEl.style.display = ''; }
+                else moEl.style.display = 'none';
+              }
               meta.textContent = (sq.game || '') + ' squad · ' + rows.length + ' of 10 seats' +
                 (captain ? ' · Captained by ' + captain.full_name : '');
               renderSquadActions();
@@ -6424,11 +6444,13 @@
         var h = '';
         if (squadCtx.myRow || isPres()) h += '<button class="btn btn-red" type="button" id="sqChatBtn">Open Group Chat</button>';
         if (squadCtx.isCaptain || isPres()) h += '<button class="btn btn-glass" type="button" id="sqInviteBtn">Invite Member</button>';
+        if (squadCtx.isCaptain || isPres()) h += '<button class="btn btn-glass" type="button" id="sqEditBtn">Edit Squad</button>';
         if (squadCtx.myRow && !squadCtx.isCaptain) h += '<button class="btn btn-glass" type="button" id="sqLeaveBtn">Leave Squad</button>';
         if (squadCtx.isCaptain || isPres()) h += '<button class="btn btn-glass" type="button" id="sqDeleteBtn" style="color:#ff8089">Delete Squad</button>';
         box.innerHTML = h;
         var chat = $('sqChatBtn'); if (chat) chat.addEventListener('click', function () { openInboxThread('squad', sq.id); });
         var inv = $('sqInviteBtn'); if (inv) inv.addEventListener('click', renderSquadInvite);
+        var ed = $('sqEditBtn'); if (ed) ed.addEventListener('click', renderSquadEdit);
         var lv = $('sqLeaveBtn'); if (lv) lv.addEventListener('click', leaveSquad);
         var del = $('sqDeleteBtn'); if (del) del.addEventListener('click', deleteSquad);
       }
@@ -6503,16 +6525,66 @@
                 if (missing(r.error)) { $('sqInviteOk').textContent = SETUP_NOTE; return; }
                 throw r.error;
               }
-              sb.from('notifications').insert({ member_id: target, type: 'squad_invite',
-                title: 'Squad invitation',
-                body: me().full_name + ' invited you to join ' + sq.name + ' (' + (sq.game || '') + '). Open your Inbox to accept.',
-                link: 'inbox' }).then(function () {}, function () {});
+              sb.rpc('notify_squad_invited', { p_squad_id: sq.id, p_member_id: target }).then(function (r) {
+                if (r.error) {
+                  /* Part 15 not in yet — fall back to the old direct insert
+                     (works when the sender is the President). */
+                  sb.from('notifications').insert({ member_id: target, type: 'squad_invite',
+                    title: 'Squad invitation',
+                    body: me().full_name + ' invited you to join ' + sq.name + ' (' + (sq.game || '') + '). Open your Inbox to accept.',
+                    link: 'inbox' }).then(function () {}, function () {});
+                }
+              });
               $('sqInviteOk').textContent = 'Invite sent — it is in their Inbox now.';
               toast('Invite sent', 'Your invitation is in their Inbox.');
             }).catch(function () { $('sqInviteOk').textContent = 'That invite could not be sent — they may already have one pending.'; });
           });
         }).catch(function () { box.innerHTML = '<p class="pf-note">Member list unavailable right now.</p>'; });
       }
+      function renderSquadEdit() {
+        var box = $('squadEditBox'); if (!box || !squadCtx || !sb) return;
+        var sq = squadCtx.squad;
+        box.innerHTML = '<div class="pf-panel glass" style="padding:18px"><h3 class="pf-title">Edit squad</h3>' +
+          '<p class="pf-sub">Name, motto and picture — the captain\u2019s tools.</p>' +
+          '<div class="field"><label for="sqEditName">Squad name</label><input id="sqEditName" type="text" value="' + esc(sq.name) + '" /></div>' +
+          '<div class="field"><label for="sqEditMotto">Motto</label><input id="sqEditMotto" type="text" value="' + esc(sq.motto || '') + '" placeholder="e.g. We never miss a final" /></div>' +
+          '<div style="display:flex;gap:9px;flex-wrap:wrap"><button class="btn btn-red" type="button" id="sqEditSave">Save changes</button>' +
+          '<button class="btn btn-glass" type="button" id="sqPicBtn">Change squad picture</button></div>' +
+          '<p class="form-ok" id="sqEditOk"></p></div>';
+        $('sqEditSave').addEventListener('click', function () {
+          var nm = $('sqEditName').value.trim();
+          var mt = $('sqEditMotto').value.trim();
+          if (!nm) { $('sqEditOk').textContent = 'The squad needs a name.'; return; }
+          sb.from('squads').update({ name: nm, motto: mt || null }).eq('id', sq.id).then(function (r) {
+            if (r.error) { $('sqEditOk').textContent = 'Save failed — please try again.'; return; }
+            $('sqEditOk').textContent = 'Saved.';
+            loadSquadPage(sq.id);
+          });
+        });
+        $('sqPicBtn').addEventListener('click', function () { var f = $('squadAvatarFile'); if (f) f.click(); });
+        box.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+      var safEl = $('squadAvatarFile');
+      if (safEl) safEl.addEventListener('change', function () {
+        var file = safEl.files && safEl.files[0]; safEl.value = '';
+        if (!file || !squadCtx || !sb || typeof kwc === 'undefined' || !kwc.user) return;
+        var sq = squadCtx.squad;
+        downscale(file, 512, function (blob) {
+          if (!blob) { toast('Upload failed', 'That image could not be read — try another one.'); return; }
+          var path = kwc.user.id + '/squad-' + sq.id + '-' + Date.now() + '.jpg';
+          sb.storage.from('avatars').upload(path, blob, { contentType: 'image/jpeg', upsert: true })
+            .then(function (res) {
+              if (res.error) throw res.error;
+              var url = sb.storage.from('avatars').getPublicUrl(path).data.publicUrl;
+              return sb.from('squads').update({ avatar_url: url }).eq('id', sq.id).then(function (u) {
+                if (u.error) throw u.error;
+                toast('Squad picture updated', 'The new picture is live.');
+                loadSquadPage(sq.id);
+              });
+            })
+            .catch(function () { toast('Upload failed', 'That photo could not be saved — please try again.'); });
+        });
+      });
       function leaveSquad() {
         if (!squadCtx || !me()) return;
         if (!window.confirm('Leave ' + squadCtx.squad.name + '?')) return;
