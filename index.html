@@ -4936,7 +4936,7 @@
               try { sessionStorage.removeItem('kwc_pending_email'); } catch (e) {}
               window.__pendingEmail = null;
               setBusy(otpVerifyBtn, false);
-              var done = function () { setConfirmedMode('ok'); showView('confirmed', true); };
+              var done = function () { showView('home', true); };
               if (user) loadMember(user).then(done); else done();
             }).catch(function (err) {
               setBusy(otpVerifyBtn, false);
