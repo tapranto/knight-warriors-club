@@ -2633,6 +2633,7 @@
                 <h3 class="pf-title">Tournament Honours</h3>
                 <p class="pf-sub">Your record in official club tournaments.</p>
                 <div id="honoursList"></div>
+                <div id="squadHonoursList"></div>
                 <p class="pf-note">Honours are added automatically from official tournament results — they can't be edited.</p>
               </div>
 
@@ -2839,6 +2840,12 @@
               <h3 class="pf-title">Roster</h3>
               <p class="pf-sub">Every Warrior in the squad, with the role their captain gave them.</p>
               <div class="roster" id="squadRoster"><p class="pf-note">Loading…</p></div>
+            </div>
+            <div class="pf-panel glass reveal" style="margin-top:18px">
+              <h3 class="pf-title">Trophies</h3>
+              <p class="pf-sub">Squad honours — awarded by the President.</p>
+              <div id="squadTrophies"><p class="pf-note">No trophies yet.</p></div>
+              <div id="squadAwardBox" style="margin-top:10px"></div>
             </div>
             <div id="squadInviteBox" style="margin-top:18px"></div>
             <div id="squadEditBox" style="margin-top:18px"></div>
@@ -5819,8 +5826,30 @@
         }
       }
 
+      /* ---------- Squad honours on profiles (Part 16) ---------- */
+      function renderSquadHonoursInto(memberId) {
+        var el = $('squadHonoursList'); if (!el) return;
+        el.innerHTML = '';
+        if (!sb) return;
+        sb.from('squad_members').select('squad_id').eq('member_id', memberId).then(function (sm) {
+          var ids = (sm.data || []).map(function (r) { return r.squad_id; });
+          if (!ids.length) return;
+          sb.from('squad_honours').select('id, title, created_at, squads(name)').in('squad_id', ids)
+            .order('created_at', { ascending: false }).then(function (res) {
+              if (res.error || !res.data || !res.data.length) return;
+              el.innerHTML = '<h4 style="margin:16px 0 8px">Squad Honours</h4><div class="trophy-grid">' +
+                res.data.map(function (h) {
+                  return '<div class="trophy-box champ"><div class="tb-visual"><span class="tb-pos">🏆</span></div>' +
+                    '<div class="tb-body"><h4>' + esc(h.title) + '</h4><p>Won with ' +
+                    esc((h.squads && h.squads.name) || 'a squad') + '</p></div></div>';
+                }).join('') + '</div>';
+            }).catch(function () {});
+        }).catch(function () {});
+      }
+
       /* ---------- Squads list (profile tab) ---------- */
       function loadSquadsInto(memberId, isGuestView) {
+        renderSquadHonoursInto(memberId);
         var box = $('profileSquadsList'); if (!box) return;
         var cb = document.querySelector('#profileSquads a[data-nav="createsquad"]');
         if (cb) cb.style.display = 'none'; /* decided once the rows land */
@@ -6439,6 +6468,7 @@
                 (captain ? ' · Captained by ' + captain.full_name : '');
               renderSquadActions();
               renderSquadRoster();
+              renderSquadTrophies();
               if (squadOpenInvite) { squadOpenInvite = false; renderSquadInvite(); }
             });
           });
@@ -6546,6 +6576,45 @@
             }).catch(function () { $('sqInviteOk').textContent = 'That invite could not be sent — they may already have one pending.'; });
           });
         }).catch(function () { box.innerHTML = '<p class="pf-note">Member list unavailable right now.</p>'; });
+      }
+      function renderSquadTrophies() {
+        var box = $('squadTrophies'); if (!box || !squadCtx || !sb) return;
+        var awardBox = $('squadAwardBox');
+        sb.from('squad_honours').select('id, title, created_at').eq('squad_id', squadCtx.squad.id)
+          .order('created_at', { ascending: false }).then(function (res) {
+            if (res.error) { box.innerHTML = '<p class="pf-note">No trophies yet.</p>'; return; }
+            var rows = res.data || [];
+            box.innerHTML = rows.length ? rows.map(function (h) {
+              return '<div style="display:flex;align-items:center;gap:10px;padding:7px 0">' +
+                '<span style="font-size:19px">🏆</span>' +
+                '<span style="flex:1"><b>' + esc(h.title) + '</b> <span class="role-sm">· ' +
+                esc(String(h.created_at || '').slice(0, 10)) + '</span></span>' +
+                (isPres() ? '<button type="button" class="btn btn-glass btn-sm" data-honour-del="' + h.id + '">Remove</button>' : '') +
+                '</div>';
+            }).join('') : '<p class="pf-note">No trophies yet — win a squad tournament and the President adds it here.</p>';
+            box.querySelectorAll('[data-honour-del]').forEach(function (b) {
+              b.addEventListener('click', function () {
+                if (!window.confirm('Remove this trophy?')) return;
+                sb.from('squad_honours').delete().eq('id', b.getAttribute('data-honour-del'))
+                  .then(function () { renderSquadTrophies(); });
+              });
+            });
+          }).catch(function () { box.innerHTML = '<p class="pf-note">No trophies yet.</p>'; });
+        if (awardBox) {
+          awardBox.innerHTML = isPres()
+            ? '<button type="button" class="btn btn-red btn-sm" id="sqAwardBtn">🏆 Award a Trophy</button>' : '';
+          var ab = $('sqAwardBtn');
+          if (ab) ab.addEventListener('click', function () {
+            var t = window.prompt('Trophy title — e.g. "eFootball Squad Cup — Champions"');
+            if (!t || !t.trim()) return;
+            sb.from('squad_honours').insert({ squad_id: squadCtx.squad.id, title: t.trim(), awarded_by: me() ? me().id : null })
+              .then(function (r) {
+                if (r.error) { toast('Award failed', 'Only the President can award trophies — and the Part 16 update must be in.'); return; }
+                toast('Trophy awarded', 'It now shows here and on every member\u2019s profile.');
+                renderSquadTrophies();
+              });
+          });
+        }
       }
       function renderSquadEdit() {
         var box = $('squadEditBox'); if (!box || !squadCtx || !sb) return;
