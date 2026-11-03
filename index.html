@@ -3069,6 +3069,7 @@
         }
         window.scrollTo(0, 0);
         refreshReveals();
+        if (typeof window.guardAuthViews === 'function') window.guardAuthViews();
       }
       document.addEventListener('click', function (e) {
         var sEl = e.target.closest ? e.target.closest('[data-story]') : null;
@@ -4168,6 +4169,48 @@
           a.style.display = on ? 'none' : '';
         });
         if (!on) closeAccountMenu();
+        guardAuthViews();
+      }
+      /* Already-logged-in guard (Pranto, 2026-11-03): a signed-in
+         member who lands on Register or Log In — e.g. a news article's
+         "Apply to join" link, especially inside the app where the
+         session is bridged into the WebView — sees an "already logged
+         in" card instead of the registration / login forms. */
+      function guardAuthViews() {
+        var m = (typeof kwc !== 'undefined') ? kwc.member : null;
+        [['view-register', '.join-grid'], ['view-login', '.auth-card']].forEach(function (pair) {
+          var view = document.getElementById(pair[0]);
+          if (!view) return;
+          var box = view.querySelector(pair[1]);
+          var card = view.querySelector('.already-card');
+          if (m) {
+            if (box) box.style.display = 'none';
+            if (!card) {
+              card = document.createElement('div');
+              card.className = 'already-card auth-card glass reveal in';
+              card.innerHTML = '<h3>You are already logged in</h3>' +
+                '<p class="auth-sub">Signed in as <b class="already-name"></b><span class="already-user"></span> — no need to register or log in again.</p>' +
+                '<div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px">' +
+                '<a class="btn btn-red" href="#inbox" data-nav="inbox">Open my Inbox</a>' +
+                '<a class="btn" href="#profile" data-nav="profile">My Profile</a>' +
+                '<button class="btn already-logout" type="button">Log out</button></div>';
+              if (box && box.parentNode) box.parentNode.insertBefore(card, box);
+              else view.querySelector('.wrap').appendChild(card);
+              card.querySelector('.already-logout').addEventListener('click', function () {
+                var b = document.getElementById('logoutBtn');
+                if (b) b.click();
+              });
+            }
+            var nm = card.querySelector('.already-name');
+            if (nm) nm.textContent = m.full_name || 'Member';
+            var un = card.querySelector('.already-user');
+            if (un) un.textContent = m.username ? ' (@' + m.username + ')' : '';
+            card.style.display = '';
+          } else {
+            if (box) box.style.display = '';
+            if (card) card.style.display = 'none';
+          }
+        });
       }
       function closeAccountMenu() {
         var menu = document.getElementById('accountMenu');
