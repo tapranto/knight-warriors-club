@@ -1676,6 +1676,7 @@
           <a href="#inbox" data-nav="inbox" id="inboxMenuLink">Inbox <span class="am-badge" id="inboxBadge2" hidden></span></a>
           <a href="#console" data-nav="console" id="allMembersLink" hidden>All Members</a>
           <a href="#allsquads" data-nav="allsquads" id="allSquadsLink" hidden>All Squads</a>
+          <a href="#pconsole" data-nav="pconsole" id="pconsoleLink" hidden>President Console</a>
           <button class="am-item" type="button" id="logoutBtn">Log out</button>
         </div>
       </div>
@@ -1686,6 +1687,8 @@
         <a href="#news" data-nav="news">News</a>
         <a href="#events" data-nav="events">Events</a>
         <a href="#leaderboard" data-nav="leaderboard">Leaderboard</a>
+        <a href="#feed" data-nav="feed">Club Feed</a>
+        <a href="#polls" data-nav="polls">Polls &amp; MVP</a>
         <a href="#maker" data-nav="maker">Tournament Maker</a>
         <a href="#community" data-nav="community">Community</a>
         <a href="#games" data-nav="games">Games</a>
@@ -2631,6 +2634,7 @@
             </div>
 
             <div id="profileActions" hidden style="margin-top:14px"></div>
+            <div id="parityActions" style="margin-top:10px"></div>
             <input type="file" id="avatarFile" accept="image/*" hidden />
             <input type="file" id="coverFile" accept="image/*" hidden />
             <p class="pf-note" id="guestNote" hidden style="margin-top:16px"></p>
@@ -2815,6 +2819,95 @@
             <div class="inbox-shell glass reveal" id="inboxShell">
               <aside class="inbox-list" id="inboxList"><p class="pf-note" style="padding:16px">Loading…</p></aside>
               <div class="inbox-pane" id="inboxPane"><p class="pf-note" style="padding:16px">Pick a conversation.</p></div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- ==================== VIEW: CLUB FEED (web parity, Layer 8) ==================== -->
+      <div class="view" id="view-feed">
+        <section>
+          <div class="wrap">
+            <div class="sec-head reveal">
+              <p class="kicker">Members Only</p>
+              <h2>Club Feed</h2>
+              <p>What's happening inside the club — post updates, call-outs and wins for every Warrior to see. The same feed as the club app.</p>
+            </div>
+            <p class="pf-note" id="feedGate" hidden>Log in to see the club feed.</p>
+            <div id="feedShell" hidden>
+              <div class="pf-panel glass">
+                <h3 class="pf-title">Share with the club</h3>
+                <div class="field"><textarea id="feedBody" rows="3" maxlength="1000" placeholder="Write something for the whole club…"></textarea></div>
+                <p class="form-err" id="feedErr" role="alert"></p>
+                <button class="btn btn-red" type="button" id="feedPostBtn">Post to Feed</button>
+              </div>
+              <div id="feedList" style="margin-top:18px"><p class="pf-note">Loading the feed…</p></div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- ==================== VIEW: POLLS & MVP (web parity, Layer 8) ==================== -->
+      <div class="view" id="view-polls">
+        <section>
+          <div class="wrap">
+            <div class="sec-head reveal">
+              <p class="kicker">Members Only</p>
+              <h2>Polls &amp; MVP</h2>
+              <p>Club polls and MVP voting — the same ballots as the club app, votes counted together.</p>
+            </div>
+            <p class="pf-note" id="pollsGate" hidden>Log in to vote.</p>
+            <div id="pollsShell" hidden>
+              <div class="pf-panel glass" id="pollCreatePanel" hidden>
+                <h3 class="pf-title">Start a Poll</h3>
+                <div class="field"><label for="pollQuestion">Question</label><input id="pollQuestion" type="text" maxlength="200" placeholder="e.g. Which game should the next tournament be?" /></div>
+                <div class="field"><label for="pollOptions">Options — one per line</label><textarea id="pollOptions" rows="4" placeholder="eFootball&#10;PUBG&#10;Clash of Clans"></textarea></div>
+                <p class="pf-note" id="pollOptHint">Add at least 2 options, one per line — CREATE turns on at 2 (now: 0)</p>
+                <p class="form-err" id="pollErr" role="alert"></p>
+                <button class="btn btn-red" type="button" id="pollCreateBtn" disabled>Create Poll</button>
+              </div>
+              <div id="pollList" style="margin-top:18px"><p class="pf-note">Loading polls…</p></div>
+              <div class="pf-panel glass" id="ballotCreatePanel" hidden style="margin-top:26px">
+                <h3 class="pf-title">Open an MVP Ballot</h3>
+                <div class="field"><label for="ballotTitle">Title</label><input id="ballotTitle" type="text" maxlength="120" placeholder="e.g. MVP of November" /></div>
+                <div class="field"><label for="ballotSearch">Nominees — search and tick at least 2 members</label><input id="ballotSearch" type="text" placeholder="Type a name to search…" autocomplete="off" /></div>
+                <div id="ballotChips" style="margin:6px 0"></div>
+                <div id="ballotResults"></div>
+                <p class="pf-note" id="ballotHint">Pick at least 2 nominees — CREATE turns on at 2 (now: 0)</p>
+                <p class="form-err" id="ballotErr" role="alert"></p>
+                <button class="btn btn-red" type="button" id="ballotCreateBtn" disabled>Create Ballot</button>
+              </div>
+              <div id="ballotList" style="margin-top:18px"><p class="pf-note">Loading MVP ballots…</p></div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- ==================== VIEW: PRESIDENT CONSOLE (web parity, Layer 8) ==================== -->
+      <div class="view" id="view-pconsole">
+        <section>
+          <div class="wrap">
+            <div class="sec-head reveal">
+              <p class="kicker">President</p>
+              <h2>President Console</h2>
+              <p>Member reports, Legacy tournament entries and member removal — the same console as the club app.</p>
+            </div>
+            <p class="pf-note" id="pconsoleGate" hidden>This console is for the President only.</p>
+            <div id="pconsoleShell" hidden>
+              <div class="pf-panel glass">
+                <h3 class="pf-title">Member Reports</h3>
+                <div id="pcReports"><p class="pf-note">Loading reports…</p></div>
+              </div>
+              <div class="pf-panel glass" style="margin-top:18px">
+                <h3 class="pf-title">eFootball Tournament Legacy — Entries</h3>
+                <div id="pcEntries"><p class="pf-note">Loading entries…</p></div>
+              </div>
+              <div class="pf-panel glass" style="margin-top:18px">
+                <h3 class="pf-title">Members</h3>
+                <div class="field"><input id="pcMemberSearch" type="text" placeholder="Search members…" autocomplete="off" /></div>
+                <div id="pcMembers"><p class="pf-note">Loading members…</p></div>
+                <p class="pf-note">Removing a member deletes their club profile row. Their login account itself stays unless deleted in the Supabase dashboard.</p>
+              </div>
             </div>
           </div>
         </section>
@@ -3026,7 +3119,7 @@
 
     <script>
       /* ---------- View router ---------- */
-      var VIEWS = ['home', 'about', 'community', 'games', 'news', 'article', 'events', 'tournament', 'leaderboard', 'maker', 'rules', 'register', 'login', 'checkemail', 'verifycode', 'confirmed', 'profile', 'squad', 'createsquad', 'console', 'allsquads', 'inbox', 'completeprofile', 'resetpassword', 'setpassword'];
+      var VIEWS = ['home', 'about', 'community', 'games', 'news', 'article', 'events', 'tournament', 'leaderboard', 'maker', 'rules', 'register', 'login', 'checkemail', 'verifycode', 'confirmed', 'profile', 'squad', 'createsquad', 'console', 'allsquads', 'inbox', 'completeprofile', 'resetpassword', 'setpassword', 'feed', 'polls', 'pconsole'];
       var HASH_ALIAS = {
         top: 'home', committee: 'community', members: 'community',
         provide: 'about', membership: 'about', practice: 'about',
@@ -7135,6 +7228,7 @@
               return '<div class="notif-row' + (n.is_read ? '' : ' unread') + '"><span class="mini-avatar">KW</span><div style="flex:1">' +
                 '<p style="margin:0"><b>' + esc(n.title || 'Notification') + '</b></p>' +
                 (n.body ? '<p style="margin:2px 0 0">' + esc(n.body) + '</p>' : '') +
+                (n.link === 'polls' ? '<p style="margin:6px 0 0"><a class="btn btn-red btn-sm" href="#polls" data-nav="polls">Open Polls &amp; MVP</a></p>' : '') +
                 '<p class="dm-meta">' + esc(fmtTime(n.created_at)) + '</p></div></div>';
             }).join('') : '<p class="pf-note">No notifications yet.</p>';
             h += '</div>';
@@ -7197,7 +7291,7 @@
             var h = paneHead('Everyone — Club Broadcasts') + '<div class="ib-scroll">';
             h += items.length ? items.map(function (b) {
               return '<div class="dm-row"><div class="dm-bubble" style="max-width:92%"><p><b>' + esc(b.title || 'Announcement') + '</b></p>' +
-                (b.body ? '<p>' + esc(b.body) + '</p>' : '') +
+                (b.body ? ((window.clubStickerOf && window.clubStickerOf(b.body)) ? '<p class="dm-sticker-big">' + esc(window.clubStickerOf(b.body)) + '</p>' : '<p>' + esc(b.body) + '</p>') : '') +
                 '<p class="dm-meta">President · ' + esc(fmtTime(b.created_at)) + '</p></div></div>';
             }).join('') : '<p class="pf-note">No broadcasts yet.</p>';
             h += '</div>';
@@ -7281,13 +7375,15 @@
       }
       function ibDMRowHTML(x, myId) {
         var mine = x.sender_member_id === myId;
-        return '<div class="dm-row' + (mine ? ' mine' : '') + '"><div class="dm-bubble"><p>' + esc(x.body) + '</p><p class="dm-meta">' + esc(fmtTime(x.created_at)) + (mine ? ibTicksHTML(x) : '') + '</p></div></div>';
+        var stk = window.clubStickerOf ? window.clubStickerOf(x.body) : null;
+        return '<div class="dm-row' + (mine ? ' mine' : '') + '"><div class="dm-bubble' + (stk ? ' stk' : '') + '">' + (stk ? '<p class="dm-sticker-big">' + esc(stk) + '</p>' : '<p>' + esc(x.body) + '</p>') + '<p class="dm-meta">' + esc(fmtTime(x.created_at)) + (mine ? ibTicksHTML(x) : '') + '</p></div></div>';
       }
       function ibSquadRowHTML(x) {
         var mine = me() && x.sender_member_id === me().id;
-        return '<div class="dm-row' + (mine ? ' mine' : '') + '"><div class="dm-bubble">' +
+        var stk2 = window.clubStickerOf ? window.clubStickerOf(x.body) : null;
+        return '<div class="dm-row' + (mine ? ' mine' : '') + '"><div class="dm-bubble' + (stk2 ? ' stk' : '') + '">' +
           (mine ? '' : '<p class="dm-meta" style="margin:0 0 2px">' + esc(memberName(x.sender_member_id)) + '</p>') +
-          '<p>' + esc(x.body) + '</p><p class="dm-meta">' + esc(fmtTime(x.created_at)) + '</p></div></div>';
+          (stk2 ? '<p class="dm-sticker-big">' + esc(stk2) + '</p>' : '<p>' + esc(x.body) + '</p>') + '<p class="dm-meta">' + esc(fmtTime(x.created_at)) + '</p></div></div>';
       }
       function ibRestorePrevBtn(type) {
         var sc = $(type === 'dm' ? 'dmScroll' : 'sqScroll'); if (!sc) return;
@@ -10928,6 +11024,755 @@
         });
         wrap.appendChild(btn);
       });
+    })();
+  </script>
+  <style>
+    /* ---------- Layer 8: web parity (Feed, Polls & MVP, Console, stickers, Player Card) ---------- */
+    .dm-bubble.stk { background: transparent !important; padding: 2px 6px; }
+    .dm-sticker-big { font-size: 46px; line-height: 1.15; }
+    .w2-ava { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; flex: none; }
+    .w2-row { display: flex; gap: 12px; align-items: flex-start; }
+    .w2-body { white-space: pre-wrap; word-break: break-word; margin: 4px 0 0; line-height: 1.55; }
+    .w2-name { font-weight: 700; color: #fff; text-decoration: none; }
+    .w2-meta { color: #9aa3b2; font-size: 12px; margin: 0; }
+    .w2-card { margin-top: 16px; }
+    .w2-opt { display: block; width: 100%; text-align: left; background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.10); border-radius: 12px; padding: 10px 12px; margin-top: 8px; color: inherit; cursor: pointer; position: relative; overflow: hidden; font: inherit; }
+    .w2-opt:hover { border-color: rgba(255,151,161,.55); }
+    .w2-opt:disabled { opacity: .55; cursor: wait; }
+    .w2-opt .w2-fill { position: absolute; top: 0; left: 0; bottom: 0; background: rgba(200,16,46,.30); }
+    .w2-opt .w2-opt-in { position: relative; display: flex; justify-content: space-between; gap: 10px; align-items: center; }
+    .w2-opt.mine { border-color: #ff97a1; }
+    .w2-chip { display: inline-flex; align-items: center; gap: 6px; background: rgba(200,16,46,.25); border: 1px solid rgba(255,151,161,.5); border-radius: 999px; padding: 4px 6px 4px 12px; margin: 0 6px 6px 0; font-size: 13px; }
+    .w2-chip button { background: none; border: none; color: #ffb3ba; cursor: pointer; font-size: 15px; line-height: 1; padding: 2px 4px; }
+    .w2-pick { display: flex; align-items: center; gap: 10px; width: 100%; background: none; border: none; border-bottom: 1px solid rgba(255,255,255,.06); color: inherit; padding: 8px 4px; cursor: pointer; font: inherit; text-align: left; }
+    .w2-pick:hover { background: rgba(255,255,255,.04); }
+    .w2-actions { margin-left: auto; flex: none; }
+    .w2-list-row { display: flex; gap: 12px; align-items: flex-start; padding: 11px 2px; border-bottom: 1px solid rgba(255,255,255,.07); }
+    .w2-list-row:last-child { border-bottom: none; }
+    .w2-stk-panel { display: flex; flex-wrap: wrap; gap: 4px; padding: 10px 12px; border-top: 1px solid rgba(255,255,255,.09); background: rgba(255,255,255,.03); }
+    .w2-stk-panel button { background: none; border: none; font-size: 30px; cursor: pointer; padding: 4px 6px; border-radius: 10px; }
+    .w2-stk-panel button:hover { background: rgba(255,255,255,.08); }
+  </style>
+  <script>
+    /* ===== Layer 8: Web parity (Pranto, 2026-11-04) =====
+       The features the club app gained in Wave 2, on the website too:
+       Club Feed, Polls & MVP (with Part 20 nominees), the President
+       Console, Report a member, the Player Card, and club stickers in
+       chats. Everything reads and writes the SAME Supabase tables the
+       app uses (Part 19/20), so posts, votes and reports sync both
+       ways. This layer only reads window.sb / window.kwc, like the
+       other layers, and never touches their internals. */
+    (function () {
+      function $(id) { return document.getElementById(id); }
+      function esc(t) { return String(t == null ? '' : t).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+      function sbx() { return window.sb || null; }
+      function me() { return (window.kwc && window.kwc.member) ? window.kwc.member : null; }
+      function isPres() { var m = me(); return !!(m && m.role === 'President'); }
+      function toast(t, b) { if (window.kwcToast) window.kwcToast(t, b || ''); }
+      function fmtT(iso) {
+        var d = new Date(iso);
+        if (!iso || isNaN(d.getTime())) return '';
+        return d.toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' });
+      }
+      function initials(name) {
+        var p = String(name || 'W').trim().split(/\s+/);
+        return ((p[0] || 'W').charAt(0) + (p.length > 1 ? p[p.length - 1].charAt(0) : '')).toUpperCase();
+      }
+
+      /* ---------- Club stickers (same set as the app) ---------- */
+      var STICKERS = ['⚔️', '🛡️', '🔥', '🏆', '🎮', '👑', '⚡', '💪', '😤', '🐺', '🌙', '⭐'];
+      function normStk(s) { return String(s || '').replace(/\uFE0F/g, '').trim(); }
+      var STK_NORM = STICKERS.map(normStk);
+      window.clubStickerOf = function (body) {
+        var t = String(body || '').trim();
+        if (!t) return null;
+        return STK_NORM.indexOf(normStk(t)) !== -1 ? t : null;
+      };
+
+      /* ---------- Member directory (cached) ---------- */
+      var memberDir = null, memberDirP = null;
+      function loadDir(force) {
+        var s = sbx();
+        if (!s) return Promise.resolve([]);
+        if (memberDir && !force) return Promise.resolve(memberDir);
+        if (memberDirP && !force) return memberDirP;
+        memberDirP = s.from('members').select('id, full_name, username, avatar_url, role').order('full_name', { ascending: true })
+          .then(function (r) { memberDir = r.data || []; memberDirP = null; return memberDir; })
+          .catch(function () { memberDirP = null; return memberDir || []; });
+        return memberDirP;
+      }
+      function dirMember(id) {
+        var d = memberDir || [];
+        for (var i = 0; i < d.length; i++) if (d[i].id === id) return d[i];
+        return null;
+      }
+      function avaHTML(m, name) {
+        if (m && m.avatar_url) return '<img class="w2-ava" src="' + esc(m.avatar_url) + '" alt="" loading="lazy" />';
+        return '<span class="mini-avatar" style="width:40px;height:40px;font-size:15px;flex:none">' + esc(initials(name || (m && m.full_name) || 'W')) + '</span>';
+      }
+      function profileHref(m) {
+        if (!m) return '#community';
+        return m.username ? '#profile/' + encodeURIComponent(m.username) : '#profile/id-' + m.id;
+      }
+
+      /* Wait until the accounts layer has resolved the session, so a
+         view opened on first load does not flash the login gate at a
+         member who is simply still being recognised. */
+      function whenMember(cb) {
+        var s = sbx();
+        if (!s) { cb(null); return; }
+        var done = false, tries = 0;
+        function finish(m) { if (!done) { done = true; cb(m); } }
+        s.auth.getSession().then(function (r) {
+          if (!r.data || !r.data.session) finish(null);
+        }).catch(function () {});
+        (function poll() {
+          var m = me();
+          if (m) { finish(m); return; }
+          if (++tries > 24) { finish(me()); return; }
+          setTimeout(poll, 350);
+        })();
+      }
+
+      /* Poll/ballot fan-out, mirroring the app (beta45/49): a bell
+         notification for every member plus the announcement push. */
+      function notifyAll(title, body) {
+        var m = me(); if (!m || !sbx()) return;
+        loadDir().then(function (dir) {
+          var rows = [];
+          dir.forEach(function (x) {
+            if (x.id !== m.id) rows.push({ member_id: x.id, type: 'info', title: title, body: body, link: 'polls' });
+          });
+          if (rows.length) sbx().from('notifications').insert(rows).then(function () {}, function () {});
+        });
+      }
+      function announcePush(title, body) {
+        try {
+          sbx().functions.invoke('send-announce-push', { body: { title: String(title).slice(0, 80), body: String(body).slice(0, 240) } })
+            .then(function () {}, function () {});
+        } catch (e) { /* push is best-effort */ }
+      }
+
+      /* ================= CLUB FEED ================= */
+      function renderFeed() {
+        var gate = $('feedGate'), shell = $('feedShell');
+        if (!gate || !shell) return;
+        var m = me(), s = sbx();
+        if (!m || !s) { gate.hidden = false; shell.hidden = true; return; }
+        gate.hidden = true; shell.hidden = false;
+        s.from('feed_posts').select('id, member_id, body, created_at').order('created_at', { ascending: false }).limit(60)
+          .then(function (res) {
+            var list = $('feedList'); if (!list) return;
+            if (res.error) { list.innerHTML = '<p class="pf-note" style="margin-top:14px">The feed could not be loaded right now.</p>'; return; }
+            loadDir().then(function () {
+              var rows = res.data || [];
+              list.innerHTML = rows.length ? rows.map(function (p) {
+                var a = dirMember(p.member_id);
+                var name = a ? a.full_name : 'A member';
+                var canDel = p.member_id === m.id || isPres();
+                return '<div class="pf-panel glass" style="margin-top:14px;padding:16px 18px"><div class="w2-row">' +
+                  avaHTML(a, name) +
+                  '<div style="flex:1;min-width:0"><p style="margin:0"><a class="w2-name" href="' + profileHref(a) + '">' + esc(name) + '</a></p>' +
+                  '<p class="w2-meta">' + esc(fmtT(p.created_at)) + '</p>' +
+                  '<p class="w2-body">' + esc(p.body) + '</p></div>' +
+                  (canDel ? '<span class="w2-actions"><button class="btn btn-glass btn-sm" type="button" data-feed-del="' + p.id + '">Delete</button></span>' : '') +
+                  '</div></div>';
+              }).join('') : '<p class="pf-note" style="margin-top:14px">No posts yet — be the first to share something with the club.</p>';
+            });
+          })
+          .catch(function () { var l = $('feedList'); if (l) l.innerHTML = '<p class="pf-note" style="margin-top:14px">The feed could not be loaded right now.</p>'; });
+      }
+      var feedBtn = $('feedPostBtn');
+      if (feedBtn) feedBtn.addEventListener('click', function () {
+        var m = me(), s = sbx(); if (!m || !s) return;
+        var body = $('feedBody').value.trim(), err = $('feedErr');
+        if (!body) { err.textContent = 'Write something first.'; return; }
+        err.textContent = ''; feedBtn.disabled = true;
+        s.from('feed_posts').insert({ member_id: m.id, body: body })
+          .then(function (r) {
+            feedBtn.disabled = false;
+            if (r.error) { err.textContent = 'Your post could not be saved. Please try again.'; return; }
+            $('feedBody').value = '';
+            renderFeed();
+          })
+          .catch(function () { feedBtn.disabled = false; err.textContent = 'Your post could not be saved. Please try again.'; });
+      });
+
+      /* ================= POLLS ================= */
+      function renderPolls() {
+        var gate = $('pollsGate'), shell = $('pollsShell');
+        if (!gate || !shell) return;
+        var m = me(), s = sbx();
+        if (!m || !s) { gate.hidden = false; shell.hidden = true; return; }
+        gate.hidden = true; shell.hidden = false;
+        $('pollCreatePanel').hidden = !isPres();
+        $('ballotCreatePanel').hidden = !isPres();
+        loadDir().then(function () {
+          s.from('polls').select('id, question, created_at').order('created_at', { ascending: false }).limit(20)
+            .then(function (pres) {
+              var list = $('pollList'); if (!list) return;
+              if (pres.error) { list.innerHTML = '<p class="pf-note">Polls could not be loaded right now.</p>'; return; }
+              var polls = pres.data || [];
+              if (!polls.length) { list.innerHTML = '<p class="pf-note">No polls yet' + (isPres() ? ' — start the first one above.' : '.') + '</p>'; return; }
+              list.innerHTML = '';
+              polls.forEach(function (p) { list.appendChild(pollCard(p, m)); });
+            })
+            .catch(function () { var l = $('pollList'); if (l) l.innerHTML = '<p class="pf-note">Polls could not be loaded right now.</p>'; });
+          renderBallots();
+        });
+      }
+      function pollCard(p, m) {
+        var card = document.createElement('div');
+        card.className = 'pf-panel glass w2-card';
+        card.innerHTML = '<h3 class="pf-title">' + esc(p.question) + '</h3><p class="pf-note">Loading votes…</p>';
+        var s = sbx();
+        Promise.all([
+          s.from('poll_options').select('id, poll_id, label').eq('poll_id', p.id).order('id', { ascending: true }).then(function (r) { return r.data || []; }).catch(function () { return []; }),
+          s.from('poll_votes').select('poll_id, option_id, member_id').eq('poll_id', p.id).then(function (r) { return r.data || []; }).catch(function () { return []; })
+        ]).then(function (rs) {
+          var opts = rs[0], votes = rs[1], total = votes.length, myVote = null, counts = {};
+          votes.forEach(function (v) {
+            counts[v.option_id] = (counts[v.option_id] || 0) + 1;
+            if (v.member_id === m.id) myVote = v.option_id;
+          });
+          var h = '<h3 class="pf-title">' + esc(p.question) + '</h3>';
+          h += '<p class="w2-meta">' + total + ' vote' + (total === 1 ? '' : 's') + ' · ' + esc(fmtT(p.created_at)) + (myVote ? ' · tap an option to change your vote' : ' · tap an option to vote') + '</p>';
+          h += opts.map(function (o) {
+            var c = counts[o.id] || 0, pct = total ? Math.round(c * 100 / total) : 0;
+            return '<button class="w2-opt' + (myVote === o.id ? ' mine' : '') + '" type="button" data-poll-vote="' + p.id + '" data-opt="' + o.id + '"><span class="w2-fill" style="width:' + pct + '%"></span><span class="w2-opt-in"><span>' + esc(o.label) + (myVote === o.id ? ' ✓' : '') + '</span><span>' + c + ' · ' + pct + '%</span></span></button>';
+          }).join('');
+          if (isPres()) h += '<p style="margin-top:10px"><button class="btn btn-glass btn-sm" type="button" data-poll-del="' + p.id + '">Delete poll</button></p>';
+          card.innerHTML = h;
+        }).catch(function () { card.innerHTML = '<h3 class="pf-title">' + esc(p.question) + '</h3><p class="pf-note">Votes could not be loaded.</p>'; });
+        return card;
+      }
+      function doPollVote(pollId, optId, btn) {
+        var m = me(), s = sbx(); if (!m || !s) return;
+        if (btn) btn.disabled = true;
+        s.from('poll_votes').delete().eq('poll_id', pollId).eq('member_id', m.id)
+          .then(function () {
+            return s.from('poll_votes').insert({ poll_id: pollId, option_id: optId, member_id: m.id });
+          })
+          .then(function (r) { if (r && r.error) toast('Vote failed', 'Please try again.'); renderPolls(); })
+          .catch(function () { renderPolls(); });
+      }
+      function pollOptCount() {
+        var ta = $('pollOptions'); if (!ta) return 0;
+        return ta.value.split('\n').filter(function (l) { return l.trim(); }).length;
+      }
+      function syncPollCreate() {
+        var n = pollOptCount(), hint = $('pollOptHint'), btn = $('pollCreateBtn');
+        if (hint) hint.textContent = n < 2
+          ? 'Add at least 2 options, one per line — CREATE turns on at 2 (now: ' + n + ')'
+          : n + ' options — ready to create';
+        if (btn) btn.disabled = !($('pollQuestion').value.trim() && n >= 2);
+      }
+      if ($('pollOptions')) { $('pollOptions').addEventListener('input', syncPollCreate); $('pollQuestion').addEventListener('input', syncPollCreate); }
+      var pollCreateBtn = $('pollCreateBtn');
+      if (pollCreateBtn) pollCreateBtn.addEventListener('click', function () {
+        var m = me(), s = sbx(); if (!m || !s || !isPres()) return;
+        var q = $('pollQuestion').value.trim();
+        var opts = $('pollOptions').value.split('\n').map(function (l) { return l.trim(); }).filter(function (l) { return l; });
+        var err = $('pollErr');
+        if (!q || opts.length < 2) { err.textContent = 'A poll needs a question and at least 2 options.'; return; }
+        err.textContent = ''; pollCreateBtn.disabled = true;
+        s.from('polls').insert({ question: q, created_by: m.id }).select().single()
+          .then(function (r) {
+            if (r.error || !r.data) throw new Error('poll');
+            var pid = r.data.id;
+            return Promise.all(opts.map(function (label) { return s.from('poll_options').insert({ poll_id: pid, label: label }); }))
+              .then(function () { return pid; });
+          })
+          .then(function () {
+            $('pollQuestion').value = ''; $('pollOptions').value = ''; syncPollCreate();
+            notifyAll('🗳️ New club poll', q);
+            announcePush('🗳️ New club poll', q);
+            toast('Poll started', 'Every member has been notified.');
+            renderPolls();
+          })
+          .catch(function () { pollCreateBtn.disabled = false; err.textContent = 'The poll could not be created. Please try again.'; });
+      });
+
+      /* ================= MVP BALLOTS ================= */
+      function renderBallots() {
+        var s = sbx(), m = me(), list = $('ballotList');
+        if (!s || !m || !list) return;
+        s.from('mvp_ballots').select('id, title, created_at, nominee_ids').order('created_at', { ascending: false }).limit(10)
+          .then(function (res) {
+            if (res.error) {
+              return s.from('mvp_ballots').select('id, title, created_at').order('created_at', { ascending: false }).limit(10)
+                .then(function (r2) { drawBallots(r2.data || [], m); });
+            }
+            drawBallots(res.data || [], m);
+          })
+          .catch(function () { list.innerHTML = '<p class="pf-note">MVP ballots could not be loaded right now.</p>'; });
+      }
+      function drawBallots(ballots, m) {
+        var list = $('ballotList'); if (!list) return;
+        if (!ballots.length) { list.innerHTML = '<p class="pf-note">No MVP ballots yet' + (isPres() ? ' — open the first one above.' : '.') + '</p>'; return; }
+        list.innerHTML = '';
+        ballots.forEach(function (b) { list.appendChild(ballotCard(b, m)); });
+      }
+      function ballotCard(b, m) {
+        var card = document.createElement('div');
+        card.className = 'pf-panel glass w2-card';
+        card.innerHTML = '<h3 class="pf-title">🏆 ' + esc(b.title) + '</h3><p class="pf-note">Loading votes…</p>';
+        var s = sbx();
+        s.from('mvp_votes').select('ballot_id, nominee_id, voter_id').eq('ballot_id', b.id)
+          .then(function (r) { return r.data || []; }).catch(function () { return []; })
+          .then(function (votes) {
+            var total = votes.length, myVote = null, counts = {};
+            votes.forEach(function (v) {
+              counts[v.nominee_id] = (counts[v.nominee_id] || 0) + 1;
+              if (v.voter_id === m.id) myVote = v.nominee_id;
+            });
+            var noms = (b.nominee_ids && b.nominee_ids.length) ? b.nominee_ids : null;
+            var h = '<h3 class="pf-title">🏆 ' + esc(b.title) + '</h3>';
+            h += '<p class="w2-meta">' + total + ' vote' + (total === 1 ? '' : 's') + ' · ' + esc(fmtT(b.created_at)) + (noms ? ' · nominees picked by the President' : ' · open ballot — anyone can be voted for') + '</p>';
+            if (noms) {
+              var rows = noms.map(function (id) { return { id: id, c: counts[id] || 0 }; })
+                .sort(function (a, z) { return z.c - a.c; });
+              h += rows.map(function (row) {
+                var who = dirMember(row.id);
+                var name = who ? who.full_name : 'A member';
+                var pct = total ? Math.round(row.c * 100 / total) : 0;
+                return '<button class="w2-opt' + (myVote === row.id ? ' mine' : '') + '" type="button" data-ballot-vote="' + b.id + '" data-nom="' + row.id + '"><span class="w2-fill" style="width:' + pct + '%"></span><span class="w2-opt-in"><span>' + esc(name) + (myVote === row.id ? ' ✓' : '') + '</span><span>' + row.c + ' · ' + pct + '%</span></span></button>';
+              }).join('');
+            } else {
+              var top = Object.keys(counts).map(function (id) { return { id: parseInt(id, 10), c: counts[id] }; })
+                .sort(function (a, z) { return z.c - a.c; }).slice(0, 5);
+              if (top.length) {
+                h += '<p class="pf-sub" style="margin-top:10px">Standings</p>' + top.map(function (row, i) {
+                  var who = dirMember(row.id);
+                  return '<p class="w2-body" style="margin-top:2px">' + (i + 1) + '. ' + esc(who ? who.full_name : 'A member') + ' — ' + row.c + ' vote' + (row.c === 1 ? '' : 's') + (myVote === row.id ? ' ✓ your vote' : '') + '</p>';
+                }).join('');
+              }
+              var dir = memberDir || [];
+              h += '<div class="field" style="margin-top:12px"><label for="openVoteSel-' + b.id + '">Vote for</label><select id="openVoteSel-' + b.id + '">' +
+                dir.map(function (x) { return '<option value="' + x.id + '"' + (myVote === x.id ? ' selected' : '') + '>' + esc(x.full_name) + '</option>'; }).join('') +
+                '</select></div><button class="btn btn-red btn-sm" type="button" data-ballot-open-vote="' + b.id + '">Vote</button>';
+            }
+            if (isPres()) h += '<p style="margin-top:10px"><button class="btn btn-glass btn-sm" type="button" data-ballot-del="' + b.id + '">Delete ballot</button></p>';
+            card.innerHTML = h;
+          });
+        return card;
+      }
+      function doBallotVote(ballotId, nomineeId, btn) {
+        var m = me(), s = sbx(); if (!m || !s) return;
+        if (btn) btn.disabled = true;
+        s.from('mvp_votes').delete().eq('ballot_id', ballotId).eq('voter_id', m.id)
+          .then(function () {
+            return s.from('mvp_votes').insert({ ballot_id: ballotId, nominee_id: nomineeId, voter_id: m.id });
+          })
+          .then(function (r) { if (r && r.error) toast('Vote failed', 'Please try again.'); renderBallots(); })
+          .catch(function () { renderBallots(); });
+      }
+      /* Nominee picker (search-first, like the app) */
+      var nomineeSel = [];
+      function drawNomineeChips() {
+        var box = $('ballotChips'), hint = $('ballotHint'), btn = $('ballotCreateBtn');
+        if (!box) return;
+        box.innerHTML = nomineeSel.map(function (id) {
+          var who = dirMember(id);
+          return '<span class="w2-chip">' + esc(who ? who.full_name : 'Member') + '<button type="button" data-nom-remove="' + id + '" aria-label="Remove nominee">✕</button></span>';
+        }).join('');
+        if (hint) hint.textContent = nomineeSel.length < 2
+          ? 'Pick at least 2 nominees — CREATE turns on at 2 (now: ' + nomineeSel.length + ')'
+          : nomineeSel.length + ' nominees — ready';
+        if (btn) btn.disabled = !($('ballotTitle').value.trim() && nomineeSel.length >= 2);
+      }
+      function drawNomineeResults() {
+        var box = $('ballotResults'), inp = $('ballotSearch');
+        if (!box || !inp) return;
+        var q = inp.value.trim().toLowerCase();
+        if (!q) { box.innerHTML = ''; return; }
+        var hits = (memberDir || []).filter(function (x) {
+          return nomineeSel.indexOf(x.id) === -1 &&
+            (x.full_name.toLowerCase().indexOf(q) !== -1 || (x.username && x.username.toLowerCase().indexOf(q) !== -1));
+        }).slice(0, 8);
+        box.innerHTML = hits.length ? hits.map(function (x) {
+          return '<button class="w2-pick" type="button" data-nom-add="' + x.id + '">' + avaHTML(x) + '<span>' + esc(x.full_name) + (x.username ? ' <span class="w2-meta">@' + esc(x.username) + '</span>' : '') + '</span></button>';
+        }).join('') : '<p class="pf-note">No members match that search.</p>';
+      }
+      if ($('ballotSearch')) {
+        $('ballotSearch').addEventListener('input', drawNomineeResults);
+        $('ballotTitle').addEventListener('input', drawNomineeChips);
+      }
+      var ballotCreateBtn = $('ballotCreateBtn');
+      if (ballotCreateBtn) ballotCreateBtn.addEventListener('click', function () {
+        var m = me(), s = sbx(); if (!m || !s || !isPres()) return;
+        var title = $('ballotTitle').value.trim(), err = $('ballotErr');
+        if (!title || nomineeSel.length < 2) { err.textContent = 'A ballot needs a title and at least 2 nominees.'; return; }
+        err.textContent = ''; ballotCreateBtn.disabled = true;
+        s.from('mvp_ballots').insert({ title: title, created_by: m.id, nominee_ids: nomineeSel.slice() })
+          .then(function (r) {
+            ballotCreateBtn.disabled = false;
+            if (r.error) {
+              err.textContent = /nominee_ids/.test(String(r.error.message || '')) || r.error.code === '42703'
+                ? 'This needs the Part 20 database update — run part20 in the Supabase SQL Editor first.'
+                : 'The ballot could not be created. Please try again.';
+              return;
+            }
+            $('ballotTitle').value = ''; $('ballotSearch').value = ''; nomineeSel = [];
+            drawNomineeChips(); drawNomineeResults();
+            notifyAll('🏆 MVP voting is open', title);
+            announcePush('🏆 MVP voting is open', title);
+            toast('MVP ballot opened', 'Every member has been notified.');
+            renderBallots();
+          })
+          .catch(function () { ballotCreateBtn.disabled = false; err.textContent = 'The ballot could not be created. Please try again.'; });
+      });
+
+      /* ================= PRESIDENT CONSOLE ================= */
+      function renderPConsole() {
+        var gate = $('pconsoleGate'), shell = $('pconsoleShell');
+        if (!gate || !shell) return;
+        if (!isPres()) { gate.hidden = false; shell.hidden = true; return; }
+        gate.hidden = true; shell.hidden = false;
+        var s = sbx();
+        loadDir().then(function () {
+          s.from('member_reports').select('id, reporter_id, reported_id, reason, created_at').order('created_at', { ascending: false }).limit(50)
+            .then(function (res) {
+              var box = $('pcReports'); if (!box) return;
+              if (res.error) { box.innerHTML = '<p class="pf-note">Reports could not be loaded right now.</p>'; return; }
+              var rows = res.data || [];
+              box.innerHTML = rows.length ? rows.map(function (r) {
+                var rep = dirMember(r.reporter_id), ted = dirMember(r.reported_id);
+                return '<div class="w2-list-row"><div style="flex:1;min-width:0">' +
+                  '<p style="margin:0"><b>' + esc(ted ? ted.full_name : 'A member') + '</b> <span class="w2-meta">reported by ' + esc(rep ? rep.full_name : 'a member') + ' · ' + esc(fmtT(r.created_at)) + '</span></p>' +
+                  '<p class="w2-body">' + esc(r.reason) + '</p></div>' +
+                  '<span class="w2-actions"><button class="btn btn-glass btn-sm" type="button" data-report-del="' + r.id + '">Dismiss</button></span></div>';
+              }).join('') : '<p class="pf-note">No open reports.</p>';
+            })
+            .catch(function () { var b = $('pcReports'); if (b) b.innerHTML = '<p class="pf-note">Reports could not be loaded right now.</p>'; });
+          s.from('tournament_entries').select('id, member_id, tournament_id').eq('tournament_id', 'efootball-tournament-legacy').order('created_at', { ascending: true }).limit(200)
+            .then(function (res) {
+              var box = $('pcEntries'); if (!box) return;
+              if (res.error) { box.innerHTML = '<p class="pf-note">Entries could not be loaded right now.</p>'; return; }
+              var rows = res.data || [];
+              box.innerHTML = rows.length ? rows.map(function (en) {
+                var who = dirMember(en.member_id);
+                return '<div class="w2-list-row">' + avaHTML(who) +
+                  '<div style="flex:1;min-width:0"><p style="margin:6px 0 0"><b>' + esc(who ? who.full_name : 'A member') + '</b>' + (who && who.username ? ' <span class="w2-meta">@' + esc(who.username) + '</span>' : '') + '</p></div>' +
+                  '<span class="w2-actions"><button class="btn btn-glass btn-sm" type="button" data-entry-del="' + en.id + '">Remove entry</button></span></div>';
+              }).join('') : '<p class="pf-note">No entries yet.</p>';
+            })
+            .catch(function () { var b = $('pcEntries'); if (b) b.innerHTML = '<p class="pf-note">Entries could not be loaded right now.</p>'; });
+          drawPcMembers('');
+        });
+      }
+      function drawPcMembers(q) {
+        var box = $('pcMembers'); if (!box) return;
+        var m = me();
+        var needle = String(q || '').trim().toLowerCase();
+        var rows = (memberDir || []).filter(function (x) {
+          return !needle || x.full_name.toLowerCase().indexOf(needle) !== -1 || (x.username && x.username.toLowerCase().indexOf(needle) !== -1);
+        });
+        box.innerHTML = rows.length ? rows.map(function (x) {
+          return '<div class="w2-list-row">' + avaHTML(x) +
+            '<div style="flex:1;min-width:0"><p style="margin:6px 0 0"><b>' + esc(x.full_name) + '</b>' + (x.username ? ' <span class="w2-meta">@' + esc(x.username) + '</span>' : '') + ' <span class="w2-meta">· ' + esc(x.role || 'Member') + '</span></p></div>' +
+            (m && x.id !== m.id ? '<span class="w2-actions"><button class="btn btn-glass btn-sm" type="button" data-member-del="' + x.id + '" data-member-name="' + esc(x.full_name) + '">Remove</button></span>' : '') +
+            '</div>';
+        }).join('') : '<p class="pf-note">No members match.</p>';
+      }
+      if ($('pcMemberSearch')) $('pcMemberSearch').addEventListener('input', function () { drawPcMembers(this.value); });
+
+      /* ================= PROFILE: PLAYER CARD + REPORT ================= */
+      function showReportForm(target) {
+        var box = $('reportBox'); if (!box) return;
+        box.innerHTML = '<div class="pf-panel glass" style="margin-top:12px;padding:14px 16px">' +
+          '<p class="pf-sub" style="margin-top:0">Report ' + esc(target.full_name) + ' to the President</p>' +
+          '<div class="field"><textarea id="reportReason" rows="3" maxlength="500" placeholder="What happened?"></textarea></div>' +
+          '<p class="form-err" id="reportErr" role="alert"></p>' +
+          '<button class="btn btn-red btn-sm" type="button" id="reportSend">Send Report</button> ' +
+          '<button class="btn btn-glass btn-sm" type="button" id="reportCancel">Cancel</button></div>';
+        $('reportCancel').addEventListener('click', function () { box.innerHTML = ''; });
+        $('reportSend').addEventListener('click', function () {
+          var m = me(), s = sbx(); if (!m || !s) return;
+          var reason = $('reportReason').value.trim(), err = $('reportErr');
+          if (!reason) { err.textContent = 'Write a short reason first.'; return; }
+          err.textContent = '';
+          s.from('member_reports').insert({ reporter_id: m.id, reported_id: target.id, reason: reason })
+            .then(function (r) {
+              if (r.error) { err.textContent = 'The report could not be sent. Please try again.'; return; }
+              box.innerHTML = '';
+              toast('Report sent', 'The President will see it in his console.');
+            })
+            .catch(function () { err.textContent = 'The report could not be sent. Please try again.'; });
+        });
+      }
+      function refreshParityActions() {
+        var box = $('parityActions'); if (!box) return;
+        if (document.body.getAttribute('data-view') !== 'profile') { box.innerHTML = ''; return; }
+        var h = window.location.hash || '';
+        var segM = h.match(/^#profile\/(.+)$/);
+        function done(target) {
+          if (document.body.getAttribute('data-view') !== 'profile') return;
+          if (!target) { box.innerHTML = ''; return; }
+          var mine = !!(me() && me().id === target.id);
+          box.innerHTML = '<button class="btn btn-glass" type="button" id="pcardBtn">🃏 Player Card</button>' +
+            (!mine && me() ? ' <button class="btn btn-glass" type="button" id="reportBtn" style="margin-left:10px">Report Member</button>' : '') +
+            '<div id="reportBox"></div>';
+          $('pcardBtn').addEventListener('click', function () { makePlayerCard(target); });
+          var rb = $('reportBtn');
+          if (rb) rb.addEventListener('click', function () { showReportForm(target); });
+        }
+        if (segM) {
+          var seg = decodeURIComponent(segM[1]);
+          var idm = /^id-(\d+)$/.exec(seg);
+          var s = sbx(); if (!s) { box.innerHTML = ''; return; }
+          var q = idm ? s.from('members').select('*').eq('id', parseInt(idm[1], 10)) : s.from('members').select('*').eq('username', seg);
+          q.maybeSingle().then(function (r) { done(r.data || null); }).catch(function () { done(null); });
+        } else {
+          var m = me();
+          if (m) done(m);
+          else whenMember(function (mm) { done(mm); });
+        }
+      }
+      function loadImg(src, cors) {
+        return new Promise(function (res) {
+          var i = new Image();
+          if (cors) i.crossOrigin = 'anonymous';
+          i.onload = function () { res(i); };
+          i.onerror = function () { res(null); };
+          i.src = src;
+        });
+      }
+      function makePlayerCard(t) {
+        var s = sbx(); if (!s) return;
+        toast('Building your Player Card…', 'The PNG downloads in a moment.');
+        Promise.all([
+          s.from('member_games').select('*').eq('member_id', t.id).then(function (r) { return r.data || []; }).catch(function () { return []; }),
+          s.from('squad_members').select('role, squads(id, name)').eq('member_id', t.id).then(function (r) { return r.data || []; }).catch(function () { return []; }),
+          s.from('member_honours').select('title').eq('member_id', t.id).order('created_at', { ascending: false }).then(function (r) { return r.data || []; }).catch(function () { return []; })
+        ]).then(function (rs) {
+          var games = rs[0], squadRows = rs[1];
+          var honours = rs[2].map(function (x) { return x.title; });
+          var squadName = squadRows.length && squadRows[0].squads ? squadRows[0].squads.name : '';
+          var squadIds = squadRows.map(function (r) { return r.squads && r.squads.id; }).filter(function (x) { return x; });
+          var finish = function () {
+            Promise.all([
+              loadImg('assets/logo.jpg', false),
+              t.avatar_url ? loadImg(t.avatar_url, true) : Promise.resolve(null)
+            ]).then(function (imgs) { paintCard(t, games, squadName, honours, imgs[0], imgs[1]); });
+          };
+          if (squadIds.length) {
+            s.from('squad_honours').select('title').in('squad_id', squadIds).order('created_at', { ascending: false })
+              .then(function (r) { (r.data || []).forEach(function (x) { honours.push(x.title); }); finish(); })
+              .catch(finish);
+          } else finish();
+        });
+      }
+      function paintCard(t, games, squadName, honours, crest, avatar) {
+        function attempt(withAvatar) {
+          var c = document.createElement('canvas');
+          c.width = 1080; c.height = 1350;
+          var x = c.getContext('2d');
+          var g = x.createLinearGradient(0, 0, 0, 1350);
+          g.addColorStop(0, '#17171f'); g.addColorStop(1, '#23232f');
+          x.fillStyle = g; x.fillRect(0, 0, 1080, 1350);
+          x.strokeStyle = '#c9a227'; x.lineWidth = 4; x.strokeRect(26, 26, 1028, 1298);
+          x.fillStyle = '#c8102e'; x.fillRect(26, 26, 1028, 10);
+          x.textAlign = 'center';
+          if (crest) {
+            var cw = 170, ch = 170;
+            if (crest.naturalWidth && crest.naturalHeight) {
+              var sc = Math.min(170 / crest.naturalWidth, 170 / crest.naturalHeight);
+              cw = crest.naturalWidth * sc; ch = crest.naturalHeight * sc;
+            }
+            x.drawImage(crest, 540 - cw / 2, 70 + (170 - ch) / 2, cw, ch);
+          }
+          x.fillStyle = '#f2c14e';
+          x.font = '44px "Luckiest Guy", Arial, sans-serif';
+          x.fillText('KNIGHT WARRIORS', 540, 320);
+          x.fillStyle = '#9aa3b2'; x.font = '26px Arial, sans-serif';
+          x.fillText('K N I G H T   W A R R I O R S   C L U B', 540, 362);
+          /* avatar */
+          x.save();
+          x.beginPath(); x.arc(540, 520, 118, 0, Math.PI * 2); x.clip();
+          if (withAvatar && avatar) {
+            var sc2 = Math.max(236 / avatar.naturalWidth, 236 / avatar.naturalHeight);
+            var aw = avatar.naturalWidth * sc2, ah = avatar.naturalHeight * sc2;
+            x.drawImage(avatar, 540 - aw / 2, 520 - ah / 2, aw, ah);
+          } else {
+            x.fillStyle = '#2a2a38'; x.fillRect(422, 402, 236, 236);
+            x.fillStyle = '#ff97a1'; x.font = '700 110px Arial, sans-serif';
+            x.fillText(initials(t.full_name), 540, 562);
+          }
+          x.restore();
+          x.beginPath(); x.arc(540, 520, 118, 0, Math.PI * 2);
+          x.strokeStyle = '#f2c14e'; x.lineWidth = 5; x.stroke();
+          /* name (shrink to fit) */
+          var size = 58;
+          x.fillStyle = '#ffffff';
+          do { x.font = '700 ' + size + 'px Arial, sans-serif'; size -= 4; } while (x.measureText(t.full_name || 'Warrior').width > 940 && size > 26);
+          x.fillText(t.full_name || 'Warrior', 540, 716);
+          x.fillStyle = '#c4cedc'; x.font = '30px Arial, sans-serif';
+          var sub = (t.username ? '@' + t.username + ' · ' : '') + (t.role || 'Member');
+          x.fillText(sub, 540, 762);
+          var y = 812;
+          if (squadName) {
+            x.fillStyle = '#ffffff'; x.font = '32px Arial, sans-serif';
+            x.fillText('🛡️ ' + squadName, 540, y); y += 58;
+          }
+          x.strokeStyle = 'rgba(255,255,255,.18)'; x.lineWidth = 2;
+          x.beginPath(); x.moveTo(240, y - 20); x.lineTo(840, y - 20); x.stroke();
+          if (games.length) {
+            x.fillStyle = '#f2c14e'; x.font = '700 27px Arial, sans-serif';
+            x.fillText('G A M E S', 540, y + 28); y += 82;
+            x.fillStyle = '#ffffff'; x.font = '31px Arial, sans-serif';
+            games.slice(0, 4).forEach(function (gm) {
+              var line = gm.game + (gm.uid ? '  ·  ' + gm.uid : '') + (gm.team_strength ? '  ·  ⭐ ' + gm.team_strength : '');
+              x.fillText(line, 540, y); y += 50;
+            });
+          }
+          if (honours.length) {
+            x.fillStyle = '#f2c14e'; x.font = '700 27px Arial, sans-serif';
+            x.fillText('H O N O U R S', 540, y + 22); y += 76;
+            x.fillStyle = '#fff4e4'; x.font = '30px Arial, sans-serif';
+            honours.slice(0, 3).forEach(function (ttl) { x.fillText('🏆 ' + ttl, 540, y); y += 48; });
+            if (honours.length > 3) {
+              x.fillStyle = '#9aa3b2'; x.font = '26px Arial, sans-serif';
+              x.fillText('+ ' + (honours.length - 3) + ' more honours', 540, y);
+            }
+          }
+          x.fillStyle = '#9aa3b2'; x.font = '25px Arial, sans-serif';
+          x.fillText('knightwarriorsclub.com', 540, 1288);
+          return c;
+        }
+        function send(canvas, onFail) {
+          var failed = false;
+          function fail() { if (!failed) { failed = true; if (onFail) onFail(); } }
+          try {
+            canvas.toBlob(function (blob) {
+              if (!blob) { fail(); return; }
+              var a = document.createElement('a');
+              a.href = URL.createObjectURL(blob);
+              a.download = 'player-card-' + (t.username || t.id) + '.png';
+              document.body.appendChild(a); a.click(); a.remove();
+              setTimeout(function () { URL.revokeObjectURL(a.href); }, 4000);
+            }, 'image/png');
+          } catch (e) { fail(); }
+        }
+        /* If the avatar image taints the canvas (no CORS), the export
+           fails — retry once with the initials avatar instead. */
+        send(attempt(true), function () {
+          send(attempt(false), function () { toast('Player Card failed', 'The card could not be built in this browser.'); });
+        });
+      }
+
+      /* ================= STICKER PICKER (DM + squad composers) ================= */
+      function injectStickerUI() {
+        ['dmForm', 'sqForm'].forEach(function (fid) {
+          var form = $(fid);
+          if (!form || form.getAttribute('data-stk')) return;
+          form.setAttribute('data-stk', '1');
+          var input = form.querySelector('input');
+          if (!input) return;
+          var panel = document.createElement('div');
+          panel.className = 'w2-stk-panel'; panel.hidden = true;
+          panel.innerHTML = STICKERS.map(function (st) { return '<button type="button" data-stk-send="' + st + '">' + st + '</button>'; }).join('');
+          form.parentNode.insertBefore(panel, form);
+          var btn = document.createElement('button');
+          btn.type = 'button'; btn.className = 'btn btn-glass'; btn.textContent = '😀';
+          btn.title = 'Club stickers'; btn.setAttribute('aria-label', 'Open club stickers');
+          btn.addEventListener('click', function () { panel.hidden = !panel.hidden; });
+          var submit = form.querySelector('button[type="submit"]');
+          if (submit) form.insertBefore(btn, submit); else form.appendChild(btn);
+          panel.addEventListener('click', function (e) {
+            var b = e.target.closest ? e.target.closest('[data-stk-send]') : null;
+            if (!b) return;
+            input.value = b.getAttribute('data-stk-send');
+            panel.hidden = true;
+            if (form.requestSubmit) form.requestSubmit();
+            else form.dispatchEvent(new Event('submit', { cancelable: true }));
+          });
+        });
+      }
+      var pane = $('inboxPane');
+      if (pane) new MutationObserver(function () { injectStickerUI(); }).observe(pane, { childList: true, subtree: true });
+
+      /* ================= Delegated actions ================= */
+      document.addEventListener('click', function (e) {
+        if (!e.target.closest) return;
+        var t, s = sbx();
+        if ((t = e.target.closest('[data-feed-del]'))) {
+          var fid = parseInt(t.getAttribute('data-feed-del'), 10);
+          t.disabled = true;
+          if (s) s.from('feed_posts').delete().eq('id', fid).then(function () { renderFeed(); }).catch(function () { renderFeed(); });
+        } else if ((t = e.target.closest('[data-poll-vote]'))) {
+          doPollVote(parseInt(t.getAttribute('data-poll-vote'), 10), parseInt(t.getAttribute('data-opt'), 10), t);
+        } else if ((t = e.target.closest('[data-poll-del]'))) {
+          var pid = parseInt(t.getAttribute('data-poll-del'), 10);
+          if (window.confirm('Delete this poll and all its votes?') && s) {
+            t.disabled = true;
+            s.from('polls').delete().eq('id', pid).then(function () { renderPolls(); }).catch(function () { renderPolls(); });
+          }
+        } else if ((t = e.target.closest('[data-ballot-vote]'))) {
+          doBallotVote(parseInt(t.getAttribute('data-ballot-vote'), 10), parseInt(t.getAttribute('data-nom'), 10), t);
+        } else if ((t = e.target.closest('[data-ballot-open-vote]'))) {
+          var bid = parseInt(t.getAttribute('data-ballot-open-vote'), 10);
+          var sel = $('openVoteSel-' + bid);
+          if (sel) doBallotVote(bid, parseInt(sel.value, 10), t);
+        } else if ((t = e.target.closest('[data-ballot-del]'))) {
+          var bid2 = parseInt(t.getAttribute('data-ballot-del'), 10);
+          if (window.confirm('Delete this MVP ballot and all its votes?') && s) {
+            t.disabled = true;
+            s.from('mvp_ballots').delete().eq('id', bid2).then(function () { renderBallots(); }).catch(function () { renderBallots(); });
+          }
+        } else if ((t = e.target.closest('[data-nom-add]'))) {
+          var addId = parseInt(t.getAttribute('data-nom-add'), 10);
+          if (nomineeSel.indexOf(addId) === -1) nomineeSel.push(addId);
+          drawNomineeChips(); drawNomineeResults();
+        } else if ((t = e.target.closest('[data-nom-remove]'))) {
+          var rmId = parseInt(t.getAttribute('data-nom-remove'), 10);
+          nomineeSel = nomineeSel.filter(function (x) { return x !== rmId; });
+          drawNomineeChips(); drawNomineeResults();
+        } else if ((t = e.target.closest('[data-report-del]'))) {
+          var rid = parseInt(t.getAttribute('data-report-del'), 10);
+          t.disabled = true;
+          if (s) s.from('member_reports').delete().eq('id', rid).then(function () { renderPConsole(); }).catch(function () { renderPConsole(); });
+        } else if ((t = e.target.closest('[data-entry-del]'))) {
+          var eid = parseInt(t.getAttribute('data-entry-del'), 10);
+          t.disabled = true;
+          if (s) s.rpc('president_remove_entry', { p_entry_id: eid, p_tournament_name: 'eFootball Tournament Legacy' })
+            .then(function (r) { if (r && r.error) toast('Remove failed', 'The entry could not be removed.'); renderPConsole(); })
+            .catch(function () { renderPConsole(); });
+        } else if ((t = e.target.closest('[data-member-del]'))) {
+          var mid = parseInt(t.getAttribute('data-member-del'), 10);
+          var mname = t.getAttribute('data-member-name') || 'this member';
+          if (window.confirm('Remove ' + mname + ' from the club? Their club profile row will be deleted (their login account stays unless deleted in the Supabase dashboard).') && s) {
+            t.disabled = true;
+            s.from('members').delete().eq('id', mid)
+              .then(function (r) {
+                if (r && r.error) toast('Remove failed', 'That member could not be removed.');
+                loadDir(true).then(function () { renderPConsole(); });
+              })
+              .catch(function () { loadDir(true).then(function () { renderPConsole(); }); });
+          }
+        }
+      });
+
+      /* ================= View routing ================= */
+      var lastView = '';
+      function route() {
+        var v = document.body.getAttribute('data-view');
+        var link = $('pconsoleLink');
+        if (link) link.hidden = !isPres();
+        if (v === 'profile') refreshParityActions();
+        if (!v || v === lastView) return;
+        lastView = v;
+        if (v === 'feed') whenMember(function () { renderFeed(); });
+        else if (v === 'polls') whenMember(function () { renderPolls(); });
+        else if (v === 'pconsole') whenMember(function () { renderPConsole(); });
+      }
+      new MutationObserver(route).observe(document.body, { attributes: true, attributeFilter: ['data-view'] });
+      window.addEventListener('hashchange', function () {
+        setTimeout(route, 60);
+        setTimeout(refreshParityActions, 160);
+      });
+      route();
+      setTimeout(route, 1600);
     })();
   </script>
 </body>
