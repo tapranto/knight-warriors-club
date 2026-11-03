@@ -1,6 +1,6 @@
 {
-  "versionCode": 65,
-  "versionName": "0.7.5-beta60",
+  "versionCode": 66,
+  "versionName": "0.7.6-beta61",
   "apkUrl": "https://github.com/tapranto/knight-warriors-club-app/releases",
-  "notes": "Compile fix: experimental-API opt-in for the autofill wiring."
+  "notes": "Compile fix (complete): autofill API sealed inside one file \u2014 no experimental types in shared signatures."
 }
