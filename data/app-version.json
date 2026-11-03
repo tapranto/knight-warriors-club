@@ -1,6 +1,6 @@
 {
-  "versionCode": 67,
-  "versionName": "0.7.7-beta62",
+  "versionCode": 68,
+  "versionName": "0.7.8-beta63",
   "apkUrl": "https://github.com/tapranto/knight-warriors-club-app/releases",
-  "notes": "Autofill dropped at Pranto\u2019s call \u2014 back to the clean build; poll fix + MVP nominees intact."
+  "notes": "beta61 restored: password-manager autofill kept (my beta62 removal was a misread); the fingerprint errand is skipped."
 }
