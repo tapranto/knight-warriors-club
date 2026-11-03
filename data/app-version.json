@@ -1,6 +1,6 @@
 {
-  "versionCode": 56,
-  "versionName": "0.6.2-beta51",
+  "versionCode": 57,
+  "versionName": "0.6.3-beta52",
   "apkUrl": "https://github.com/tapranto/knight-warriors-club-app/releases",
-  "notes": "Tapping News or Events again now returns to that section's home page; More menu thumbnails; poll notifications."
+  "notes": "Inside web pages, Inbox / My Profile / Log out now open the app screens and log out of the app."
 }
