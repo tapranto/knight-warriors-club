@@ -2834,6 +2834,7 @@
             </div>
             <div class="pf-panel glass reveal">
               <h3 class="pf-title">Squads</h3>
+              <div class="field"><input id="allSquadsSearch" type="text" placeholder="Search squads or captains…" /></div>
               <div id="allSquadsList"><p class="pf-note">Loading…</p></div>
             </div>
           </div>
@@ -6458,6 +6459,28 @@
       })();
 
       /* ---------- All Squads (President, from the avatar menu) ---------- */
+      var asData = null; /* { squads, caps, counts } — every squad club-wide */
+      function renderAllSquads(filter) {
+        var box = $('allSquadsList'); if (!box || !asData) return;
+        var q = String(filter || '').trim().toLowerCase();
+        var rows = asData.squads.filter(function (sq) {
+          if (!q) return true;
+          return sq.name.toLowerCase().indexOf(q) !== -1 ||
+            String(asData.caps[sq.captain_member_id] || '').toLowerCase().indexOf(q) !== -1;
+        });
+        box.innerHTML = rows.length ? rows.map(function (sq) {
+          var crest = sq.avatar_url
+            ? '<img class="squad-crest" src="' + esc(sq.avatar_url) + '" alt="" style="object-fit:cover" />'
+            : '<span class="squad-crest">' + esc(initials(sq.name)) + '</span>';
+          return '<a class="squad-row" href="#squad/' + sq.id + '">' + crest +
+            '<span class="sq-main"><span class="sq-name">' + esc(sq.name) + '</span>' +
+            '<span class="sq-meta">' + esc(sq.game || '') + ' · Captained by ' +
+            esc(asData.caps[sq.captain_member_id] || '—') + ' · ' + (asData.counts[sq.id] || 0) +
+            ' members</span></span>' +
+            '<span style="margin-left:auto"><button type="button" class="btn btn-glass btn-sm" ' +
+            'data-award-squad="' + sq.id + '" data-award-name="' + esc(sq.name) + '">🏆 Award</button></span></a>';
+        }).join('') : '<p class="pf-note">No squads match that search.</p>';
+      }
       function loadAllSquads() {
         var box = $('allSquadsList'); if (!box || !sb) return;
         box.innerHTML = '<p class="pf-note">Loading…</p>';
@@ -6473,19 +6496,29 @@
             ]).then(function (rs) {
               var caps = {}; (rs[0].data || []).forEach(function (mm) { caps[mm.id] = mm.full_name; });
               var counts = {}; (rs[1].data || []).forEach(function (r) { counts[r.squad_id] = (counts[r.squad_id] || 0) + 1; });
-              box.innerHTML = squads.map(function (sq) {
-                var crest = sq.avatar_url
-                  ? '<img class="squad-crest" src="' + esc(sq.avatar_url) + '" alt="" style="object-fit:cover" />'
-                  : '<span class="squad-crest">' + esc(initials(sq.name)) + '</span>';
-                return '<a class="squad-row" href="#squad/' + sq.id + '">' + crest +
-                  '<span class="sq-main"><span class="sq-name">' + esc(sq.name) + '</span>' +
-                  '<span class="sq-meta">' + esc(sq.game || '') + ' · Captained by ' +
-                  esc(caps[sq.captain_member_id] || '—') + ' · ' + (counts[sq.id] || 0) +
-                  ' members</span></span></a>';
-              }).join('');
+              asData = { squads: squads, caps: caps, counts: counts };
+              var search = $('allSquadsSearch');
+              renderAllSquads(search ? search.value : '');
             });
           }).catch(function () { box.innerHTML = '<p class="pf-note">Squads could not be loaded right now.</p>'; });
       }
+      var asSearchEl = $('allSquadsSearch');
+      if (asSearchEl) asSearchEl.addEventListener('input', function () { renderAllSquads(asSearchEl.value); });
+      var asBoxEl = $('allSquadsList');
+      if (asBoxEl) asBoxEl.addEventListener('click', function (e) {
+        var b = e.target.closest ? e.target.closest('[data-award-squad]') : null;
+        if (!b) return;
+        e.preventDefault(); e.stopPropagation();
+        var sid = parseInt(b.getAttribute('data-award-squad'), 10);
+        var sname = b.getAttribute('data-award-name') || 'this squad';
+        var t = window.prompt('Trophy title for ' + sname + ' — e.g. "eFootball Squad Cup — Champions"');
+        if (!t || !t.trim()) return;
+        sb.from('squad_honours').insert({ squad_id: sid, title: t.trim(), awarded_by: me() ? me().id : null })
+          .then(function (r) {
+            if (r.error) { toast('Award failed', 'Only the President can award trophies.'); return; }
+            toast('Trophy awarded', 'It now shows on ' + sname + ' and every member\u2019s profile.');
+          });
+      });
       function maybeAllSquads() {
         if ((window.location.hash || '') === '#allsquads') loadAllSquads();
       }
