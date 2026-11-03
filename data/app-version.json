@@ -1,6 +1,6 @@
 {
-  "versionCode": 58,
-  "versionName": "0.6.4-beta53",
+  "versionCode": 59,
+  "versionName": "0.6.5-beta54",
   "apkUrl": "https://github.com/tapranto/knight-warriors-club-app/releases",
-  "notes": "Settings gains a Chat heads shortcut to the Android Bubbles setting."
+  "notes": "Chat heads fix: the messages channel now allows Bubbles (new channel) \u2014 enable Bubbles and a closed-app message floats as a chat head."
 }
