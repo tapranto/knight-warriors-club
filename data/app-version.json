@@ -1,6 +1,6 @@
 {
-  "versionCode": 57,
-  "versionName": "0.6.3-beta52",
+  "versionCode": 58,
+  "versionName": "0.6.4-beta53",
   "apkUrl": "https://github.com/tapranto/knight-warriors-club-app/releases",
-  "notes": "Inside web pages, Inbox / My Profile / Log out now open the app screens and log out of the app."
+  "notes": "Settings gains a Chat heads shortcut to the Android Bubbles setting."
 }
