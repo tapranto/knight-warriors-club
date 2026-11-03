@@ -1,6 +1,6 @@
 {
-  "versionCode": 64,
-  "versionName": "0.7.4-beta59",
+  "versionCode": 65,
+  "versionName": "0.7.5-beta60",
   "apkUrl": "https://github.com/tapranto/knight-warriors-club-app/releases",
-  "notes": "Compile fix: password-manager autofill rebuilt on the legacy API this Compose version supports."
+  "notes": "Compile fix: experimental-API opt-in for the autofill wiring."
 }
