@@ -2636,7 +2636,9 @@
                 <p class="pf-sub">Your record in official club tournaments.</p>
                 <div id="honoursList"></div>
                 <div id="squadHonoursList"></div>
-                <p class="pf-note">Honours are added automatically from official tournament results — they can't be edited.</p>
+                <div id="memberHonoursList"></div>
+                <div id="memberAwardBox"></div>
+                <p class="pf-note">Tournament honours are added automatically from official results; squad and player trophies are awarded by the President.</p>
               </div>
 
               <!-- Squads -->
@@ -2835,6 +2837,7 @@
             <div class="pf-panel glass reveal">
               <h3 class="pf-title">Squads</h3>
               <div class="field"><input id="allSquadsSearch" type="text" placeholder="Search squads or captains…" /></div>
+              <div id="allSquadsAwardBox"></div>
               <div id="allSquadsList"><p class="pf-note">Loading…</p></div>
             </div>
           </div>
@@ -5849,19 +5852,73 @@
       }
 
       /* ---------- Squad honours on profiles (Part 16) ---------- */
+      /* Player (individual) honours — Part 17; President awards from here. */
+      function renderMemberHonoursInto(memberId) {
+        var awardBox = $('memberAwardBox');
+        if (awardBox) {
+          awardBox.innerHTML = isPres()
+            ? '<div style="margin-top:16px"><div class="field"><label>Award a trophy to this player</label>' +
+              '<input id="memberTrophyName" type="text" placeholder="Award name — e.g. Player of the Tournament" /></div>' +
+              '<div class="field"><label>Award logo (optional)</label><input id="memberTrophyLogo" type="file" accept="image/*" /></div>' +
+              '<button type="button" class="btn btn-red btn-sm" id="memberAwardBtn">🏆 AWARD</button></div>'
+            : '';
+          var ab = $('memberAwardBtn');
+          if (ab) ab.addEventListener('click', function () {
+            var t = $('memberTrophyName').value.trim();
+            if (!t) { toast('Award name needed', 'Type the award name first.'); return; }
+            var f = $('memberTrophyLogo'); var file = f && f.files && f.files[0];
+            uploadAwardLogo(file, function (logoUrl) {
+              var row = { member_id: memberId, title: t, awarded_by: me() ? me().id : null };
+              if (logoUrl) row.logo_url = logoUrl;
+              sb.from('member_honours').insert(row).then(function (r) {
+                if (r.error) { toast('Award failed', 'Only the President can award player trophies.'); return; }
+                toast('Trophy awarded', 'It now shows on this player\u2019s profile.');
+                renderMemberHonoursInto(memberId);
+              });
+            });
+          });
+        }
+        var el = $('memberHonoursList'); if (!el || !sb) return;
+        el.innerHTML = '';
+        sb.from('member_honours').select('id, title, logo_url, created_at').eq('member_id', memberId)
+          .order('created_at', { ascending: false }).then(function (res) {
+            if (res.error || !res.data || !res.data.length) return;
+            el.innerHTML = '<h4 style="margin:16px 0 8px">Player Honours</h4><div class="trophy-grid">' +
+              res.data.map(function (h) {
+                var visual = h.logo_url
+                  ? '<img src="' + esc(h.logo_url) + '" alt="" style="width:100%;height:100%;object-fit:cover" />'
+                  : '<span class="tb-pos">🏆</span>';
+                return '<div class="trophy-box champ"><div class="tb-visual">' + visual + '</div>' +
+                  '<div class="tb-body"><h4>' + esc(h.title) + '</h4><p>Individual honour</p></div>' +
+                  (isPres() ? '<button type="button" class="btn btn-glass btn-sm" data-del-member-honour="' + h.id + '">Remove</button>' : '') +
+                  '</div>';
+              }).join('') + '</div>';
+            el.querySelectorAll('[data-del-member-honour]').forEach(function (b) {
+              b.addEventListener('click', function () {
+                if (!window.confirm('Remove this trophy?')) return;
+                sb.from('member_honours').delete().eq('id', b.getAttribute('data-del-member-honour'))
+                  .then(function () { renderMemberHonoursInto(memberId); });
+              });
+            });
+          }).catch(function () {});
+      }
       function renderSquadHonoursInto(memberId) {
+        renderMemberHonoursInto(memberId);
         var el = $('squadHonoursList'); if (!el) return;
         el.innerHTML = '';
         if (!sb) return;
         sb.from('squad_members').select('squad_id').eq('member_id', memberId).then(function (sm) {
           var ids = (sm.data || []).map(function (r) { return r.squad_id; });
           if (!ids.length) return;
-          sb.from('squad_honours').select('id, title, created_at, squads(name)').in('squad_id', ids)
+          sb.from('squad_honours').select('id, title, logo_url, created_at, squads(name)').in('squad_id', ids)
             .order('created_at', { ascending: false }).then(function (res) {
               if (res.error || !res.data || !res.data.length) return;
               el.innerHTML = '<h4 style="margin:16px 0 8px">Squad Honours</h4><div class="trophy-grid">' +
                 res.data.map(function (h) {
-                  return '<div class="trophy-box champ"><div class="tb-visual"><span class="tb-pos">🏆</span></div>' +
+                  var visual = h.logo_url
+                    ? '<img src="' + esc(h.logo_url) + '" alt="" style="width:100%;height:100%;object-fit:cover" />'
+                    : '<span class="tb-pos">🏆</span>';
+                  return '<div class="trophy-box champ"><div class="tb-visual">' + visual + '</div>' +
                     '<div class="tb-body"><h4>' + esc(h.title) + '</h4><p>Won with ' +
                     esc((h.squads && h.squads.name) || 'a squad') + '</p></div></div>';
                 }).join('') + '</div>';
@@ -6418,6 +6475,20 @@
         });
         input.value = '';
       }
+
+      /* Upload an award logo (avatars bucket, caller's folder); cb(url|null). */
+      function uploadAwardLogo(file, cb) {
+        if (!file || !sb || typeof kwc === 'undefined' || !kwc.user) { cb(null); return; }
+        downscale(file, 512, function (blob) {
+          if (!blob) { cb(null); return; }
+          var path = kwc.user.id + '/award-' + Date.now() + '.jpg';
+          sb.storage.from('avatars').upload(path, blob, { contentType: 'image/jpeg', upsert: true })
+            .then(function (res) {
+              if (res.error) { cb(null); return; }
+              cb(sb.storage.from('avatars').getPublicUrl(path).data.publicUrl);
+            }).catch(function () { cb(null); });
+        });
+      }
       var ab = $('avatarEditBtn'); if (ab) ab.addEventListener('click', function () { var f = $('avatarFile'); if (f) f.click(); });
       var cb2 = $('coverEditBtn'); if (cb2) cb2.addEventListener('click', function () { var f = $('coverFile'); if (f) f.click(); });
       var af2 = $('avatarFile'); if (af2) af2.addEventListener('change', function () { uploadPhoto('avatar'); });
@@ -6504,20 +6575,44 @@
       }
       var asSearchEl = $('allSquadsSearch');
       if (asSearchEl) asSearchEl.addEventListener('input', function () { renderAllSquads(asSearchEl.value); });
+      var asAward = null; /* { id, name } — squad being awarded from the list */
+      function renderAsAwardForm() {
+        var box = $('allSquadsAwardBox'); if (!box) return;
+        if (!asAward) { box.innerHTML = ''; return; }
+        box.innerHTML = '<div class="pf-panel glass" style="padding:16px;margin-bottom:14px">' +
+          '<h3 class="pf-title">🏆 Award — ' + esc(asAward.name) + '</h3>' +
+          '<div class="field"><label>Award name</label><input id="asTrophyName" type="text" placeholder="e.g. eFootball Squad Cup — Champions" /></div>' +
+          '<div class="field"><label>Award logo (optional)</label><input id="asTrophyLogo" type="file" accept="image/*" /></div>' +
+          '<div style="display:flex;gap:9px"><button type="button" class="btn btn-red btn-sm" id="asAwardGo">🏆 AWARD</button>' +
+          '<button type="button" class="btn btn-glass btn-sm" id="asAwardCancel">Cancel</button></div></div>';
+        $('asAwardCancel').addEventListener('click', function () { asAward = null; renderAsAwardForm(); });
+        $('asAwardGo').addEventListener('click', function () {
+          var t = $('asTrophyName').value.trim();
+          if (!t) { toast('Award name needed', 'Type the award name first.'); return; }
+          var f = $('asTrophyLogo'); var file = f && f.files && f.files[0];
+          var target = asAward;
+          uploadAwardLogo(file, function (logoUrl) {
+            var row = { squad_id: target.id, title: t, awarded_by: me() ? me().id : null };
+            if (logoUrl) row.logo_url = logoUrl;
+            sb.from('squad_honours').insert(row).then(function (r) {
+              if (r.error) { toast('Award failed', 'Only the President can award trophies.'); return; }
+              toast('Trophy awarded', 'It now shows on ' + target.name + ' and every member\u2019s profile.');
+              asAward = null; renderAsAwardForm();
+            });
+          });
+        });
+        box.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
       var asBoxEl = $('allSquadsList');
       if (asBoxEl) asBoxEl.addEventListener('click', function (e) {
         var b = e.target.closest ? e.target.closest('[data-award-squad]') : null;
         if (!b) return;
         e.preventDefault(); e.stopPropagation();
-        var sid = parseInt(b.getAttribute('data-award-squad'), 10);
-        var sname = b.getAttribute('data-award-name') || 'this squad';
-        var t = window.prompt('Trophy title for ' + sname + ' — e.g. "eFootball Squad Cup — Champions"');
-        if (!t || !t.trim()) return;
-        sb.from('squad_honours').insert({ squad_id: sid, title: t.trim(), awarded_by: me() ? me().id : null })
-          .then(function (r) {
-            if (r.error) { toast('Award failed', 'Only the President can award trophies.'); return; }
-            toast('Trophy awarded', 'It now shows on ' + sname + ' and every member\u2019s profile.');
-          });
+        asAward = {
+          id: parseInt(b.getAttribute('data-award-squad'), 10),
+          name: b.getAttribute('data-award-name') || 'this squad'
+        };
+        renderAsAwardForm();
       });
       function maybeAllSquads() {
         if ((window.location.hash || '') === '#allsquads') loadAllSquads();
@@ -6685,13 +6780,16 @@
       function renderSquadTrophies() {
         var box = $('squadTrophies'); if (!box || !squadCtx || !sb) return;
         var awardBox = $('squadAwardBox');
-        sb.from('squad_honours').select('id, title, created_at').eq('squad_id', squadCtx.squad.id)
+        sb.from('squad_honours').select('id, title, logo_url, created_at').eq('squad_id', squadCtx.squad.id)
           .order('created_at', { ascending: false }).then(function (res) {
             if (res.error) { box.innerHTML = '<p class="pf-note">No trophies yet.</p>'; return; }
             var rows = res.data || [];
             box.innerHTML = rows.length ? rows.map(function (h) {
+              var visual = h.logo_url
+                ? '<img src="' + esc(h.logo_url) + '" alt="" style="width:30px;height:30px;border-radius:9px;object-fit:cover" />'
+                : '<span style="font-size:19px">🏆</span>';
               return '<div style="display:flex;align-items:center;gap:10px;padding:7px 0">' +
-                '<span style="font-size:19px">🏆</span>' +
+                visual +
                 '<span style="flex:1"><b>' + esc(h.title) + '</b> <span class="role-sm">· ' +
                 esc(String(h.created_at || '').slice(0, 10)) + '</span></span>' +
                 (isPres() ? '<button type="button" class="btn btn-glass btn-sm" data-honour-del="' + h.id + '">Remove</button>' : '') +
@@ -6707,17 +6805,25 @@
           }).catch(function () { box.innerHTML = '<p class="pf-note">No trophies yet.</p>'; });
         if (awardBox) {
           awardBox.innerHTML = isPres()
-            ? '<button type="button" class="btn btn-red btn-sm" id="sqAwardBtn">🏆 Award a Trophy</button>' : '';
+            ? '<div class="field"><label>Award name</label><input id="trophyName" type="text" placeholder="e.g. eFootball Squad Cup — Champions" /></div>' +
+              '<div class="field"><label>Award logo (optional)</label><input id="trophyLogo" type="file" accept="image/*" /></div>' +
+              '<button type="button" class="btn btn-red btn-sm" id="sqAwardBtn">🏆 Award a Trophy</button>' : '';
           var ab = $('sqAwardBtn');
           if (ab) ab.addEventListener('click', function () {
-            var t = window.prompt('Trophy title — e.g. "eFootball Squad Cup — Champions"');
-            if (!t || !t.trim()) return;
-            sb.from('squad_honours').insert({ squad_id: squadCtx.squad.id, title: t.trim(), awarded_by: me() ? me().id : null })
-              .then(function (r) {
-                if (r.error) { toast('Award failed', 'Only the President can award trophies — and the Part 16 update must be in.'); return; }
-                toast('Trophy awarded', 'It now shows here and on every member\u2019s profile.');
-                renderSquadTrophies();
-              });
+            var nameEl = $('trophyName'); var t = nameEl ? nameEl.value.trim() : '';
+            if (!t) { toast('Award name needed', 'Type the award name first.'); return; }
+            var fileEl = $('trophyLogo');
+            var file = fileEl && fileEl.files && fileEl.files[0];
+            uploadAwardLogo(file, function (logoUrl) {
+              var row = { squad_id: squadCtx.squad.id, title: t, awarded_by: me() ? me().id : null };
+              if (logoUrl) row.logo_url = logoUrl;
+              sb.from('squad_honours').insert(row)
+                .then(function (r) {
+                  if (r.error) { toast('Award failed', 'Only the President can award trophies.'); return; }
+                  toast('Trophy awarded', 'It now shows here and on every member\u2019s profile.');
+                  renderSquadTrophies();
+                });
+            });
           });
         }
       }
