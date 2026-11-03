@@ -73,6 +73,10 @@
       body[data-view="checkemail"] .sec-head h2 { color: #10344e; text-shadow: none; }
       body[data-view="checkemail"] .sec-head p { color: #33566e; text-shadow: none; }
       body[data-view="checkemail"] .kicker { color: #b30f1e; }
+      body[data-view="verifycode"] .bg-layer { background-image: linear-gradient(180deg, #6ec1f0 0%, #9fd8f8 52%, #d3f0fd 100%); background-color: #8fd0f5; }
+      body[data-view="verifycode"] .sec-head h2 { color: #10344e; text-shadow: none; }
+      body[data-view="verifycode"] .sec-head p { color: #33566e; text-shadow: none; }
+      body[data-view="verifycode"] .kicker { color: #b30f1e; }
       /* Layer 3 */
       .avatar-wrap { position: relative; display: inline-block; }
       .pencil-btn { position: absolute; width: 34px; height: 34px; border-radius: 50%; border: 2px solid rgba(255,255,255,.85); background: #c8102e; color: #fff; display: none; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 14px rgba(0,0,0,.45); z-index: 3; }
@@ -2405,8 +2409,37 @@
               <p class="auth-sub">We sent it to<br /><b id="checkEmailAddr" style="font-size:17px;color:#fff">your email address</b></p>
               <p class="auth-sub">Open the mail and tap <b>&ldquo;Confirm email address&rdquo;</b> to complete your account. Then come back and log in &mdash; your member profile is created automatically at your first login.</p>
               <a class="btn btn-red" href="#login" data-nav="login" style="width:100%;justify-content:center">Go to Log In</a>
+              <p class="auth-alt" style="margin-top:16px">Got a 6-digit code instead? <a href="#verifycode" data-nav="verifycode">Enter your code</a></p>
               <p class="auth-alt" style="margin-top:16px">Didn&rsquo;t get it? Check your spam folder, or <a href="#" id="resendBtn">resend the email</a></p>
               <p class="form-ok" id="resendNote" aria-live="polite"></p>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- ==================== VIEW: VERIFY CODE (signup OTP) ==================== -->
+      <div class="view" id="view-verifycode">
+        <section>
+          <div class="wrap">
+            <div class="sec-head center reveal">
+              <p class="kicker">Almost There</p>
+              <h2>Enter Your Code</h2>
+              <p>One quick step finishes your account.</p>
+            </div>
+            <div class="auth-card glass reveal" style="text-align:center">
+              <div class="rs-icon" style="margin:0 auto 14px"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg></div>
+              <h3 style="margin-bottom:10px">We sent you a 6-digit code</h3>
+              <p class="auth-sub">Check the inbox of<br /><b id="verifyEmailAddr" style="font-size:17px;color:#fff">your email address</b></p>
+              <p class="auth-sub">Type the code from the email below — it works once and expires in 1 hour.</p>
+              <div class="field" style="text-align:left">
+                <label for="otpCode">Confirmation code</label>
+                <input id="otpCode" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="123456" style="text-align:center;font-size:22px;letter-spacing:8px" />
+              </div>
+              <p class="form-err" id="otpError" role="alert" style="margin:0 0 16px"></p>
+              <button class="btn btn-red" type="button" id="otpVerifyBtn" style="width:100%;justify-content:center">Verify &amp; Activate Account</button>
+              <p class="auth-alt" style="margin-top:16px">Didn&rsquo;t get it? Check your spam folder, or <a href="#" id="otpResendBtn">resend the code</a></p>
+              <p class="form-ok" id="otpResendNote" aria-live="polite"></p>
+              <p class="auth-alt" style="margin-top:8px">Already confirmed? <a href="#login" data-nav="login">Go to Log In</a></p>
             </div>
           </div>
         </section>
@@ -2933,7 +2966,7 @@
 
     <script>
       /* ---------- View router ---------- */
-      var VIEWS = ['home', 'about', 'community', 'games', 'news', 'article', 'events', 'tournament', 'leaderboard', 'maker', 'rules', 'register', 'login', 'checkemail', 'confirmed', 'profile', 'squad', 'createsquad', 'console', 'inbox', 'completeprofile', 'resetpassword', 'setpassword'];
+      var VIEWS = ['home', 'about', 'community', 'games', 'news', 'article', 'events', 'tournament', 'leaderboard', 'maker', 'rules', 'register', 'login', 'checkemail', 'verifycode', 'confirmed', 'profile', 'squad', 'createsquad', 'console', 'inbox', 'completeprofile', 'resetpassword', 'setpassword'];
       var HASH_ALIAS = {
         top: 'home', committee: 'community', members: 'community',
         provide: 'about', membership: 'about', practice: 'about',
@@ -4809,9 +4842,12 @@
                  at the member's first login. Send the member to the
                  dedicated check-email page. */
               window.__pendingEmail = email;
+              try { sessionStorage.setItem('kwc_pending_email', email); } catch (e) {}
               var ca = el('checkEmailAddr');
               if (ca) ca.textContent = email;
-              showView('checkemail', true);
+              var va = el('verifyEmailAddr');
+              if (va) va.textContent = email;
+              showView('verifycode', true);
               return null;
             }
             return sb.from('members').insert({
@@ -4871,6 +4907,65 @@
           });
         }
 
+        /* ---------- Verify signup code (OTP) ---------- */
+        function pendingEmail() {
+          if (window.__pendingEmail) return window.__pendingEmail;
+          try { return sessionStorage.getItem('kwc_pending_email'); } catch (e) { return null; }
+        }
+        (function () {
+          var stored = pendingEmail();
+          if (stored) {
+            var va = el('verifyEmailAddr'); if (va) va.textContent = stored;
+            var ca = el('checkEmailAddr'); if (ca) ca.textContent = stored;
+          }
+        })();
+        var otpVerifyBtn = el('otpVerifyBtn');
+        if (otpVerifyBtn) {
+          otpVerifyBtn.addEventListener('click', function () {
+            hideErr('otpError');
+            var em = pendingEmail();
+            var codeInput = el('otpCode');
+            var code = codeInput ? (codeInput.value || '').replace(/\D/g, '') : '';
+            if (!em) { showErr('otpError', 'Register first, so we know which email the code belongs to.'); return; }
+            if (!/^\d{6}$/.test(code)) { showErr('otpError', 'Enter the 6-digit code from the email.'); return; }
+            if (!sb) { showErr('otpError', OFFLINE_MSG); return; }
+            setBusy(otpVerifyBtn, true);
+            sb.auth.verifyOtp({ email: em, token: code, type: 'signup' }).then(function (res) {
+              if (res.error) throw res.error;
+              var user = res.data ? res.data.user : null;
+              try { sessionStorage.removeItem('kwc_pending_email'); } catch (e) {}
+              window.__pendingEmail = null;
+              setBusy(otpVerifyBtn, false);
+              var done = function () { setConfirmedMode('ok'); showView('confirmed', true); };
+              if (user) loadMember(user).then(done); else done();
+            }).catch(function (err) {
+              setBusy(otpVerifyBtn, false);
+              if (isNetworkError(err)) showErr('otpError', OFFLINE_MSG);
+              else showErr('otpError', 'That code is wrong or has expired — check the newest email, or resend a fresh code.');
+            });
+          });
+        }
+        var otpCodeInput = el('otpCode');
+        if (otpCodeInput && otpVerifyBtn) {
+          otpCodeInput.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter') { e.preventDefault(); otpVerifyBtn.click(); }
+          });
+        }
+        var otpResendBtn = el('otpResendBtn');
+        if (otpResendBtn) {
+          otpResendBtn.addEventListener('click', function (e) {
+            e.preventDefault();
+            var em = pendingEmail();
+            var note = el('otpResendNote');
+            if (!sb || !em) { if (note) note.textContent = 'Register again to get a fresh code.'; return; }
+            setBusy(otpResendBtn, true);
+            sb.auth.resend({ type: 'signup', email: em }).then(function (res) {
+              setBusy(otpResendBtn, false);
+              if (note) note.textContent = res.error ? 'Could not resend just now — wait a minute and try again.' : 'Fresh code sent — check your inbox (and spam folder).';
+            });
+          });
+        }
+
         /* ---------- Log in ---------- */
         function handleLogin() {
           hideErr('loginError');
@@ -4894,7 +4989,15 @@
             showView('profile', true);
           }).catch(function (err) {
             setBusy(btn, false);
-            if (isNetworkError(err)) showErr('loginError', OFFLINE_MSG);
+            if (isNetworkError(err)) { showErr('loginError', OFFLINE_MSG); return; }
+            var lmsg = err && err.message ? String(err.message) : '';
+            if (/not confirmed/i.test(lmsg)) {
+              window.__pendingEmail = email;
+              try { sessionStorage.setItem('kwc_pending_email', email); } catch (e) {}
+              var lva = el('verifyEmailAddr'); if (lva) lva.textContent = email;
+              showView('verifycode', true);
+              return;
+            }
             else showErr('loginError', 'That email and password don\u2019t match — check them and try again.');
           });
         }
