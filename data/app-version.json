@@ -1,6 +1,6 @@
 {
-  "versionCode": 54,
-  "versionName": "0.6.0-beta49",
+  "versionCode": 56,
+  "versionName": "0.6.2-beta51",
   "apkUrl": "https://github.com/tapranto/knight-warriors-club-app/releases",
-  "notes": "Poll and MVP notifications now buzz your phone, in-app update notices, Settings tidy-up and fixes."
+  "notes": "Tapping News or Events again now returns to that section's home page; More menu thumbnails; poll notifications."
 }
