@@ -6476,7 +6476,7 @@
               box.innerHTML = squads.map(function (sq) {
                 var crest = sq.avatar_url
                   ? '<img class="squad-crest" src="' + esc(sq.avatar_url) + '" alt="" style="object-fit:cover" />'
-                  : '<span class="squad-crest">' + esc(initialsOf(sq.name)) + '</span>';
+                  : '<span class="squad-crest">' + esc(initials(sq.name)) + '</span>';
                 return '<a class="squad-row" href="#squad/' + sq.id + '">' + crest +
                   '<span class="sq-main"><span class="sq-name">' + esc(sq.name) + '</span>' +
                   '<span class="sq-meta">' + esc(sq.game || '') + ' · Captained by ' +
