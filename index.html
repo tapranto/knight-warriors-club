@@ -800,6 +800,7 @@
       }
       .avatar-initial[hidden] { display: none; }
       #allMembersLink[hidden] { display: none; }
+      #allSquadsLink[hidden] { display: none; }
       @media (max-width: 520px) {
         .game-opts { grid-template-columns: 1fr; }
         .auth-card { padding: 30px 22px; }
@@ -1651,6 +1652,7 @@
           <a href="#profile" data-nav="profile" data-pftab="settings">Edit Profile</a>
           <a href="#inbox" data-nav="inbox" id="inboxMenuLink">Inbox <span class="am-badge" id="inboxBadge2" hidden></span></a>
           <a href="#console" data-nav="console" id="allMembersLink" hidden>All Members</a>
+          <a href="#allsquads" data-nav="allsquads" id="allSquadsLink" hidden>All Squads</a>
           <button class="am-item" type="button" id="logoutBtn">Log out</button>
         </div>
       </div>
@@ -2821,6 +2823,23 @@
         </section>
       </div>
 
+      <!-- ==================== VIEW: ALL SQUADS (President) ==================== -->
+      <div class="view" id="view-allsquads">
+        <section>
+          <div class="wrap">
+            <div class="sec-head reveal">
+              <p class="kicker">President</p>
+              <h2>All Squads</h2>
+              <p>Every squad in the club. Tap one to open its page.</p>
+            </div>
+            <div class="pf-panel glass reveal">
+              <h3 class="pf-title">Squads</h3>
+              <div id="allSquadsList"><p class="pf-note">Loading…</p></div>
+            </div>
+          </div>
+        </section>
+      </div>
+
       <!-- ==================== VIEW: SQUAD ==================== -->
       <div class="view" id="view-squad">
         <section>
@@ -2980,7 +2999,7 @@
 
     <script>
       /* ---------- View router ---------- */
-      var VIEWS = ['home', 'about', 'community', 'games', 'news', 'article', 'events', 'tournament', 'leaderboard', 'maker', 'rules', 'register', 'login', 'checkemail', 'verifycode', 'confirmed', 'profile', 'squad', 'createsquad', 'console', 'inbox', 'completeprofile', 'resetpassword', 'setpassword'];
+      var VIEWS = ['home', 'about', 'community', 'games', 'news', 'article', 'events', 'tournament', 'leaderboard', 'maker', 'rules', 'register', 'login', 'checkemail', 'verifycode', 'confirmed', 'profile', 'squad', 'createsquad', 'console', 'allsquads', 'inbox', 'completeprofile', 'resetpassword', 'setpassword'];
       var HASH_ALIAS = {
         top: 'home', committee: 'community', members: 'community',
         provide: 'about', membership: 'about', practice: 'about',
@@ -4544,6 +4563,7 @@
           el('amName').textContent = SAMPLE.amName;
           el('amSub').textContent = SAMPLE.amSub;
           el('allMembersLink').hidden = true;
+          el('allSquadsLink').hidden = true;
           var img = el('avatarImg');
           img.src = SAMPLE.avatarImg; img.alt = SAMPLE.amName; img.style.display = '';
           el('avatarInitial').hidden = true;
@@ -4570,6 +4590,7 @@
           var firstGame = kwc.games.length ? kwc.games[0].game : '';
           el('amSub').textContent = m ? ((m.role || 'Member') + (firstGame ? ' · ' + firstGame : '')) : '';
           el('allMembersLink').hidden = !(m && (m.role === 'President' || m.is_committee));
+          el('allSquadsLink').hidden = !(m && m.role === 'President');
           el('avatarBtn').setAttribute('aria-label', 'Your account menu — ' + name);
           var img = el('avatarImg'), ini = el('avatarInitial');
           if (m && m.avatar_url) {
@@ -6423,6 +6444,57 @@
         showView('squad', false);
         loadSquadPage(parseInt(id, 10));
       };
+      /* Boot rescue (Pranto, 2026-11-03): on a fresh load or reload the
+         main router resolves #squad/<id> to Home — re-assert the squad
+         route now that __routeSquad exists, and again on window load. */
+      (function () {
+        function squadBoot() {
+          var h = (window.location.hash || '').replace(/^#/, '');
+          var m = h.match(/^squad\/(.+)$/);
+          if (m) window.__routeSquad(m[1]);
+        }
+        squadBoot();
+        window.addEventListener('load', squadBoot);
+      })();
+
+      /* ---------- All Squads (President, from the avatar menu) ---------- */
+      function loadAllSquads() {
+        var box = $('allSquadsList'); if (!box || !sb) return;
+        box.innerHTML = '<p class="pf-note">Loading…</p>';
+        sb.from('squads').select('id, name, game, captain_member_id, avatar_url, created_at')
+          .order('created_at', { ascending: true }).then(function (sres) {
+            if (sres.error) throw sres.error;
+            var squads = sres.data || [];
+            if (!squads.length) { box.innerHTML = '<p class="pf-note">No squads yet.</p>'; return; }
+            var capIds = squads.map(function (s) { return s.captain_member_id; });
+            return Promise.all([
+              sb.from('members').select('id, full_name').in('id', capIds),
+              sb.from('squad_members').select('squad_id')
+            ]).then(function (rs) {
+              var caps = {}; (rs[0].data || []).forEach(function (mm) { caps[mm.id] = mm.full_name; });
+              var counts = {}; (rs[1].data || []).forEach(function (r) { counts[r.squad_id] = (counts[r.squad_id] || 0) + 1; });
+              box.innerHTML = squads.map(function (sq) {
+                var crest = sq.avatar_url
+                  ? '<img class="squad-crest" src="' + esc(sq.avatar_url) + '" alt="" style="object-fit:cover" />'
+                  : '<span class="squad-crest">' + esc(initialsOf(sq.name)) + '</span>';
+                return '<a class="squad-row" href="#squad/' + sq.id + '">' + crest +
+                  '<span class="sq-main"><span class="sq-name">' + esc(sq.name) + '</span>' +
+                  '<span class="sq-meta">' + esc(sq.game || '') + ' · Captained by ' +
+                  esc(caps[sq.captain_member_id] || '—') + ' · ' + (counts[sq.id] || 0) +
+                  ' members</span></span></a>';
+              }).join('');
+            });
+          }).catch(function () { box.innerHTML = '<p class="pf-note">Squads could not be loaded right now.</p>'; });
+      }
+      function maybeAllSquads() {
+        if ((window.location.hash || '') === '#allsquads') loadAllSquads();
+      }
+      window.addEventListener('hashchange', maybeAllSquads);
+      window.addEventListener('popstate', maybeAllSquads);
+      document.addEventListener('click', function (e) {
+        if (e.target.closest && e.target.closest('#allSquadsLink')) setTimeout(loadAllSquads, 60);
+      });
+      maybeAllSquads();
       function loadSquadPage(sid) {
         var nameEl = $('squadName'), meta = $('squadMeta'), roster = $('squadRoster'),
             actions = $('squadActions'), inviteBox = $('squadInviteBox');
