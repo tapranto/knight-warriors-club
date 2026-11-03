@@ -1,6 +1,6 @@
 {
-  "versionCode": 66,
-  "versionName": "0.7.6-beta61",
+  "versionCode": 67,
+  "versionName": "0.7.7-beta62",
   "apkUrl": "https://github.com/tapranto/knight-warriors-club-app/releases",
-  "notes": "Compile fix (complete): autofill API sealed inside one file \u2014 no experimental types in shared signatures."
+  "notes": "Autofill dropped at Pranto\u2019s call \u2014 back to the clean build; poll fix + MVP nominees intact."
 }
