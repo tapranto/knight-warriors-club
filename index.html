@@ -8121,7 +8121,7 @@
         var css = '.t-logo{display:block;width:min(430px,100%);height:auto;border-radius:14px;margin:0 0 12px}' +
           '.ms-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px 14px}@media(max-width:560px){.ms-grid{grid-template-columns:1fr}}' +
           '.ms-row{display:flex;justify-content:space-between;gap:10px;padding:6px 10px;border:1px solid rgba(255,255,255,.08);border-radius:8px;background:rgba(255,255,255,.03);font-size:13px}.ms-row span{opacity:.75}' +
-          '.ko-tree{display:flex;gap:14px;overflow-x:auto;padding-bottom:8px}.ko-col{min-width:210px;flex:1;display:flex;flex-direction:column}.ko-col-body{flex:1;display:flex;flex-direction:column;justify-content:space-around;gap:10px}.ko-tree .ko-match{position:relative}.ko-tree .ko-match::after{content:"";position:absolute;right:-15px;top:50%;width:14px;border-top:2px solid rgba(255,255,255,.3)}.ko-tree .ko-col:last-child .ko-match::after{display:none}.ko-col h4{margin:0 0 8px;font-size:13px;letter-spacing:.06em;text-transform:uppercase;opacity:.85}' +
+          '.ko-tree{overflow-x:auto;padding-bottom:8px}.ko-wrap{width:max-content}.ko-heads{display:flex;margin-bottom:10px}.ko-heads span{width:210px;flex:none;text-align:center;font-size:13px;letter-spacing:.06em;text-transform:uppercase;opacity:.85;font-weight:700}.ko-heads i{width:22px;flex:none}.ko-sub{display:flex;align-items:stretch}.ko-feed{display:flex;flex-direction:column;justify-content:center}.ko-feed>*{margin:5px 0}.ko-one{display:flex;align-items:center;flex:none}.ko-tree .ko-match{width:210px;flex:none}.ko-tree .ko-name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}.ko-conn{width:22px;flex:none;position:relative}.ko-conn i{position:absolute;display:block;filter:drop-shadow(0 0 5px rgba(255,46,99,.9))}.ko-conn .a{left:0;top:25%;width:50%;height:50%;border-top:2px solid #ff2e63;border-bottom:2px solid #ff2e63;border-right:2px solid #ff2e63}.ko-conn .b{left:50%;top:50%;width:50%;border-top:2px solid #ff2e63}.ko-col h4{margin:0 0 8px;font-size:13px;letter-spacing:.06em;text-transform:uppercase;opacity:.85}' +
           '.ko-list-h{margin:16px 0 8px;font-size:13px;letter-spacing:.06em;text-transform:uppercase;opacity:.85}.ko-match{border:1px solid rgba(255,255,255,.14);border-radius:10px;padding:8px 10px;margin-bottom:8px;background:rgba(8,12,18,.58);backdrop-filter:blur(12px) saturate(120%);-webkit-backdrop-filter:blur(12px) saturate(120%)}' +
           '.ko-p{display:flex;justify-content:space-between;gap:8px;padding:3px 0;font-size:13px}.ko-p.win{color:#f5c451;font-weight:700}' +
           '.ko-edit{display:flex;gap:6px;align-items:center;margin-top:7px}.ko-edit input{width:52px;padding:5px 7px;border-radius:7px;border:1px solid rgba(255,255,255,.18);background:rgba(0,0,0,.3);color:#fff;font-size:13px}' +
@@ -8226,14 +8226,22 @@
             rs.forEach(function (r) { h += koCard(r); });
           });
         } else {
-          h += '<div class="ko-tree">';
-          rounds.forEach(function (rd) {
-            var rs = rows.filter(function (r) { return r.round === rd; });
-            h += '<div class="ko-col"><h4>' + esc(rs[0].round_label || ('Round ' + rd)) + '</h4><div class="ko-col-body">';
-            rs.forEach(function (r) { h += koCard(r); });
-            h += '</div></div>';
+          var byKeyT = {};
+          rows.forEach(function (r) { byKeyT[rowKey(r)] = r; });
+          function subHTML(r) {
+            if (r.round === 1) return '<div class="ko-one">' + koCard(r) + '</div>';
+            var A = byKeyT[(r.round - 1) + ':' + (r.slot * 2 - 1)], B = byKeyT[(r.round - 1) + ':' + (r.slot * 2)];
+            if (!A || !B) return '<div class="ko-one">' + koCard(r) + '</div>';
+            return '<div class="ko-sub"><div class="ko-feed">' + subHTML(A) + subHTML(B) + '</div><div class="ko-conn"><i class="a"></i><i class="b"></i></div><div class="ko-one">' + koCard(r) + '</div></div>';
+          }
+          var rootRow = rows.filter(function (r) { return r.round === rounds[rounds.length - 1]; })[0];
+          h += '<div class="ko-tree"><div class="ko-wrap"><div class="ko-heads">';
+          rounds.forEach(function (rd, i) {
+            var rs0 = rows.filter(function (r) { return r.round === rd; })[0];
+            if (i) h += '<i></i>';
+            h += '<span>' + esc(rs0.round_label || ('Round ' + rd)) + '</span>';
           });
-          h += '</div>';
+          h += '</div>' + (rootRow ? subHTML(rootRow) : '') + '</div></div>';
         }
         if (pres) h += '<p class="entry-msg" style="margin-top:10px">President: results are entered on the Matches tab \u2014 winners advance here automatically.</p>';
         return h;
