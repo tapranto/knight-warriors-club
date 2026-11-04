@@ -8121,7 +8121,7 @@
         var css = '.t-logo{display:block;width:min(430px,100%);height:auto;border-radius:14px;margin:0 0 12px}' +
           '.ms-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px 14px}@media(max-width:560px){.ms-grid{grid-template-columns:1fr}}' +
           '.ms-row{display:flex;justify-content:space-between;gap:10px;padding:6px 10px;border:1px solid rgba(255,255,255,.08);border-radius:8px;background:rgba(255,255,255,.03);font-size:13px}.ms-row span{opacity:.75}' +
-          '.ko-tree{display:flex;gap:14px;overflow-x:auto;padding-bottom:8px}.ko-col{min-width:210px;flex:1}.ko-col h4{margin:0 0 8px;font-size:13px;letter-spacing:.06em;text-transform:uppercase;opacity:.85}' +
+          '.ko-tree{display:flex;gap:14px;overflow-x:auto;padding-bottom:8px;position:relative}.ko-lines{position:absolute;left:0;top:0;pointer-events:none}.ko-col{min-width:210px;flex:1}.ko-col h4{margin:0 0 8px;font-size:13px;letter-spacing:.06em;text-transform:uppercase;opacity:.85}' +
           '.ko-list-h{margin:16px 0 8px;font-size:13px;letter-spacing:.06em;text-transform:uppercase;opacity:.85}.ko-match{border:1px solid rgba(255,255,255,.14);border-radius:10px;padding:8px 10px;margin-bottom:8px;background:rgba(8,12,18,.58);backdrop-filter:blur(12px) saturate(120%);-webkit-backdrop-filter:blur(12px) saturate(120%)}' +
           '.ko-p{display:flex;justify-content:space-between;gap:8px;padding:3px 0;font-size:13px}.ko-p.win{color:#f5c451;font-weight:700}' +
           '.ko-edit{display:flex;gap:6px;align-items:center;margin-top:7px}.ko-edit input{width:52px;padding:5px 7px;border-radius:7px;border:1px solid rgba(255,255,255,.18);background:rgba(0,0,0,.3);color:#fff;font-size:13px}' +
@@ -8215,7 +8215,7 @@
           var e = eff[rowKey(r)] || { p1: null, p2: null };
           var p1n = e.p1 ? e.p1.name : null, p2n = e.p2 ? e.p2.name : null;
           var win = winnerOf(r, e);
-          var c = '<div class="ko-match"><div class="ko-p' + (win && r.winner_side === 1 ? ' win' : '') + '"><span class="ko-name">' + (p1n ? avHTML(e.p1 && e.p1.member_id, p1n, mp) : '') + esc(p1n || 'TBD') + '</span><b>' + (r.played ? r.s1 : '\u2013') + '</b></div><div class="ko-p' + (win && r.winner_side === 2 ? ' win' : '') + '"><span class="ko-name">' + (p2n ? avHTML(e.p2 && e.p2.member_id, p2n, mp) : '') + esc(p2n || 'TBD') + '</span><b>' + (r.played ? r.s2 : '\u2013') + '</b></div>';
+          var c = '<div class="ko-match" data-rd="' + r.round + '" data-slot="' + r.slot + '"><div class="ko-p' + (win && r.winner_side === 1 ? ' win' : '') + '"><span class="ko-name">' + (p1n ? avHTML(e.p1 && e.p1.member_id, p1n, mp) : '') + esc(p1n || 'TBD') + '</span><b>' + (r.played ? r.s1 : '\u2013') + '</b></div><div class="ko-p' + (win && r.winner_side === 2 ? ' win' : '') + '"><span class="ko-name">' + (p2n ? avHTML(e.p2 && e.p2.member_id, p2n, mp) : '') + esc(p2n || 'TBD') + '</span><b>' + (r.played ? r.s2 : '\u2013') + '</b></div>';
           if (r.played && r.s1 === r.s2 && !win) c += '<div class="ko-pens">Level \u2014 penalty shoot-out result to come.</div>';
           return c + '</div>';
         }
@@ -8238,6 +8238,31 @@
         if (pres) h += '<p class="entry-msg" style="margin-top:10px">President: results are entered on the Matches tab \u2014 winners advance here automatically.</p>';
         return h;
       }
+      function drawTreeLines() {
+        var fb = $('tFixtureBody'); if (!fb) return;
+        var tree = fb.querySelector('.ko-tree'); if (!tree || !tree.offsetParent) return;
+        var old = tree.querySelector('.ko-lines'); if (old) old.remove();
+        var cards = {};
+        tree.querySelectorAll('.ko-match').forEach(function (el) { cards[el.getAttribute('data-rd') + ':' + el.getAttribute('data-slot')] = el; });
+        var tRect = tree.getBoundingClientRect();
+        function box(el) { var r = el.getBoundingClientRect(); return { l: r.left - tRect.left + tree.scrollLeft, r: r.right - tRect.left + tree.scrollLeft, cy: (r.top + r.bottom) / 2 - tRect.top + tree.scrollTop }; }
+        var paths = '';
+        Object.keys(cards).forEach(function (k) {
+          var p = k.split(':'); var rd = +p[0], slot = +p[1];
+          var A = cards[(rd - 1) + ':' + (slot * 2 - 1)], B = cards[(rd - 1) + ':' + (slot * 2)], T = cards[k];
+          if (!A || !B || !T) return;
+          var a = box(A), b = box(B), t = box(T);
+          var midX = (a.r + t.l) / 2;
+          paths += '<path d="M ' + a.r + ' ' + a.cy + ' H ' + midX + ' M ' + b.r + ' ' + b.cy + ' H ' + midX + ' M ' + midX + ' ' + a.cy + ' V ' + b.cy + ' M ' + midX + ' ' + t.cy + ' H ' + t.l + '" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="2"/>';
+        });
+        if (!paths) return;
+        var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        svg.setAttribute('class', 'ko-lines');
+        svg.setAttribute('width', tree.scrollWidth); svg.setAttribute('height', tree.scrollHeight);
+        svg.innerHTML = paths;
+        tree.appendChild(svg);
+      }
+      window.addEventListener('resize', function () { if (offView === 'tree') drawTreeLines(); });
       function memberByIdMap() { var mp = {}; (entryRows || []).forEach(function (r) { if (r.member) mp[r.member_id] = r.member; }); return mp; }
       function avHTML(mid, name, mp) {
         var m = mid ? mp[mid] : null;
@@ -8640,6 +8665,7 @@
             fb.innerHTML = '<div class="t-note glass">Loading\u2026</div>';
           } else fb.innerHTML = '<div class="t-note glass"><b>Knockout bracket</b> \u2014 ' + (t.playerCap === 8 ? 'Quarter-finals &rarr; Semi-finals &rarr; Final' : 'Round of 16 &rarr; Quarter-finals &rarr; Semi-finals &rarr; Final') + '. Pairings appear here the moment the President starts the tournament.</div>';
         }
+        if (offView === 'tree' && offStarted()) { requestAnimationFrame(drawTreeLines); setTimeout(drawTreeLines, 350); }
         document.querySelectorAll('.jump-bar button').forEach(function (b) {
           if (b.getAttribute('data-jump') === 'tTable') b.style.display = 'none';
         });
