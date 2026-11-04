@@ -8,7 +8,7 @@
       "endDate": "2026-09-26",
       "game": "eFootball",
       "id": "efootball-demo-cup",
-      "intro": "Demo tournament \u2014 a walkthrough of how a finished Knight Warriors tournament looks: final table, records, results and the champion's page.",
+      "intro": "Demo tournament — a walkthrough of how a finished Knight Warriors tournament looks: final table, records, results and the champion's page.",
       "name": "eFootball Demo Cup (DEMO)",
       "participants": [
         "Abdullah Al Mahmud",
@@ -25,11 +25,55 @@
       "format": "knockout",
       "game": "eFootball",
       "id": "efootball-tournament-legacy",
-      "intro": "The club's first open knockout championship. Registered players join right here on the site \u2014 single elimination: Round of 16, Quarter-finals, Semi-finals and the Final. Lose and you are out; win four matches and the Legacy title is yours.",
+      "intro": "The club's first open knockout championship. Eight registered players, single elimination: Quarter-finals, Semi-finals and the Final. Lose and you are out; win three matches and the Legacy title is yours.",
       "name": "eFootball Tournament Legacy",
       "participants": [],
       "startDate": "",
-      "status": "upcoming"
+      "status": "upcoming",
+      "playerCap": 8,
+      "logo": "assets/tournament-legacy-logo.jpg",
+      "matchSettings": [
+        [
+          "Match Type",
+          "Standard"
+        ],
+        [
+          "Match Time",
+          "10 Minutes"
+        ],
+        [
+          "Injuries",
+          "Yes"
+        ],
+        [
+          "Extra Time",
+          "ON"
+        ],
+        [
+          "Penalties",
+          "ON"
+        ],
+        [
+          "Substitutions",
+          "5 Players"
+        ],
+        [
+          "Sub Intervals",
+          "3 Times"
+        ],
+        [
+          "+1 Sub in Extra Time",
+          "NO"
+        ],
+        [
+          "Home Condition",
+          "Excellent"
+        ],
+        [
+          "Away Condition",
+          "Excellent"
+        ]
+      ]
     }
   ]
 }
