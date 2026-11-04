@@ -8300,26 +8300,45 @@
         ctx.arcTo(x, y, x + w, y, r);
         ctx.closePath();
       }
-      function loadCImg(u) { return new Promise(function (res) { var im = new Image(); im.crossOrigin = 'anonymous'; im.onload = function () { res(im); }; im.onerror = function () { res(null); }; im.src = u; }); }
-      function dlDataUrl(u, name) { if (!u) return; var a = document.createElement('a'); a.href = u; a.download = name; document.body.appendChild(a); a.click(); a.remove(); }
+      function loadCImg(u) { return new Promise(function (res) { var done = false; function fin(im) { if (!done) { done = true; res(im); } } var im = new Image(); im.crossOrigin = 'anonymous'; im.onload = function () { fin(im); }; im.onerror = function () { fin(null); }; im.src = u; setTimeout(function () { fin(null); }, 4000); }); }
+      function sendSchedCanvas(cv, fname, onFail) {
+        var failed = false;
+        function fail() { if (!failed) { failed = true; if (onFail) onFail(); } }
+        try {
+          cv.toBlob(function (blob) {
+            if (!blob) { fail(); return; }
+            var a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = fname;
+            document.body.appendChild(a); a.click(); a.remove();
+            setTimeout(function () { URL.revokeObjectURL(a.href); }, 4000);
+          }, 'image/png');
+        } catch (e) { fail(); }
+      }
       function scheduleImage(mode) {
-        var t = currentTournament(); if (!t) return;
+        var t = currentTournament; if (!t) return;
+        toast('Building image\u2026', 'Your PNG downloads in a moment.');
         var rows = offRows || []; var eff = deriveAll(rows);
+        var maxRound = 0; rows.forEach(function (r) { if (r.round > maxRound) maxRound = r.round; });
         var champ = null;
-        rows.forEach(function (r) { if (r.round === 99 && r.played) { var e = eff[r.id]; if (e) champ = r.winner_side === 2 ? e.p2.name : e.p1.name; } });
+        rows.forEach(function (r) { if (r.round === maxRound && r.played) { var e = eff[rowKey(r)]; if (e) champ = r.winner_side === 2 ? (e.p2 && e.p2.name) : (e.p1 && e.p1.name); } });
         var mp = memberByIdMap();
         var jobs = [loadCImg('assets/logo.jpg').then(function (im) { return { k: '__logo', im: im }; })];
         if (t.logo) jobs.push(loadCImg(t.logo).then(function (im) { return { k: '__tlogo', im: im }; }));
         var seen = {};
-        rows.forEach(function (r) { var e = eff[r.id]; if (!e) return; [e.p1, e.p2].forEach(function (p) { if (p && p.member_id && !seen[p.member_id]) { seen[p.member_id] = 1; var mem = mp[p.member_id]; var url = mem && (mem.avatar_url || mem.avatar); if (url) jobs.push(loadCImg(url).then(function (im) { return { k: 'm' + p.member_id, im: im }; })); } }); });
+        rows.forEach(function (r) { var e = eff[rowKey(r)]; if (!e) return; [e.p1, e.p2].forEach(function (p) { if (p && p.member_id && !seen[p.member_id]) { seen[p.member_id] = 1; var mem = mp[p.member_id]; var url = mem && (mem.avatar_url || mem.avatar); if (url) jobs.push(loadCImg(url).then(function (im) { return { k: 'm' + p.member_id, im: im }; })); } }); });
         Promise.all(jobs).then(function (res) {
           var av = {}; var logoImg = null; var tLogoImg = null;
           res.forEach(function (o) { if (!o) return; if (o.k === '__logo') logoImg = o.im; else if (o.k === '__tlogo') tLogoImg = o.im; else if (o.im) av[o.k] = o.im; });
           var fname = String(t.name || 'schedule').toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-schedule-' + mode + '.png';
-          var url = renderSchedCanvas(mode, t, rows, eff, champ, logoImg, av, tLogoImg);
-          if (!url) url = renderSchedCanvas(mode, t, rows, eff, champ, logoImg, {}, tLogoImg);
-          dlDataUrl(url, fname);
-        });
+          var cv1 = renderSchedCanvas(mode, t, rows, eff, champ, logoImg, av, tLogoImg);
+          if (!cv1) { toast('Could not make the image', 'No fixtures yet.'); return; }
+          sendSchedCanvas(cv1, fname, function () {
+            var cv2 = renderSchedCanvas(mode, t, rows, eff, champ, logoImg, {}, tLogoImg);
+            if (!cv2) { toast('Could not make the image', 'Please try again.'); return; }
+            sendSchedCanvas(cv2, fname, function () { toast('Could not make the image', 'Please try again.'); });
+          });
+        }).catch(function () { toast('Could not make the image', 'Please try again.'); });
       }
       function renderSchedCanvas(mode, t, rows, eff, champ, logoImg, av, tLogoImg) {
         var byRound = {};
@@ -8419,7 +8438,7 @@
             ctx.font = '700 20px Arial, sans-serif'; ctx.fillStyle = 'rgba(255,255,255,.85)';
             ctx.fillText((rs[0].round_label || ('Round ' + k)).toUpperCase(), x, 288);
             pos[k].forEach(function (m) {
-              var r = m.r; var e = eff[r.id] || r; var win = r.played && r.winner_side;
+              var r = m.r; var e = eff[rowKey(r)] || { p1: null, p2: null }; var win = r.played && r.winner_side;
               roundBox(m.x, m.yy, colW, e.p1 && e.p1.name ? e.p1 : null, r.played ? r.s1 : '', win && r.winner_side === 1, 44);
               roundBox(m.x, m.yy + 48, colW, e.p2 && e.p2.name ? e.p2 : null, r.played ? r.s2 : '', win && r.winner_side === 2, 44);
             });
@@ -8433,7 +8452,7 @@
             rs.forEach(function (r, idx) {
               var col = idx % 2, rowi = Math.floor(idx / 2);
               var x = 44 + col * (colW2 + 24), yy = y + rowi * 120;
-              var e = eff[r.id] || r; var win = r.played && r.winner_side;
+              var e = eff[rowKey(r)] || { p1: null, p2: null }; var win = r.played && r.winner_side;
               roundBox(x, yy, colW2, e.p1 && e.p1.name ? e.p1 : null, r.played ? r.s1 : '', win && r.winner_side === 1, 48);
               roundBox(x, yy + 54, colW2, e.p2 && e.p2.name ? e.p2 : null, r.played ? r.s2 : '', win && r.winner_side === 2, 48);
             });
@@ -8441,7 +8460,7 @@
           });
         }
         if (champ) { ctx.font = '800 26px Arial, sans-serif'; ctx.fillStyle = '#f5c451'; ctx.textAlign = 'center'; ctx.fillText('★ Champion: ' + champ, W / 2, H - 30); ctx.textAlign = 'left'; }
-        try { return cv.toDataURL('image/png'); } catch (e) { return null; }
+        return cv;
       }
       function paintLogo(id) {
         var lg = $('tLogoImg');
@@ -8597,7 +8616,7 @@
           if (offMissing) {
             fb.innerHTML = '<div class="t-note glass"><b>Knockout bracket</b> \u2014 the official matches table is not switched on yet (Part 21).</div>';
           } else if (offStarted()) {
-            fb.innerHTML = '<div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap"><button type="button" class="btn btn-glass btn-sm" data-dl-schedule="list">\u2B07 Schedule image (Normal)</button><button type="button" class="btn btn-glass btn-sm" data-dl-schedule="tree">\u2B07 Bracket image (Tree)</button></div>' + officialBracketHTML();
+            fb.innerHTML = '<div style="display:flex;gap:8px;margin-bottom:12px"><button type="button" class="btn btn-glass btn-sm" style="flex:1;white-space:nowrap" data-dl-schedule="list">\u2B07 Matches image</button><button type="button" class="btn btn-glass btn-sm" style="flex:1;white-space:nowrap" data-dl-schedule="tree">\u2B07 Bracket image</button></div>' + officialBracketHTML();
           } else if (offLoadedFor !== TID) {
             fb.innerHTML = '<div class="t-note glass">Loading\u2026</div>';
           } else fb.innerHTML = '<div class="t-note glass"><b>Knockout bracket</b> \u2014 ' + (t.playerCap === 8 ? 'Quarter-finals &rarr; Semi-finals &rarr; Final' : 'Round of 16 &rarr; Quarter-finals &rarr; Semi-finals &rarr; Final') + '. Pairings appear here the moment the President starts the tournament.</div>';
