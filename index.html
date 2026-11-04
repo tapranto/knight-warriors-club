@@ -8114,6 +8114,7 @@
       var TID = null, builtFor = null;
       var entryRows = null, entryErr = null;
       var offRows = null, offMissing = false, offLoadedFor = null, offLoadingFor = null;
+      var lastEntryLoad = 0;
       var drawPairs = null;              // manual draw state: 8 member ids in QF order
       (function () {
         var css = '.t-logo{display:block;width:min(430px,100%);height:auto;border-radius:14px;margin:0 0 12px}' +
@@ -8246,6 +8247,7 @@
       }
 
       function loadEntries() {
+        lastEntryLoad = Date.now();
         if (typeof sb === 'undefined' || !sb) { entryErr = { message: 'offline' }; entryRows = null; renderAll(); return; }
         entryErr = null;
         sb.from('tournament_entries').select('id, member_id, created_at').eq('tournament_id', TID).order('created_at', { ascending: true })
@@ -8395,6 +8397,19 @@
         }
         if (builtFor !== id) { builtFor = id; TID = id; loadEntries(); return; }
         if (!$('entryPanel') && entryRows) renderAll();
+        /* Live page: while a tournament page stays open, re-check the
+           entries and official matches every 20s so new players and
+           results appear by themselves (no manual refresh). Pauses
+           while the President is mid-draw or typing a score, and
+           while the tab/app page is in the background. */
+        if (entryRows && !drawPairs && !document.hidden && Date.now() - lastEntryLoad > 20000) {
+          var ae = document.activeElement;
+          if (!(ae && ae.tagName === 'INPUT' && String(ae.id || '').indexOf('os') === 0)) {
+            lastEntryLoad = Date.now();
+            offLoadedFor = null;
+            loadEntries();
+          }
+        }
       }
       setInterval(tick, 1200);
 
