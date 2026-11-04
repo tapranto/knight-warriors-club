@@ -8136,7 +8136,7 @@
           '.mk-edit{display:flex;gap:8px;align-items:center;margin-top:10px;flex-wrap:wrap}.mk-edit input{width:58px;padding:8px;border-radius:9px;border:1px solid rgba(255,255,255,.2);background:rgba(0,0,0,.35);color:#fff;font-size:15px;text-align:center}' +
           '.mk-score{font-size:19px;font-weight:800;letter-spacing:.04em;margin-top:8px}' +
           '.st-row{display:grid;grid-template-columns:1fr repeat(6,34px);gap:6px;align-items:center;padding:8px 12px;border:1px solid rgba(255,255,255,.14);border-radius:12px;margin-bottom:7px;background:rgba(8,12,18,.58);backdrop-filter:blur(12px) saturate(120%);-webkit-backdrop-filter:blur(12px) saturate(120%);font-size:13px}' +
-          '.st-row.st-head{background:rgba(227,27,51,.18);font-weight:700;text-transform:uppercase;font-size:11px;letter-spacing:.05em}.st-row span:not(:first-child){text-align:center}';
+          '.st-row.st-head{background:rgba(227,27,51,.18);font-weight:700;text-transform:uppercase;font-size:11px;letter-spacing:.05em}.st-row span:not(:first-child){text-align:center}.ko-p .mk-av{width:22px;height:22px}.ko-p .mk-ini{width:22px;height:22px;font-size:9px}.ko-p .ko-name{display:inline-flex;align-items:center;gap:7px}';
         var stEl = document.createElement('style'); stEl.textContent = css; document.head.appendChild(stEl);
       })();
       function offStarted() { return !!(offRows && offRows.length); }
@@ -8203,6 +8203,7 @@
         var rows = offRows || [];
         var eff = deriveAll(rows);
         var pres = isPres();
+        var mp = memberByIdMap();
         var h = '';
         var fin = rows.filter(function (r) { return r.round === 3; })[0];
         if (fin) { var fw = winnerOf(fin, eff[rowKey(fin)] || {}); if (fw) h += '<div class="t-note glass" style="margin-bottom:12px">\u{1F3C6} <b>Champion: ' + esc(fw.name) + '</b></div>'; }
@@ -8217,7 +8218,7 @@
             var e = eff[rowKey(r)] || { p1: null, p2: null };
             var p1n = e.p1 ? e.p1.name : null, p2n = e.p2 ? e.p2.name : null;
             var win = winnerOf(r, e);
-            h += '<div class="ko-match"><div class="ko-p' + (win && r.winner_side === 1 ? ' win' : '') + '"><span>' + esc(p1n || 'TBD') + '</span><b>' + (r.played ? r.s1 : '\u2013') + '</b></div><div class="ko-p' + (win && r.winner_side === 2 ? ' win' : '') + '"><span>' + esc(p2n || 'TBD') + '</span><b>' + (r.played ? r.s2 : '\u2013') + '</b></div>';
+            h += '<div class="ko-match"><div class="ko-p' + (win && r.winner_side === 1 ? ' win' : '') + '"><span class="ko-name">' + (p1n ? avHTML(e.p1 && e.p1.member_id, p1n, mp) : '') + esc(p1n || 'TBD') + '</span><b>' + (r.played ? r.s1 : '\u2013') + '</b></div><div class="ko-p' + (win && r.winner_side === 2 ? ' win' : '') + '"><span class="ko-name">' + (p2n ? avHTML(e.p2 && e.p2.member_id, p2n, mp) : '') + esc(p2n || 'TBD') + '</span><b>' + (r.played ? r.s2 : '\u2013') + '</b></div>';
             if (r.played && r.s1 === r.s2 && !win) {
               h += '<div class="ko-pens">Level \u2014 penalty shoot-out result to come.</div>';
             }
