@@ -8268,13 +8268,14 @@
       }
       function officialStatsHTML() {
         var rows = offRows || []; var eff = deriveAll(rows);
+        var mpS = memberByIdMap();
         var st = {};
-        function ensure(name) { if (!st[name]) st[name] = { name: name, p: 0, w: 0, l: 0, gf: 0, ga: 0 }; return st[name]; }
+        function ensure(name, mid) { if (!st[name]) st[name] = { name: name, mid: mid || null, p: 0, w: 0, l: 0, gf: 0, ga: 0 }; return st[name]; }
         rows.forEach(function (r) {
           if (!r.played) return;
           var e = eff[rowKey(r)] || { p1: null, p2: null };
           if (!e.p1 || !e.p2 || !e.p1.name || !e.p2.name) return;
-          var a = ensure(e.p1.name), b = ensure(e.p2.name);
+          var a = ensure(e.p1.name, e.p1.member_id), b = ensure(e.p2.name, e.p2.member_id);
           a.p++; b.p++; a.gf += r.s1; a.ga += r.s2; b.gf += r.s2; b.ga += r.s1;
           var win = winnerOf(r, e);
           if (win) { if (win.name === a.name) { a.w++; b.l++; } else { b.w++; a.l++; } }
@@ -8287,7 +8288,7 @@
         if (champ) h += '<div class="t-note glass" style="margin-bottom:12px">\u{1F3C6} <b>Champion: ' + esc(champ.name) + '</b></div>';
         if (!list.length) return h + '<div class="t-note glass">No matches played yet \u2014 stats appear after the first result.</div>';
         h += '<div class="st-row st-head"><span>Player</span><span>P</span><span>W</span><span>L</span><span>GF</span><span>GA</span><span>GD</span></div>';
-        list.forEach(function (s) { h += '<div class="st-row"><span>' + esc(s.name) + '</span><span>' + s.p + '</span><span>' + s.w + '</span><span>' + s.l + '</span><span>' + s.gf + '</span><span>' + s.ga + '</span><span>' + (s.gf - s.ga) + '</span></div>'; });
+        list.forEach(function (s) { h += '<div class="st-row"><span style="display:flex;align-items:center;gap:7px">' + avHTML(s.mid, s.name, mpS) + esc(s.name) + '</span><span>' + s.p + '</span><span>' + s.w + '</span><span>' + s.l + '</span><span>' + s.gf + '</span><span>' + s.ga + '</span><span>' + (s.gf - s.ga) + '</span></div>'; });
         return h;
       }
       function roundRect(ctx, x, y, w, h, r) {
