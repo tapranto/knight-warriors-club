@@ -3237,6 +3237,12 @@
         if ((m = h.match(/^squad\/(.+)$/))) { if (window.__routeSquad) { window.__routeSquad(m[1]); return; } }
         if (h === 'squad' && window.__routeSquad) { window.__routeSquad(''); return; }
         if (h === 'profile' && window.__routeProfile) { window.__routeProfile(''); return; }
+        if (h === 'tournament') {
+          if (currentTournament) showView('tournament', false);
+          else if (homeRunning) openTournament(homeRunning.id);
+          else showView('tournament', false);
+          return;
+        }
         showView(h || 'home', false);
       }
       var __lastRoute = '', __lastRouteAt = 0;
@@ -4261,6 +4267,8 @@
       if (bootHash.indexOf('news/') === 0) openArticle(bootHash.slice(5));
       /* Deep link: #tournament/<id> opens that tournament's page directly. */
       else if (bootHash.indexOf('tournament/') === 0) openTournament(bootHash.slice('tournament/'.length));
+      /* Bare #tournament: land on the featured tournament, not the placeholder. */
+      else if (bootHash === 'tournament' && homeRunning) openTournament(homeRunning.id);
 
       /* ---------- Member experience (front-end preview) ----------
          The preview is signed in as the demo profile (Bijoy Rahman, the
