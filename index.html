@@ -8398,11 +8398,11 @@
         if (builtFor !== id) { builtFor = id; TID = id; loadEntries(); return; }
         if (!$('entryPanel') && entryRows) renderAll();
         /* Live page: while a tournament page stays open, re-check the
-           entries and official matches every 20s so new players and
+           entries and official matches every 10s so new players and
            results appear by themselves (no manual refresh). Pauses
            while the President is mid-draw or typing a score, and
            while the tab/app page is in the background. */
-        if (entryRows && !drawPairs && !document.hidden && Date.now() - lastEntryLoad > 20000) {
+        if (entryRows && !drawPairs && !document.hidden && Date.now() - lastEntryLoad > 10000) {
           var ae = document.activeElement;
           if (!(ae && ae.tagName === 'INPUT' && String(ae.id || '').indexOf('os') === 0)) {
             lastEntryLoad = Date.now();
