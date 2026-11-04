@@ -8309,18 +8309,19 @@
         rows.forEach(function (r) { if (r.round === 99 && r.played) { var e = eff[r.id]; if (e) champ = r.winner_side === 2 ? e.p2.name : e.p1.name; } });
         var mp = memberByIdMap();
         var jobs = [loadCImg('assets/logo.jpg').then(function (im) { return { k: '__logo', im: im }; })];
+        if (t.logo) jobs.push(loadCImg(t.logo).then(function (im) { return { k: '__tlogo', im: im }; }));
         var seen = {};
         rows.forEach(function (r) { var e = eff[r.id]; if (!e) return; [e.p1, e.p2].forEach(function (p) { if (p && p.member_id && !seen[p.member_id]) { seen[p.member_id] = 1; var mem = mp[p.member_id]; var url = mem && (mem.avatar_url || mem.avatar); if (url) jobs.push(loadCImg(url).then(function (im) { return { k: 'm' + p.member_id, im: im }; })); } }); });
         Promise.all(jobs).then(function (res) {
-          var av = {}; var logoImg = null;
-          res.forEach(function (o) { if (!o) return; if (o.k === '__logo') logoImg = o.im; else if (o.im) av[o.k] = o.im; });
+          var av = {}; var logoImg = null; var tLogoImg = null;
+          res.forEach(function (o) { if (!o) return; if (o.k === '__logo') logoImg = o.im; else if (o.k === '__tlogo') tLogoImg = o.im; else if (o.im) av[o.k] = o.im; });
           var fname = String(t.name || 'schedule').toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-schedule-' + mode + '.png';
-          var url = renderSchedCanvas(mode, t, rows, eff, champ, logoImg, av);
-          if (!url) url = renderSchedCanvas(mode, t, rows, eff, champ, logoImg, {});
+          var url = renderSchedCanvas(mode, t, rows, eff, champ, logoImg, av, tLogoImg);
+          if (!url) url = renderSchedCanvas(mode, t, rows, eff, champ, logoImg, {}, tLogoImg);
           dlDataUrl(url, fname);
         });
       }
-      function renderSchedCanvas(mode, t, rows, eff, champ, logoImg, av) {
+      function renderSchedCanvas(mode, t, rows, eff, champ, logoImg, av, tLogoImg) {
         var byRound = {};
         rows.forEach(function (r) { (byRound[r.round] = byRound[r.round] || []).push(r); });
         var rkeys = Object.keys(byRound).map(Number).sort(function (a, b) { return a - b; });
@@ -8334,29 +8335,35 @@
           bodyH = maxCount * 92 + (maxCount - 1) * 26;
         } else {
           W = 920;
-          rkeys.forEach(function (k) { bodyH += 40; byRound[k].forEach(function () { bodyH += 48 + 6 + 48 + 18; }); });
+          rkeys.forEach(function (k) { bodyH += 40 + Math.ceil(byRound[k].length / 2) * 120; });
         }
-        var H = 336 + bodyH + (champ ? 74 : 20);
+        var H = (mode === 'tree' ? 306 : 258) + bodyH + (champ ? 74 : 20);
         var cv = document.createElement('canvas'); cv.width = W * 2; cv.height = H * 2;
         var ctx = cv.getContext('2d'); ctx.scale(2, 2);
         var g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#101a2c'); g.addColorStop(1, '#070d18');
         ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
         ctx.fillStyle = '#e31b33'; ctx.fillRect(0, 0, W, 6);
         function rrPath(x, y, w, h, r) { ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); }
-        if (logoImg) { ctx.save(); rrPath((W - 108) / 2, 24, 108, 108, 18); ctx.clip(); ctx.drawImage(logoImg, (W - 108) / 2, 24, 108, 108); ctx.restore(); }
+        if (logoImg) { ctx.save(); rrPath(44, 24, 108, 108, 18); ctx.clip(); ctx.drawImage(logoImg, 44, 24, 108, 108); ctx.restore(); }
+        if (tLogoImg) {
+          ctx.save(); rrPath(W - 44 - 144, 24, 144, 108, 14); ctx.clip();
+          var ts2 = Math.max(144 / tLogoImg.naturalWidth, 108 / tLogoImg.naturalHeight);
+          var tw2 = tLogoImg.naturalWidth * ts2, th2 = tLogoImg.naturalHeight * ts2;
+          ctx.drawImage(tLogoImg, W - 44 - 144 + (144 - tw2) / 2, 24 + (108 - th2) / 2, tw2, th2); ctx.restore();
+        }
         ctx.textAlign = 'center';
         ctx.fillStyle = '#f7c948'; ctx.font = '800 37px Arial, sans-serif';
-        ctx.fillText('KNIGHT WARRIORS CLUB', W / 2, 178);
+        ctx.fillText('KNIGHT WARRIORS CLUB', W / 2, 88);
         ctx.font = '400 19px Arial, sans-serif'; ctx.fillStyle = 'rgba(255,255,255,.7)';
-        ctx.fillText('EST. 2023 · ESPORTS CLUB', W / 2, 208);
-        ctx.strokeStyle = '#e31b33'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(44, 232); ctx.lineTo(W - 44, 232); ctx.stroke(); ctx.lineWidth = 1;
+        ctx.fillText('EST. 2023 \u00b7 ESPORTS CLUB', W / 2, 120);
+        ctx.strokeStyle = '#e31b33'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(44, 152); ctx.lineTo(W - 44, 152); ctx.stroke(); ctx.lineWidth = 1;
         ctx.textAlign = 'left'; ctx.fillStyle = '#ffffff';
         var tSize = 33; ctx.font = '800 ' + tSize + 'px Arial, sans-serif';
         while (ctx.measureText(t.name || 'Tournament').width > W - 88 && tSize > 20) { tSize -= 2; ctx.font = '800 ' + tSize + 'px Arial, sans-serif'; }
-        ctx.fillText(t.name || 'Tournament', 44, 278);
+        ctx.fillText(t.name || 'Tournament', 44, 200);
         ctx.font = '400 21px Arial, sans-serif'; ctx.fillStyle = 'rgba(255,255,255,.75)';
-        ctx.fillText('Official Match Schedule' + (t.game ? ' · ' + t.game : '') + (champ ? ' · Finished' : ' · Running'), 44, 308);
-        ctx.strokeStyle = 'rgba(255,255,255,.15)'; ctx.beginPath(); ctx.moveTo(44, 326); ctx.lineTo(W - 44, 326); ctx.stroke();
+        ctx.fillText('Official Match Schedule' + (t.game ? ' \u00b7 ' + t.game : '') + (champ ? ' \u00b7 Finished' : ' \u00b7 Running'), 44, 232);
+        ctx.strokeStyle = 'rgba(255,255,255,.15)'; ctx.beginPath(); ctx.moveTo(44, 250); ctx.lineTo(W - 44, 250); ctx.stroke();
         function initialsOf(n) { var p = String(n || '?').trim().split(' ').filter(Boolean); var a = (p[0] || '?').charAt(0); var b = p.length > 1 ? p[p.length - 1].charAt(0) : ''; return (a + b).toUpperCase(); }
         function fitText(s, max) { if (ctx.measureText(s).width <= max) return s; while (s.length > 1 && ctx.measureText(s + '..').width > max) s = s.slice(0, -1); return s + '..'; }
         function roundBox(x, y, w, player, score, win, bh) {
@@ -8378,30 +8385,59 @@
           if (score !== '' && score !== null && score !== undefined) { ctx.textAlign = 'right'; ctx.fillText(String(score), x + w - 14, y + bh / 2 + 7); ctx.textAlign = 'left'; }
         }
         if (mode === 'tree') {
+          var pos = {};
+          rkeys.forEach(function (k, ci) {
+            var rs = byRound[k]; var x = 44 + ci * (colW + gapX); pos[k] = [];
+            rs.forEach(function (r, j) {
+              var yy;
+              if (ci === 0) yy = 306 + j * (92 + 26);
+              else {
+                var prev = pos[rkeys[ci - 1]]; var f1 = prev[j * 2], f2 = prev[j * 2 + 1];
+                if (f1 && f2) yy = ((f1.yy + 46) + (f2.yy + 46)) / 2 - 46;
+                else if (f1) yy = f1.yy; else yy = 306 + j * (92 + 26);
+              }
+              pos[k].push({ r: r, x: x, yy: yy });
+            });
+          });
+          ctx.strokeStyle = 'rgba(255,255,255,.35)'; ctx.lineWidth = 2; ctx.beginPath();
+          rkeys.forEach(function (k, ci) {
+            if (ci === 0) return;
+            var prevK = rkeys[ci - 1];
+            pos[k].forEach(function (m, j) {
+              var f1 = pos[prevK][j * 2], f2 = pos[prevK][j * 2 + 1];
+              if (!f1 || !f2) return;
+              var midX = f1.x + colW + gapX / 2, ty = m.yy + 46;
+              ctx.moveTo(f1.x + colW, f1.yy + 46); ctx.lineTo(midX, f1.yy + 46);
+              ctx.moveTo(f2.x + colW, f2.yy + 46); ctx.lineTo(midX, f2.yy + 46);
+              ctx.moveTo(midX, f1.yy + 46); ctx.lineTo(midX, f2.yy + 46);
+              ctx.moveTo(midX, ty); ctx.lineTo(m.x, ty);
+            });
+          });
+          ctx.stroke(); ctx.lineWidth = 1;
           rkeys.forEach(function (k, ci) {
             var rs = byRound[k]; var x = 44 + ci * (colW + gapX);
             ctx.font = '700 20px Arial, sans-serif'; ctx.fillStyle = 'rgba(255,255,255,.85)';
-            ctx.fillText((rs[0].round_label || ('Round ' + k)).toUpperCase(), x, 366);
-            var totalH = rs.length * 92 + (rs.length - 1) * 26;
-            var y0 = 384 + (bodyH - totalH) / 2;
-            rs.forEach(function (r, j) {
-              var e = eff[r.id] || r; var yy = y0 + j * (92 + 26);
-              var win = r.played && r.winner_side;
-              roundBox(x, yy, colW, e.p1 && e.p1.name ? e.p1 : null, r.played ? r.s1 : '', win && r.winner_side === 1, 44);
-              roundBox(x, yy + 48, colW, e.p2 && e.p2.name ? e.p2 : null, r.played ? r.s2 : '', win && r.winner_side === 2, 44);
+            ctx.fillText((rs[0].round_label || ('Round ' + k)).toUpperCase(), x, 288);
+            pos[k].forEach(function (m) {
+              var r = m.r; var e = eff[r.id] || r; var win = r.played && r.winner_side;
+              roundBox(m.x, m.yy, colW, e.p1 && e.p1.name ? e.p1 : null, r.played ? r.s1 : '', win && r.winner_side === 1, 44);
+              roundBox(m.x, m.yy + 48, colW, e.p2 && e.p2.name ? e.p2 : null, r.played ? r.s2 : '', win && r.winner_side === 2, 44);
             });
           });
         } else {
-          var y = 352;
+          var colW2 = (W - 88 - 24) / 2, y = 274;
           rkeys.forEach(function (k) {
             var rs = byRound[k];
             ctx.font = '700 20px Arial, sans-serif'; ctx.fillStyle = 'rgba(255,255,255,.85)';
             ctx.fillText((rs[0].round_label || ('Round ' + k)).toUpperCase(), 44, y + 24); y += 40;
-            rs.forEach(function (r) {
+            rs.forEach(function (r, idx) {
+              var col = idx % 2, rowi = Math.floor(idx / 2);
+              var x = 44 + col * (colW2 + 24), yy = y + rowi * 120;
               var e = eff[r.id] || r; var win = r.played && r.winner_side;
-              roundBox(44, y, W - 88, e.p1 && e.p1.name ? e.p1 : null, r.played ? r.s1 : '', win && r.winner_side === 1, 48); y += 54;
-              roundBox(44, y, W - 88, e.p2 && e.p2.name ? e.p2 : null, r.played ? r.s2 : '', win && r.winner_side === 2, 48); y += 54 + 18;
+              roundBox(x, yy, colW2, e.p1 && e.p1.name ? e.p1 : null, r.played ? r.s1 : '', win && r.winner_side === 1, 48);
+              roundBox(x, yy + 54, colW2, e.p2 && e.p2.name ? e.p2 : null, r.played ? r.s2 : '', win && r.winner_side === 2, 48);
             });
+            y += Math.ceil(rs.length / 2) * 120;
           });
         }
         if (champ) { ctx.font = '800 26px Arial, sans-serif'; ctx.fillStyle = '#f5c451'; ctx.textAlign = 'center'; ctx.fillText('★ Champion: ' + champ, W / 2, H - 30); ctx.textAlign = 'left'; }
