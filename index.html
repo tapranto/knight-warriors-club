@@ -8300,6 +8300,19 @@
       }
       function scheduleImage(kind) {
         var t = LIVE[TID]; if (!t || !offRows) return;
+        var logoImg = new Image();
+        var doneFlag = false;
+        var proceed = function () {
+          if (doneFlag) return; doneFlag = true;
+          drawScheduleImage(kind, (logoImg.complete && logoImg.naturalWidth) ? logoImg : null);
+        };
+        logoImg.onload = proceed;
+        logoImg.onerror = function () { proceed(); };
+        logoImg.src = 'assets/logo.jpg';
+        setTimeout(proceed, 2500);
+      }
+      function drawScheduleImage(kind, logoImg) {
+        var t = LIVE[TID]; if (!t || !offRows) return;
         var rows = offRows; var eff = deriveAll(rows);
         var rounds = [];
         rows.forEach(function (r) { if (rounds.indexOf(r.round) === -1) rounds.push(r.round); });
@@ -8313,18 +8326,33 @@
         var counts = rounds.map(function (rd) { return rows.filter(function (r) { return r.round === rd; }).length; });
         var maxCount = Math.max.apply(null, counts);
         var bodyH = kind === 'tree' ? (maxCount * (boxH + gapY) + 30) : rounds.reduce(function (acc, rd, i) { return acc + 44 + counts[i] * (boxH + gapY) + 18; }, 0);
-        var H = 190 + bodyH + (champ ? 74 : 20);
+        var H = 336 + bodyH + (champ ? 74 : 20);
         var cv = document.createElement('canvas'); cv.width = W * S; cv.height = H * S;
         var ctx = cv.getContext('2d'); ctx.scale(S, S);
         var grad = ctx.createLinearGradient(0, 0, 0, H);
         grad.addColorStop(0, '#101a2c'); grad.addColorStop(1, '#070d18');
         ctx.fillStyle = grad; ctx.fillRect(0, 0, W, H);
         ctx.fillStyle = '#e31b33'; ctx.fillRect(0, 0, W, 6);
-        ctx.fillStyle = '#ffffff'; ctx.font = '800 40px Arial, sans-serif'; ctx.textAlign = 'left';
-        ctx.fillText(t.name || 'Tournament', 44, 72);
-        ctx.font = '400 23px Arial, sans-serif'; ctx.fillStyle = 'rgba(255,255,255,.75)';
-        ctx.fillText('Knight Warriors Club' + (t.game ? ' \u00b7 ' + t.game : '') + (champ ? ' \u00b7 Finished' : ' \u00b7 Running'), 44, 112);
-        ctx.strokeStyle = 'rgba(255,255,255,.15)'; ctx.beginPath(); ctx.moveTo(44, 140); ctx.lineTo(W - 44, 140); ctx.stroke();
+        if (logoImg) {
+          ctx.save(); roundRect(ctx, (W - 108) / 2, 24, 108, 108, 18); ctx.clip();
+          ctx.drawImage(logoImg, (W - 108) / 2, 24, 108, 108); ctx.restore();
+        }
+        ctx.textAlign = 'center';
+        ctx.fillStyle = '#f7c948'; ctx.font = '800 37px Arial, sans-serif';
+        ctx.fillText('KNIGHT WARRIORS CLUB', W / 2, 178);
+        ctx.font = '400 19px Arial, sans-serif'; ctx.fillStyle = 'rgba(255,255,255,.7)';
+        ctx.fillText('EST. 2023 \u00b7 ESPORTS CLUB', W / 2, 208);
+        ctx.strokeStyle = '#e31b33'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(44, 232); ctx.lineTo(W - 44, 232); ctx.stroke();
+        ctx.lineWidth = 1;
+        ctx.textAlign = 'left';
+        ctx.fillStyle = '#ffffff';
+        var tSize = 33;
+        ctx.font = '800 ' + tSize + 'px Arial, sans-serif';
+        while (ctx.measureText(t.name || 'Tournament').width > W - 88 && tSize > 20) { tSize -= 2; ctx.font = '800 ' + tSize + 'px Arial, sans-serif'; }
+        ctx.fillText(t.name || 'Tournament', 44, 278);
+        ctx.font = '400 21px Arial, sans-serif'; ctx.fillStyle = 'rgba(255,255,255,.75)';
+        ctx.fillText('Official Match Schedule' + (t.game ? ' \u00b7 ' + t.game : '') + (champ ? ' \u00b7 Finished' : ' \u00b7 Running'), 44, 308);
+        ctx.strokeStyle = 'rgba(255,255,255,.15)'; ctx.beginPath(); ctx.moveTo(44, 326); ctx.lineTo(W - 44, 326); ctx.stroke();
         function drawMatch(x, y, w, r) {
           var e = eff[rowKey(r)] || { p1: null, p2: null };
           var p1n = e.p1 ? e.p1.name : 'TBD', p2n = e.p2 ? e.p2.name : 'TBD';
@@ -8346,13 +8374,13 @@
             var rs = rows.filter(function (r) { return r.round === rd; });
             var x = 44 + ci * (colW + 40);
             ctx.fillStyle = '#f0a6b3'; ctx.font = '700 21px Arial, sans-serif';
-            ctx.fillText((rs[0].round_label || ('Round ' + rd)).toUpperCase(), x, 178);
+            ctx.fillText((rs[0].round_label || ('Round ' + rd)).toUpperCase(), x, 366);
             var totalH = rs.length * (boxH + gapY) - gapY;
-            var y0 = 196 + Math.max(0, (maxCount * (boxH + gapY) - gapY - totalH) / 2);
+            var y0 = 384 + Math.max(0, (maxCount * (boxH + gapY) - gapY - totalH) / 2);
             rs.forEach(function (r, i) { drawMatch(x, y0 + i * (boxH + gapY), colW, r); });
           });
         } else {
-          var y = 168;
+          var y = 352;
           rounds.forEach(function (rd) {
             var rs = rows.filter(function (r) { return r.round === rd; });
             ctx.fillStyle = '#f0a6b3'; ctx.font = '700 23px Arial, sans-serif';
