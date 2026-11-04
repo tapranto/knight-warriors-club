@@ -8105,17 +8105,115 @@
       var MATCHED = {};
       var TID = null, builtFor = null;
       var entryRows = null, entryErr = null;
-      var startInfo = null;              // {for, id, token} after President taps Start
-      var bracketCache = {}, bracketLoading = null;
+      var offRows = null, offMissing = false, offLoadedFor = null, offLoadingFor = null;
+      var drawPairs = null;              // manual draw state: 8 member ids in QF order
       (function () {
         var css = '.t-logo{display:block;width:min(430px,100%);height:auto;border-radius:14px;margin:0 0 12px}' +
           '.ms-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px 14px}@media(max-width:560px){.ms-grid{grid-template-columns:1fr}}' +
           '.ms-row{display:flex;justify-content:space-between;gap:10px;padding:6px 10px;border:1px solid rgba(255,255,255,.08);border-radius:8px;background:rgba(255,255,255,.03);font-size:13px}.ms-row span{opacity:.75}' +
           '.ko-tree{display:flex;gap:14px;overflow-x:auto;padding-bottom:8px}.ko-col{min-width:210px;flex:1}.ko-col h4{margin:0 0 8px;font-size:13px;letter-spacing:.06em;text-transform:uppercase;opacity:.85}' +
           '.ko-match{border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:8px 10px;margin-bottom:8px;background:rgba(255,255,255,.03)}' +
-          '.ko-p{display:flex;justify-content:space-between;gap:8px;padding:3px 0;font-size:13px}.ko-p.win{color:#f5c451;font-weight:700}';
+          '.ko-p{display:flex;justify-content:space-between;gap:8px;padding:3px 0;font-size:13px}.ko-p.win{color:#f5c451;font-weight:700}' +
+          '.ko-edit{display:flex;gap:6px;align-items:center;margin-top:7px}.ko-edit input{width:52px;padding:5px 7px;border-radius:7px;border:1px solid rgba(255,255,255,.18);background:rgba(0,0,0,.3);color:#fff;font-size:13px}' +
+          '.ko-pens{margin-top:7px;font-size:12px}.ko-pens button{margin:4px 6px 0 0}' +
+          '.draw-grid{display:grid;gap:8px;margin-top:8px}.draw-row{display:flex;gap:8px;align-items:center}.draw-row select{flex:1;padding:7px;border-radius:8px;background:#101828;color:#fff;border:1px solid rgba(255,255,255,.18);font-size:13px}';
         var stEl = document.createElement('style'); stEl.textContent = css; document.head.appendChild(stEl);
       })();
+      function offStarted() { return !!(offRows && offRows.length); }
+      function loadOfficial() {
+        if (!TID || offLoadedFor === TID || offLoadingFor === TID) return;
+        if (typeof sb === 'undefined' || !sb) return;
+        offLoadingFor = TID;
+        sb.from('official_matches').select('*').eq('tournament_id', TID).order('round', { ascending: true }).order('slot', { ascending: true })
+          .then(function (res) {
+            offLoadingFor = null;
+            if (res.error) { if (missing(res.error)) { offMissing = true; offRows = []; } offLoadedFor = TID; renderAll(); return; }
+            offMissing = false; offRows = res.data || []; offLoadedFor = TID; renderAll();
+          })
+          .catch(function () { offLoadingFor = null; offLoadedFor = TID; });
+      }
+      function rowKey(r) { return r.round + ':' + r.slot; }
+      function winnerOf(r, eff) {
+        if (!r || !r.played || (r.winner_side !== 1 && r.winner_side !== 2)) return null;
+        var p = (r.winner_side === 1) ? eff.p1 : eff.p2;
+        return (p && p.name) ? p : null;
+      }
+      /* Effective participants for every row: Round 1 is stored; later
+         rounds are DERIVED from earlier winners (QF slot k feeds SF
+         slot ceil(k/2), odd slot -> p1, even -> p2; same into Final). */
+      function deriveAll(rows) {
+        var byKey = {};
+        rows.forEach(function (r) { byKey[rowKey(r)] = r; });
+        var eff = {};
+        rows.forEach(function (r) {
+          if (r.round === 1) eff[rowKey(r)] = { p1: { name: r.p1_name, member_id: r.p1_member_id }, p2: { name: r.p2_name, member_id: r.p2_member_id } };
+        });
+        [2, 3].forEach(function (rd) {
+          rows.filter(function (r) { return r.round === rd; }).forEach(function (r) {
+            var srcA = byKey[(rd - 1) + ':' + (r.slot * 2 - 1)], srcB = byKey[(rd - 1) + ':' + (r.slot * 2)];
+            eff[rowKey(r)] = {
+              p1: srcA ? winnerOf(srcA, eff[rowKey(srcA)] || { p1: { name: srcA.p1_name, member_id: srcA.p1_member_id }, p2: { name: srcA.p2_name, member_id: srcA.p2_member_id } }) : null,
+              p2: srcB ? winnerOf(srcB, eff[rowKey(srcB)] || { p1: { name: srcB.p1_name, member_id: srcB.p1_member_id }, p2: { name: srcB.p2_name, member_id: srcB.p2_member_id } }) : null
+            };
+          });
+        });
+        return eff;
+      }
+      /* After any result change: push derived participants into the
+         stored SF/Final rows, clearing their results whenever the
+         participants change (a stale result can never survive). */
+      function syncOfficial() {
+        if (!offRows || !offRows.length) return Promise.resolve();
+        var eff = deriveAll(offRows);
+        var jobs = [];
+        offRows.filter(function (r) { return r.round > 1; }).forEach(function (r) {
+          var e = eff[rowKey(r)] || { p1: null, p2: null };
+          var n1 = e.p1 ? e.p1.name : null, i1 = e.p1 ? e.p1.member_id : null;
+          var n2 = e.p2 ? e.p2.name : null, i2 = e.p2 ? e.p2.member_id : null;
+          var changed = (r.p1_name !== n1 || r.p2_name !== n2 || r.p1_member_id !== i1 || r.p2_member_id !== i2);
+          if (!changed) return;
+          var upd = { p1_name: n1, p2_name: n2, p1_member_id: i1, p2_member_id: i2 };
+          if (r.played) { upd.s1 = null; upd.s2 = null; upd.played = false; upd.winner_side = null; }
+          jobs.push(sb.from('official_matches').update(upd).eq('id', r.id));
+        });
+        if (!jobs.length) return Promise.resolve();
+        return Promise.all(jobs).then(function () { offLoadedFor = null; loadOfficial(); });
+      }
+      function officialBracketHTML() {
+        var rows = offRows || [];
+        var eff = deriveAll(rows);
+        var pres = isPres();
+        var h = '';
+        var fin = rows.filter(function (r) { return r.round === 3; })[0];
+        if (fin) { var fw = winnerOf(fin, eff[rowKey(fin)] || {}); if (fw) h += '<div class="t-note glass" style="margin-bottom:12px">\u{1F3C6} <b>Champion: ' + esc(fw.name) + '</b></div>'; }
+        var rounds = [];
+        rows.forEach(function (r) { if (rounds.indexOf(r.round) === -1) rounds.push(r.round); });
+        rounds.sort(function (a, b) { return a - b; });
+        h += '<div class="ko-tree">';
+        rounds.forEach(function (rd) {
+          var rs = rows.filter(function (r) { return r.round === rd; });
+          h += '<div class="ko-col"><h4>' + esc(rs[0].round_label || ('Round ' + rd)) + '</h4>';
+          rs.forEach(function (r) {
+            var e = eff[rowKey(r)] || { p1: null, p2: null };
+            var p1n = e.p1 ? e.p1.name : null, p2n = e.p2 ? e.p2.name : null;
+            var win = winnerOf(r, e);
+            h += '<div class="ko-match"><div class="ko-p' + (win && r.winner_side === 1 ? ' win' : '') + '"><span>' + esc(p1n || 'TBD') + '</span><b>' + (r.played ? r.s1 : '\u2013') + '</b></div><div class="ko-p' + (win && r.winner_side === 2 ? ' win' : '') + '"><span>' + esc(p2n || 'TBD') + '</span><b>' + (r.played ? r.s2 : '\u2013') + '</b></div>';
+            if (pres && p1n && p2n) {
+              h += '<div class="ko-edit"><input type="number" min="0" id="os1-' + r.id + '" value="' + (r.played && r.s1 !== null ? r.s1 : '') + '" placeholder="0" /><span>\u2013</span><input type="number" min="0" id="os2-' + r.id + '" value="' + (r.played && r.s2 !== null ? r.s2 : '') + '" placeholder="0" /><button type="button" class="btn btn-glass btn-sm" data-save-score="' + r.id + '">Save</button></div>';
+              if (r.played && r.s1 === r.s2 && !win) {
+                h += '<div class="ko-pens">Level scores \u2014 who won on penalties?<br><button type="button" class="btn btn-glass btn-sm" data-pens="' + r.id + ':1">' + esc(p1n) + '</button><button type="button" class="btn btn-glass btn-sm" data-pens="' + r.id + ':2">' + esc(p2n) + '</button></div>';
+              }
+            } else if (r.played && r.s1 === r.s2 && !win) {
+              h += '<div class="ko-pens">Level \u2014 penalty shoot-out result to come.</div>';
+            }
+            h += '</div>';
+          });
+          h += '</div>';
+        });
+        h += '</div>';
+        if (pres) h += '<p class="entry-msg" style="margin-top:10px">President: enter each result above and tap Save \u2014 winners advance automatically. Empty both boxes and Save to clear a result.</p>';
+        return h;
+      }
       function paintLogo(id) {
         var lg = $('tLogoImg');
         var t = (id && LIVE[id]) ? LIVE[id] : null;
@@ -8126,43 +8224,6 @@
           if (lg.getAttribute('src') !== t.logo) lg.setAttribute('src', t.logo);
         } else if (lg) { lg.remove(); }
       }
-      function bracketHTML(d) {
-        var t = d.tournament || {};
-        var ms = (d.matches || []).filter(function (x) { return x.stage === 'knockout' || x.stage === 'thirdplace'; });
-        var h = '';
-        if (t.champion) h += '<div class="t-note glass" style="margin-bottom:12px">\u{1F3C6} <b>Champion: ' + esc(t.champion) + '</b></div>';
-        if (!ms.length) return h + '<div class="t-note glass"><b>The draw is being made.</b> Fixtures appear here as soon as the President creates the schedule in the Tournament Maker.</div>';
-        var keys = [], seen = {};
-        ms.forEach(function (x) { var k = x.stage + ':' + x.round; if (!seen[k]) { seen[k] = 1; keys.push({ stage: x.stage, round: x.round, label: x.round_label || ('Round ' + x.round) }); } });
-        keys.sort(function (a, b) { if (a.stage !== b.stage) return a.stage === 'thirdplace' ? 1 : -1; return a.round - b.round; });
-        h += '<div class="ko-tree">';
-        keys.forEach(function (k) {
-          var rows = ms.filter(function (x) { return x.stage === k.stage && x.round === k.round; }).sort(function (a, b) { return (a.sort || 0) - (b.sort || 0); });
-          h += '<div class="ko-col"><h4>' + esc(k.label) + '</h4>';
-          rows.forEach(function (x) {
-            var w1 = x.played && +x.s1 > +x.s2, w2 = x.played && +x.s2 > +x.s1;
-            h += '<div class="ko-match"><div class="ko-p' + (w1 ? ' win' : '') + '"><span>' + esc(x.p1 || 'TBD') + '</span><b>' + (x.played ? x.s1 : '\u2013') + '</b></div><div class="ko-p' + (w2 ? ' win' : '') + '"><span>' + esc(x.p2 || 'TBD') + '</span><b>' + (x.played ? x.s2 : '\u2013') + '</b></div></div>';
-          });
-          h += '</div>';
-        });
-        h += '</div><p class="entry-msg" style="margin-top:10px">Live from the Tournament Maker \u2014 results appear here as they are entered.</p>';
-        return h;
-      }
-      function renderBracket(fb, t) {
-        if (bracketCache[TID]) { fb.innerHTML = bracketHTML(bracketCache[TID]); return; }
-        if (bracketLoading === TID) return;
-        bracketLoading = TID;
-        fb.innerHTML = '<div class="t-note glass">Loading the bracket\u2026</div>';
-        sb.rpc('get_maker_tournament_by_token', { p_token: t.makerToken })
-          .then(function (res) {
-            bracketLoading = null;
-            if (res.error || !res.data || !res.data.tournament) { var f3 = $('tFixtureBody'); if (f3) f3.innerHTML = '<div class="t-note glass">The bracket could not load \u2014 check your connection and reopen this page.</div>'; return; }
-            bracketCache[TID] = res.data;
-            var f2 = $('tFixtureBody'); if (f2) f2.innerHTML = bracketHTML(res.data);
-          })
-          .catch(function () { bracketLoading = null; });
-      }
-
       fetch('data/tournaments.json').then(function (r) { return r.json(); }).then(function (d) {
         (d.tournaments || []).forEach(function (t) { if (t.entries === 'live') LIVE[t.id] = t; });
       }).catch(function () {});
@@ -8202,6 +8263,7 @@
 
       function renderAll() {
         if (!TID || !LIVE[TID]) return;
+        loadOfficial();
         var t = LIVE[TID];
         var m = me();
         var inCount = entryRows ? entryRows.length : 0;
@@ -8221,24 +8283,31 @@
           } else {
             var mine = null;
             if (m) entryRows.forEach(function (r) { if (r.member_id === m.id) mine = r; });
-            h += '<div class="entry-head"><b>' + inCount + ' player' + (inCount === 1 ? '' : 's') + ' in</b><span>' + (t.makerToken ? 'This tournament is live \u2014 the bracket is on the Fixture tab.' : (t.playerCap ? 'Entries close at ' + t.playerCap + ' players. The President starts the tournament when the field is full.' : 'The bracket draws when the President locks the final 16.')) + '</span></div>';
+            h += '<div class="entry-head"><b>' + inCount + ' player' + (inCount === 1 ? '' : 's') + ' in</b><span>' + (offStarted() ? 'This tournament is live \u2014 the bracket is on the Fixture tab.' : (t.playerCap ? 'Entries close at ' + t.playerCap + ' players. The President starts the tournament when the field is full.' : 'The bracket draws when the President locks the final 16.')) + '</span></div>';
             if (!m) {
               h += '<p class="entry-msg">Only registered players can join this tournament. <a href="#login" data-nav="login">Log in</a> or <a href="#register" data-nav="register">register</a>, then come back and tap Join.</p>';
             } else if (mine) {
-              h += '<p class="entry-msg">You are in &#10003; — seat #' + (entryRows.indexOf(mine) + 1) + '.</p>' + (t.makerToken ? '<p class="entry-msg">The tournament is LIVE \u2014 follow the bracket on the Fixture tab.</p>' : '<button type="button" class="btn btn-glass" data-withdraw-entry="' + mine.id + '">Withdraw</button>');
+              h += '<p class="entry-msg">You are in &#10003; — seat #' + (entryRows.indexOf(mine) + 1) + '.</p>' + (offStarted() ? '<p class="entry-msg">The tournament is LIVE \u2014 follow the bracket on the Fixture tab.</p>' : '<button type="button" class="btn btn-glass" data-withdraw-entry="' + mine.id + '">Withdraw</button>');
             } else {
-              h += t.makerToken
+              h += offStarted()
                 ? '<p class="entry-msg"><b>This tournament has started.</b> Entries are locked \u2014 follow the bracket on the Fixture tab.</p>'
                 : ((t.playerCap && inCount >= t.playerCap)
                     ? '<p class="entry-msg"><b>Tournament full</b> \u2014 all ' + t.playerCap + ' seats are taken.</p>'
                     : '<button type="button" class="btn btn-red" data-join-tourney="' + TID + '">Join Tournament</button>');
             }
             if (isPres()) h += '<p class="entry-msg">President: you can remove any player from the Participants tab.</p>';
-            if (isPres() && t.playerCap && inCount >= t.playerCap && !t.makerToken) {
-              if (startInfo && startInfo.for === TID) {
-                h += '<div class="entry-msg" style="margin-top:10px"><b>\u2705 Tournament created in the Maker.</b><br>1) Open it and create the schedule from its <b>Matches</b> tab \u2014 choose the <b>Random</b> or <b>Manual</b> draw there.<br>2) Then send amane this one-time link code so this page can show the live bracket to everyone:<br><b style="font-size:15px">' + esc(startInfo.token || '(open the Maker and tap its link icon)') + '</b></div><p style="margin-top:8px"><a class="btn btn-red" href="#maker/' + startInfo.id + '">Open in Tournament Maker</a> <button type="button" class="btn btn-glass" data-copy-token="' + esc(startInfo.token || '') + '">Copy code</button></p>';
+            if (isPres() && offMissing) {
+              h += '<p class="entry-msg" style="margin-top:10px"><b>President:</b> to run this tournament from this page, first run <b>Part 21</b> (official matches) in the Supabase SQL Editor \u2014 amane has the file ready.</p>';
+            } else if (isPres() && offStarted()) {
+              h += '<p class="entry-msg" style="margin-top:10px"><b>President:</b> you are running this tournament \u2014 enter results on the Fixture tab.</p>';
+            } else if (isPres() && t.playerCap && inCount >= t.playerCap) {
+              if (drawPairs) {
+                var optFor = function (sel) { return entryRows.map(function (r) { return '<option value="' + r.member_id + '"' + (sel === r.member_id ? ' selected' : '') + '>' + esc(r.member.full_name) + '</option>'; }).join(''); };
+                h += '<div class="draw-grid">' + [0, 1, 2, 3].map(function (q) {
+                  return '<div class="draw-row"><b>QF' + (q + 1) + '</b><select data-pair="' + (q * 2) + '">' + optFor(drawPairs[q * 2]) + '</select><span>vs</span><select data-pair="' + (q * 2 + 1) + '">' + optFor(drawPairs[q * 2 + 1]) + '</select></div>';
+                }).join('') + '</div><p style="margin-top:8px"><button type="button" class="btn btn-red" data-create-fixtures="1">Create fixtures</button> <button type="button" class="btn btn-glass" data-draw-cancel="1">Cancel</button></p>';
               } else {
-                h += '<p style="margin-top:10px"><button type="button" class="btn btn-red" data-start-legacy="1">\u{1F3C6} Start Tournament</button></p><p class="entry-msg">Starts ' + esc(t.name) + ' as a Tournament Maker tournament with these ' + inCount + ' players. You make the draw (Random or Manual) from its Matches tab.</p>';
+                h += '<p style="margin-top:10px"><button type="button" class="btn btn-red" data-draw="random">\u{1F3B2} Random draw</button> <button type="button" class="btn btn-glass" data-draw="manual">\u270B Pick the pairings</button></p><p class="entry-msg">Start ' + esc(t.name) + ' with these ' + inCount + ' players \u2014 the bracket appears on the Fixture tab and you enter the results there.</p>';
               }
             }
           }
@@ -8255,7 +8324,7 @@
         }
         var meta = $('tMeta');
         if (meta && entryRows && !MATCHED[TID]) {
-          meta.textContent = (t.game || '') + ' · Knockout · ' + inCount + ' players in · ' + (t.makerToken ? 'live now' : 'bracket draws at ' + (t.playerCap || 16));
+          meta.textContent = (t.game || '') + ' · Knockout · ' + inCount + ' players in · ' + (offStarted() ? 'live now' : 'bracket draws at ' + (t.playerCap || 16));
         }
         var pb = $('tParticipantsBody');
         if (pb) {
@@ -8281,12 +8350,26 @@
         }
         var fb = $('tFixtureBody');
         if (fb && !MATCHED[TID]) {
-          if (t.makerToken) { renderBracket(fb, t); }
-          else fb.innerHTML = '<div class="t-note glass"><b>Knockout bracket</b> \u2014 ' + (t.playerCap === 8 ? 'Quarter-finals &rarr; Semi-finals &rarr; Final' : 'Round of 16 &rarr; Quarter-finals &rarr; Semi-finals &rarr; Final') + '. Pairings appear here the moment the President starts the tournament.</div>';
+          if (offMissing) {
+            fb.innerHTML = '<div class="t-note glass"><b>Knockout bracket</b> \u2014 the official matches table is not switched on yet (Part 21).</div>';
+          } else if (offStarted()) {
+            fb.innerHTML = officialBracketHTML();
+          } else if (offLoadedFor !== TID) {
+            fb.innerHTML = '<div class="t-note glass">Loading\u2026</div>';
+          } else fb.innerHTML = '<div class="t-note glass"><b>Knockout bracket</b> \u2014 ' + (t.playerCap === 8 ? 'Quarter-finals &rarr; Semi-finals &rarr; Final' : 'Round of 16 &rarr; Quarter-finals &rarr; Semi-finals &rarr; Final') + '. Pairings appear here the moment the President starts the tournament.</div>';
         }
         document.querySelectorAll('.jump-bar button').forEach(function (b) {
           if (b.getAttribute('data-jump') === 'tTable') b.style.display = 'none';
         });
+        var rb = $('tResultsBody');
+        if (rb && offStarted()) {
+          var playedRows = offRows.filter(function (r) { return r.played; });
+          var effR = deriveAll(offRows);
+          rb.innerHTML = playedRows.length ? '<div class="entry-list">' + playedRows.map(function (r) {
+            var e = effR[rowKey(r)] || { p1: null, p2: null };
+            return '<div class="entry-row"><span class="entry-name">' + esc(r.round_label) + ': ' + esc(e.p1 ? e.p1.name : 'TBD') + ' ' + r.s1 + '\u2013' + r.s2 + ' ' + esc(e.p2 ? e.p2.name : 'TBD') + '</span></div>';
+          }).join('') + '</div>' : '<div class="t-note glass">No results yet \u2014 the first result lands here.</div>';
+        }
       }
 
       function restoreTabs() {
@@ -8319,7 +8402,7 @@
           var m = me();
           if (!m) { toast('Log in first', 'Only registered players can join.'); return; }
           var tt = LIVE[TID];
-          if (tt && tt.makerToken) { toast('Tournament started', 'Entries are locked.'); return; }
+          if (tt && offStarted()) { toast('Tournament started', 'Entries are locked.'); return; }
           if (tt && tt.playerCap && entryRows && entryRows.length >= tt.playerCap) { toast('Tournament full', 'All ' + tt.playerCap + ' seats are taken.'); loadEntries(); return; }
           j.disabled = true;
           sb.from('tournament_entries').insert({ tournament_id: TID, member_id: m.id })
@@ -8353,40 +8436,102 @@
               }
             });
         }
-        var stb = e.target.closest ? e.target.closest('[data-start-legacy]') : null;
-        if (stb) {
-          var pm = me(); var tt2 = LIVE[TID];
-          if (!pm || !tt2 || !entryRows) return;
-          if (!window.confirm('Start ' + tt2.name + ' now with these ' + entryRows.length + ' players? Entries lock and the tournament is created in the Tournament Maker.')) return;
-          stb.disabled = true; stb.textContent = 'Starting\u2026';
-          var entrants = entryRows.map(function (r) { return { name: r.member.full_name, member_id: r.member_id }; });
-          sb.from('kwc_tournaments').insert({ name: tt2.name, game: tt2.game || 'eFootball', format: 'knockout', status: 'live', created_by: pm.id }).select().single()
-            .then(function (res) {
-              if (res.error) throw res.error;
-              startInfo = { for: TID, id: res.data.id, token: res.data.share_token || null };
-              var rows = entrants.map(function (en, i) { return { tournament_id: res.data.id, name: en.name, member_id: en.member_id, seed: i + 1, group_label: null }; });
-              return sb.from('kwc_tournament_players').insert(rows);
-            })
-            .then(function (pres) {
-              if (pres.error) throw pres.error;
-              return sb.from('kwc_tournaments').update({ settings: { legs: { final: 1, third: 0, sf: 1, qf: 1, r16: 1, r32: 1, r64: 1, r128: 1, r256: 1 }, groups: 2, picks: {} } }).eq('id', startInfo.id);
-            })
-            .then(function () {
-              if (startInfo.token) return null;
-              return sb.from('kwc_tournaments').select('share_token').eq('id', startInfo.id).single()
-                .then(function (r2) { if (r2.data && r2.data.share_token) startInfo.token = r2.data.share_token; });
-            })
-            .then(function () { toast('Tournament created', 'Now create the schedule from its Matches tab.'); renderAll(); })
-            .catch(function () { toast('Could not start', 'Please try again.'); renderAll(); });
+        var drw = e.target.closest ? e.target.closest('[data-draw]') : null;
+        if (drw) {
+          if (!isPres() || !entryRows || entryRows.length < 2) return;
+          if (drw.getAttribute('data-draw') === 'manual') {
+            drawPairs = entryRows.map(function (r) { return r.member_id; });
+            renderAll();
+          } else {
+            if (!window.confirm('Start ' + (LIVE[TID] ? LIVE[TID].name : 'the tournament') + ' with a RANDOM draw of these ' + entryRows.length + ' players? Entries lock.')) return;
+            var pool = entryRows.slice();
+            for (var si = pool.length - 1; si > 0; si--) { var sj = Math.floor(Math.random() * (si + 1)); var tmp = pool[si]; pool[si] = pool[sj]; pool[sj] = tmp; }
+            createFixtures(pool.map(function (r) { return { member_id: r.member_id, name: r.member.full_name }; }));
+          }
           return;
         }
-        var cp = e.target.closest ? e.target.closest('[data-copy-token]') : null;
-        if (cp) {
-          var tok = cp.getAttribute('data-copy-token') || '';
-          if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(tok).then(function () { toast('Code copied', 'Send it to amane to link the bracket.'); }).catch(function () { window.prompt('Copy this code:', tok); });
-          else window.prompt('Copy this code:', tok);
+        var dcc = e.target.closest ? e.target.closest('[data-draw-cancel]') : null;
+        if (dcc) { drawPairs = null; renderAll(); return; }
+        var cfx = e.target.closest ? e.target.closest('[data-create-fixtures]') : null;
+        if (cfx) {
+          if (!drawPairs || drawPairs.length !== 8 || !entryRows) return;
+          var seen = {}; var dup = false;
+          drawPairs.forEach(function (id) { if (seen[id]) dup = true; seen[id] = true; });
+          if (dup || Object.keys(seen).length !== 8) { toast('Check the draw', 'Each of the 8 players must appear exactly once.'); return; }
+          var byMid = {}; entryRows.forEach(function (r) { byMid[r.member_id] = r; });
+          createFixtures(drawPairs.map(function (id) { return { member_id: id, name: byMid[id].member.full_name }; }));
+          return;
+        }
+        var scb = e.target.closest ? e.target.closest('[data-save-score]') : null;
+        if (scb) {
+          if (!isPres()) return;
+          var mid = parseInt(scb.getAttribute('data-save-score'), 10);
+          var i1el = $('os1-' + mid), i2el = $('os2-' + mid);
+          if (!i1el || !i2el) return;
+          var v1 = i1el.value.trim(), v2 = i2el.value.trim();
+          var upd;
+          if (v1 === '' && v2 === '') upd = { s1: null, s2: null, played: false, winner_side: null };
+          else {
+            var n1 = parseInt(v1, 10), n2 = parseInt(v2, 10);
+            if (isNaN(n1) || isNaN(n2) || n1 < 0 || n2 < 0) { toast('Score needed', 'Enter both scores (or empty both to clear).'); return; }
+            upd = { s1: n1, s2: n2, played: true, winner_side: n1 > n2 ? 1 : (n2 > n1 ? 2 : null) };
+          }
+          scb.disabled = true;
+          sb.from('official_matches').update(upd).eq('id', mid).then(function (res) {
+            if (res.error) { toast('Could not save', 'The result was not saved \u2014 please try again.'); renderAll(); return; }
+            sb.from('official_matches').select('*').eq('tournament_id', TID).order('round', { ascending: true }).order('slot', { ascending: true }).then(function (r2) {
+              if (!r2.error) offRows = r2.data || [];
+              offLoadedFor = TID;
+              syncOfficial().then(function () { renderAll(); });
+            });
+            toast('Result saved', upd.played ? 'The bracket has been updated.' : 'Result cleared.');
+          });
+          return;
+        }
+        var pen = e.target.closest ? e.target.closest('[data-pens]') : null;
+        if (pen) {
+          if (!isPres()) return;
+          var parts = (pen.getAttribute('data-pens') || '').split(':');
+          var pid = parseInt(parts[0], 10), pside = parseInt(parts[1], 10);
+          if (!pid || (pside !== 1 && pside !== 2)) return;
+          sb.from('official_matches').update({ winner_side: pside }).eq('id', pid).then(function (res) {
+            if (res.error) { toast('Could not save', 'Please try again.'); return; }
+            sb.from('official_matches').select('*').eq('tournament_id', TID).order('round', { ascending: true }).order('slot', { ascending: true }).then(function (r2) {
+              if (!r2.error) offRows = r2.data || [];
+              offLoadedFor = TID;
+              syncOfficial().then(function () { renderAll(); });
+            });
+            toast('Penalty winner set', 'The bracket has been updated.');
+          });
+          return;
         }
       });
+      function createFixtures(pairs) {
+        var rows = [];
+        for (var q = 0; q < 4; q++) {
+          rows.push({ tournament_id: TID, round: 1, round_label: 'Quarter-final', slot: q + 1, p1_member_id: pairs[q * 2].member_id, p1_name: pairs[q * 2].name, p2_member_id: pairs[q * 2 + 1].member_id, p2_name: pairs[q * 2 + 1].name });
+        }
+        rows.push({ tournament_id: TID, round: 2, round_label: 'Semi-final', slot: 1 });
+        rows.push({ tournament_id: TID, round: 2, round_label: 'Semi-final', slot: 2 });
+        rows.push({ tournament_id: TID, round: 3, round_label: 'Final', slot: 1 });
+        sb.from('official_matches').insert(rows).then(function (res) {
+          if (res.error) {
+            if (missing(res.error)) { offMissing = true; offLoadedFor = TID; toast('Part 21 needed', 'Run Part 21 in the SQL Editor first.'); }
+            else toast('Could not start', 'The fixtures were not created \u2014 please try again.');
+            renderAll(); return;
+          }
+          drawPairs = null; offLoadedFor = null; loadOfficial();
+          toast('Tournament started', 'The bracket is live on the Fixture tab.');
+        });
+      }
+
+      document.addEventListener('change', function (e) {
+        var sel = e.target.closest ? e.target.closest('[data-pair]') : null;
+        if (!sel || !drawPairs) return;
+        var idx = parseInt(sel.getAttribute('data-pair'), 10);
+        drawPairs[idx] = parseInt(sel.value, 10);
+      });
+
     })();
   </script>
 
