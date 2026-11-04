@@ -3743,6 +3743,17 @@
         if (!t) TOURNAMENTS.forEach(function (x) { if (x.status === 'upcoming' && !t) t = x; });
         if (!t) return; /* static "Coming Soon" copy already in place */
         homeRunning = t;
+        var bandLogo = document.getElementById('homeTourneyLogo');
+        if (t.logo) {
+          if (!bandLogo) {
+            bandLogo = document.createElement('img');
+            bandLogo.id = 'homeTourneyLogo'; bandLogo.alt = '';
+            bandLogo.style.cssText = 'display:block;width:min(300px,82%);height:auto;border-radius:12px;margin:2px 0 10px';
+            var stEl2 = document.getElementById('homeTourneyStatus');
+            stEl2.parentNode.insertBefore(bandLogo, stEl2);
+          }
+          bandLogo.src = t.logo; bandLogo.hidden = false;
+        } else if (bandLogo) { bandLogo.hidden = true; }
         var statusEl = document.getElementById('homeTourneyStatus');
         statusEl.innerHTML = esc(t.name) + '<span class="t-arrow" aria-hidden="true">→</span>';
         statusEl.classList.add('is-link');
@@ -3751,7 +3762,7 @@
           ? (t.game || 'Tournament') + ' — registration is open. Registered players join on its page.'
           : (t.game || 'Tournament') + ' — live now. Follow every fixture, result and the table.';
         var res = t.results || [], fix = t.fixtures || [];
-        document.getElementById('homeLatestResult').textContent = res.length ? resultLine(res[res.length - 1]) : (t.status === 'upcoming' ? 'No matches yet — the bracket appears when the final 16 are locked.' : 'No matches played yet — the first result lands here.');
+        document.getElementById('homeLatestResult').textContent = res.length ? resultLine(res[res.length - 1]) : (t.status === 'upcoming' ? 'No matches yet — the bracket appears when the final ' + (t.playerCap || 16) + ' are locked.' : 'No matches played yet — the first result lands here.');
         document.getElementById('homeNextFixture').textContent = fix.length ? fix[0].home + ' vs ' + fix[0].away + (fix[0].when ? ' · ' + fix[0].when : '') : (t.status === 'upcoming' ? 'The draw is made once the President locks the field.' : 'All scheduled fixtures have been played.');
       }
       var homePanel = document.getElementById('homeTourneyPanel');
@@ -5537,6 +5548,7 @@
               intro: t.intro, participants: t.participants || [],
               champion: t.champion, championPhoto: t.championPhoto,
               championCutout: t.championCutout, championCutoutAnim: t.championCutoutAnim,
+              logo: t.logo || null, playerCap: t.playerCap || 0,
               fixtures: fixtures, results: results
             };
           });
@@ -8093,6 +8105,63 @@
       var MATCHED = {};
       var TID = null, builtFor = null;
       var entryRows = null, entryErr = null;
+      var startInfo = null;              // {for, id, token} after President taps Start
+      var bracketCache = {}, bracketLoading = null;
+      (function () {
+        var css = '.t-logo{display:block;width:min(430px,100%);height:auto;border-radius:14px;margin:0 0 12px}' +
+          '.ms-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px 14px}@media(max-width:560px){.ms-grid{grid-template-columns:1fr}}' +
+          '.ms-row{display:flex;justify-content:space-between;gap:10px;padding:6px 10px;border:1px solid rgba(255,255,255,.08);border-radius:8px;background:rgba(255,255,255,.03);font-size:13px}.ms-row span{opacity:.75}' +
+          '.ko-tree{display:flex;gap:14px;overflow-x:auto;padding-bottom:8px}.ko-col{min-width:210px;flex:1}.ko-col h4{margin:0 0 8px;font-size:13px;letter-spacing:.06em;text-transform:uppercase;opacity:.85}' +
+          '.ko-match{border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:8px 10px;margin-bottom:8px;background:rgba(255,255,255,.03)}' +
+          '.ko-p{display:flex;justify-content:space-between;gap:8px;padding:3px 0;font-size:13px}.ko-p.win{color:#f5c451;font-weight:700}';
+        var stEl = document.createElement('style'); stEl.textContent = css; document.head.appendChild(stEl);
+      })();
+      function paintLogo(id) {
+        var lg = $('tLogoImg');
+        var t = (id && LIVE[id]) ? LIVE[id] : null;
+        if (t && t.logo) {
+          var head = document.querySelector('#view-tournament .t-head-main');
+          if (!head) return;
+          if (!lg) { lg = document.createElement('img'); lg.id = 'tLogoImg'; lg.className = 't-logo'; lg.alt = ''; head.insertBefore(lg, head.firstChild); }
+          if (lg.getAttribute('src') !== t.logo) lg.setAttribute('src', t.logo);
+        } else if (lg) { lg.remove(); }
+      }
+      function bracketHTML(d) {
+        var t = d.tournament || {};
+        var ms = (d.matches || []).filter(function (x) { return x.stage === 'knockout' || x.stage === 'thirdplace'; });
+        var h = '';
+        if (t.champion) h += '<div class="t-note glass" style="margin-bottom:12px">\u{1F3C6} <b>Champion: ' + esc(t.champion) + '</b></div>';
+        if (!ms.length) return h + '<div class="t-note glass"><b>The draw is being made.</b> Fixtures appear here as soon as the President creates the schedule in the Tournament Maker.</div>';
+        var keys = [], seen = {};
+        ms.forEach(function (x) { var k = x.stage + ':' + x.round; if (!seen[k]) { seen[k] = 1; keys.push({ stage: x.stage, round: x.round, label: x.round_label || ('Round ' + x.round) }); } });
+        keys.sort(function (a, b) { if (a.stage !== b.stage) return a.stage === 'thirdplace' ? 1 : -1; return a.round - b.round; });
+        h += '<div class="ko-tree">';
+        keys.forEach(function (k) {
+          var rows = ms.filter(function (x) { return x.stage === k.stage && x.round === k.round; }).sort(function (a, b) { return (a.sort || 0) - (b.sort || 0); });
+          h += '<div class="ko-col"><h4>' + esc(k.label) + '</h4>';
+          rows.forEach(function (x) {
+            var w1 = x.played && +x.s1 > +x.s2, w2 = x.played && +x.s2 > +x.s1;
+            h += '<div class="ko-match"><div class="ko-p' + (w1 ? ' win' : '') + '"><span>' + esc(x.p1 || 'TBD') + '</span><b>' + (x.played ? x.s1 : '\u2013') + '</b></div><div class="ko-p' + (w2 ? ' win' : '') + '"><span>' + esc(x.p2 || 'TBD') + '</span><b>' + (x.played ? x.s2 : '\u2013') + '</b></div></div>';
+          });
+          h += '</div>';
+        });
+        h += '</div><p class="entry-msg" style="margin-top:10px">Live from the Tournament Maker \u2014 results appear here as they are entered.</p>';
+        return h;
+      }
+      function renderBracket(fb, t) {
+        if (bracketCache[TID]) { fb.innerHTML = bracketHTML(bracketCache[TID]); return; }
+        if (bracketLoading === TID) return;
+        bracketLoading = TID;
+        fb.innerHTML = '<div class="t-note glass">Loading the bracket\u2026</div>';
+        sb.rpc('get_maker_tournament_by_token', { p_token: t.makerToken })
+          .then(function (res) {
+            bracketLoading = null;
+            if (res.error || !res.data || !res.data.tournament) { var f3 = $('tFixtureBody'); if (f3) f3.innerHTML = '<div class="t-note glass">The bracket could not load \u2014 check your connection and reopen this page.</div>'; return; }
+            bracketCache[TID] = res.data;
+            var f2 = $('tFixtureBody'); if (f2) f2.innerHTML = bracketHTML(res.data);
+          })
+          .catch(function () { bracketLoading = null; });
+      }
 
       fetch('data/tournaments.json').then(function (r) { return r.json(); }).then(function (d) {
         (d.tournaments || []).forEach(function (t) { if (t.entries === 'live') LIVE[t.id] = t; });
@@ -8152,21 +8221,41 @@
           } else {
             var mine = null;
             if (m) entryRows.forEach(function (r) { if (r.member_id === m.id) mine = r; });
-            h += '<div class="entry-head"><b>' + inCount + ' player' + (inCount === 1 ? '' : 's') + ' in</b><span>The bracket draws when the President locks the final 16.</span></div>';
+            h += '<div class="entry-head"><b>' + inCount + ' player' + (inCount === 1 ? '' : 's') + ' in</b><span>' + (t.makerToken ? 'This tournament is live \u2014 the bracket is on the Fixture tab.' : (t.playerCap ? 'Entries close at ' + t.playerCap + ' players. The President starts the tournament when the field is full.' : 'The bracket draws when the President locks the final 16.')) + '</span></div>';
             if (!m) {
               h += '<p class="entry-msg">Only registered players can join this tournament. <a href="#login" data-nav="login">Log in</a> or <a href="#register" data-nav="register">register</a>, then come back and tap Join.</p>';
             } else if (mine) {
-              h += '<p class="entry-msg">You are in &#10003; — seat #' + (entryRows.indexOf(mine) + 1) + '.</p><button type="button" class="btn btn-glass" data-withdraw-entry="' + mine.id + '">Withdraw</button>';
+              h += '<p class="entry-msg">You are in &#10003; — seat #' + (entryRows.indexOf(mine) + 1) + '.</p>' + (t.makerToken ? '<p class="entry-msg">The tournament is LIVE \u2014 follow the bracket on the Fixture tab.</p>' : '<button type="button" class="btn btn-glass" data-withdraw-entry="' + mine.id + '">Withdraw</button>');
             } else {
-              h += '<button type="button" class="btn btn-red" data-join-tourney="' + TID + '">Join Tournament</button>';
+              h += t.makerToken
+                ? '<p class="entry-msg"><b>This tournament has started.</b> Entries are locked \u2014 follow the bracket on the Fixture tab.</p>'
+                : ((t.playerCap && inCount >= t.playerCap)
+                    ? '<p class="entry-msg"><b>Tournament full</b> \u2014 all ' + t.playerCap + ' seats are taken.</p>'
+                    : '<button type="button" class="btn btn-red" data-join-tourney="' + TID + '">Join Tournament</button>');
             }
             if (isPres()) h += '<p class="entry-msg">President: you can remove any player from the Participants tab.</p>';
+            if (isPres() && t.playerCap && inCount >= t.playerCap && !t.makerToken) {
+              if (startInfo && startInfo.for === TID) {
+                h += '<div class="entry-msg" style="margin-top:10px"><b>\u2705 Tournament created in the Maker.</b><br>1) Open it and create the schedule from its <b>Matches</b> tab \u2014 choose the <b>Random</b> or <b>Manual</b> draw there.<br>2) Then send amane this one-time link code so this page can show the live bracket to everyone:<br><b style="font-size:15px">' + esc(startInfo.token || '(open the Maker and tap its link icon)') + '</b></div><p style="margin-top:8px"><a class="btn btn-red" href="#maker/' + startInfo.id + '">Open in Tournament Maker</a> <button type="button" class="btn btn-glass" data-copy-token="' + esc(startInfo.token || '') + '">Copy code</button></p>';
+              } else {
+                h += '<p style="margin-top:10px"><button type="button" class="btn btn-red" data-start-legacy="1">\u{1F3C6} Start Tournament</button></p><p class="entry-msg">Starts ' + esc(t.name) + ' as a Tournament Maker tournament with these ' + inCount + ' players. You make the draw (Random or Manual) from its Matches tab.</p>';
+              }
+            }
           }
           panel.innerHTML = h + '</div>';
+          var spn = $('settingsPanel');
+          if (t.matchSettings && t.matchSettings.length) {
+            if (!spn) { spn = document.createElement('div'); spn.id = 'settingsPanel'; ob.appendChild(spn); }
+            if (spn.getAttribute('data-for') !== TID) {
+              spn.setAttribute('data-for', TID);
+              spn.innerHTML = '<div class="t-note glass" style="margin-top:12px"><b>\u2699\uFE0F Official Match Settings</b><p style="margin:6px 0 10px">Every match in this tournament is played with these exact settings.</p><div class="ms-grid">' +
+                t.matchSettings.map(function (row) { return '<div class="ms-row"><span>' + esc(row[0]) + '</span><b>' + esc(row[1]) + '</b></div>'; }).join('') + '</div></div>';
+            }
+          } else if (spn) { spn.remove(); }
         }
         var meta = $('tMeta');
         if (meta && entryRows && !MATCHED[TID]) {
-          meta.textContent = (t.game || '') + ' · Knockout · ' + inCount + ' players in · bracket draws at 16';
+          meta.textContent = (t.game || '') + ' · Knockout · ' + inCount + ' players in · ' + (t.makerToken ? 'live now' : 'bracket draws at ' + (t.playerCap || 16));
         }
         var pb = $('tParticipantsBody');
         if (pb) {
@@ -8192,7 +8281,8 @@
         }
         var fb = $('tFixtureBody');
         if (fb && !MATCHED[TID]) {
-          fb.innerHTML = '<div class="t-note glass"><b>Knockout bracket</b> — Round of 16 &rarr; Quarter-finals &rarr; Semi-finals &rarr; Final. Pairings appear here the moment the President locks the final 16 and the draw is made.</div>';
+          if (t.makerToken) { renderBracket(fb, t); }
+          else fb.innerHTML = '<div class="t-note glass"><b>Knockout bracket</b> \u2014 ' + (t.playerCap === 8 ? 'Quarter-finals &rarr; Semi-finals &rarr; Final' : 'Round of 16 &rarr; Quarter-finals &rarr; Semi-finals &rarr; Final') + '. Pairings appear here the moment the President starts the tournament.</div>';
         }
         document.querySelectorAll('.jump-bar button').forEach(function (b) {
           if (b.getAttribute('data-jump') === 'tTable') b.style.display = 'none';
@@ -8207,6 +8297,7 @@
 
       function tick() {
         var id = currentId();
+        paintLogo(id);
         if (!id || !LIVE[id]) {
           if (builtFor) { restoreTabs(); builtFor = null; TID = null; entryRows = null; }
           return;
@@ -8227,6 +8318,9 @@
         if (j) {
           var m = me();
           if (!m) { toast('Log in first', 'Only registered players can join.'); return; }
+          var tt = LIVE[TID];
+          if (tt && tt.makerToken) { toast('Tournament started', 'Entries are locked.'); return; }
+          if (tt && tt.playerCap && entryRows && entryRows.length >= tt.playerCap) { toast('Tournament full', 'All ' + tt.playerCap + ' seats are taken.'); loadEntries(); return; }
           j.disabled = true;
           sb.from('tournament_entries').insert({ tournament_id: TID, member_id: m.id })
             .then(function (res) {
@@ -8258,6 +8352,39 @@
                 loadEntries();
               }
             });
+        }
+        var stb = e.target.closest ? e.target.closest('[data-start-legacy]') : null;
+        if (stb) {
+          var pm = me(); var tt2 = LIVE[TID];
+          if (!pm || !tt2 || !entryRows) return;
+          if (!window.confirm('Start ' + tt2.name + ' now with these ' + entryRows.length + ' players? Entries lock and the tournament is created in the Tournament Maker.')) return;
+          stb.disabled = true; stb.textContent = 'Starting\u2026';
+          var entrants = entryRows.map(function (r) { return { name: r.member.full_name, member_id: r.member_id }; });
+          sb.from('kwc_tournaments').insert({ name: tt2.name, game: tt2.game || 'eFootball', format: 'knockout', status: 'live', created_by: pm.id }).select().single()
+            .then(function (res) {
+              if (res.error) throw res.error;
+              startInfo = { for: TID, id: res.data.id, token: res.data.share_token || null };
+              var rows = entrants.map(function (en, i) { return { tournament_id: res.data.id, name: en.name, member_id: en.member_id, seed: i + 1, group_label: null }; });
+              return sb.from('kwc_tournament_players').insert(rows);
+            })
+            .then(function (pres) {
+              if (pres.error) throw pres.error;
+              return sb.from('kwc_tournaments').update({ settings: { legs: { final: 1, third: 0, sf: 1, qf: 1, r16: 1, r32: 1, r64: 1, r128: 1, r256: 1 }, groups: 2, picks: {} } }).eq('id', startInfo.id);
+            })
+            .then(function () {
+              if (startInfo.token) return null;
+              return sb.from('kwc_tournaments').select('share_token').eq('id', startInfo.id).single()
+                .then(function (r2) { if (r2.data && r2.data.share_token) startInfo.token = r2.data.share_token; });
+            })
+            .then(function () { toast('Tournament created', 'Now create the schedule from its Matches tab.'); renderAll(); })
+            .catch(function () { toast('Could not start', 'Please try again.'); renderAll(); });
+          return;
+        }
+        var cp = e.target.closest ? e.target.closest('[data-copy-token]') : null;
+        if (cp) {
+          var tok = cp.getAttribute('data-copy-token') || '';
+          if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(tok).then(function () { toast('Code copied', 'Send it to amane to link the bracket.'); }).catch(function () { window.prompt('Copy this code:', tok); });
+          else window.prompt('Copy this code:', tok);
         }
       });
     })();
