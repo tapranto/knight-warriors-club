@@ -1,6 +1,1 @@
-{
-  "versionCode": 68,
-  "versionName": "0.7.8-beta63",
-  "apkUrl": "https://github.com/tapranto/knight-warriors-club-app/releases",
-  "notes": "beta61 restored: password-manager autofill kept (my beta62 removal was a misread); the fingerprint errand is skipped."
-}
+{"apkUrl":"https://github.com/tapranto/knight-warriors-club-app/releases/download/v1.0/KnightWarriorsClub.apk","notes":"Knight Warriors Club v1.0 — the first official signed release. Download the App from knightwarriorsclub.com or the GitHub release page.","versionCode":70,"versionName":"0.8.0-beta65"}
