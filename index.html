@@ -8114,6 +8114,7 @@
       var TID = null, builtFor = null;
       var entryRows = null, entryErr = null;
       var offRows = null, offMissing = false, offLoadedFor = null, offLoadingFor = null;
+      var offView = 'list';
       var lastEntryLoad = 0;
       var drawPairs = null;              // manual draw state: 8 member ids in QF order
       (function () {
@@ -8121,7 +8122,7 @@
           '.ms-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px 14px}@media(max-width:560px){.ms-grid{grid-template-columns:1fr}}' +
           '.ms-row{display:flex;justify-content:space-between;gap:10px;padding:6px 10px;border:1px solid rgba(255,255,255,.08);border-radius:8px;background:rgba(255,255,255,.03);font-size:13px}.ms-row span{opacity:.75}' +
           '.ko-tree{display:flex;gap:14px;overflow-x:auto;padding-bottom:8px}.ko-col{min-width:210px;flex:1}.ko-col h4{margin:0 0 8px;font-size:13px;letter-spacing:.06em;text-transform:uppercase;opacity:.85}' +
-          '.ko-match{border:1px solid rgba(255,255,255,.14);border-radius:10px;padding:8px 10px;margin-bottom:8px;background:rgba(8,12,18,.58);backdrop-filter:blur(12px) saturate(120%);-webkit-backdrop-filter:blur(12px) saturate(120%)}' +
+          '.ko-list-h{margin:16px 0 8px;font-size:13px;letter-spacing:.06em;text-transform:uppercase;opacity:.85}.ko-match{border:1px solid rgba(255,255,255,.14);border-radius:10px;padding:8px 10px;margin-bottom:8px;background:rgba(8,12,18,.58);backdrop-filter:blur(12px) saturate(120%);-webkit-backdrop-filter:blur(12px) saturate(120%)}' +
           '.ko-p{display:flex;justify-content:space-between;gap:8px;padding:3px 0;font-size:13px}.ko-p.win{color:#f5c451;font-weight:700}' +
           '.ko-edit{display:flex;gap:6px;align-items:center;margin-top:7px}.ko-edit input{width:52px;padding:5px 7px;border-radius:7px;border:1px solid rgba(255,255,255,.18);background:rgba(0,0,0,.3);color:#fff;font-size:13px}' +
           '.ko-pens{margin-top:7px;font-size:12px}.ko-pens button{margin:4px 6px 0 0}' +
@@ -8210,23 +8211,30 @@
         var rounds = [];
         rows.forEach(function (r) { if (rounds.indexOf(r.round) === -1) rounds.push(r.round); });
         rounds.sort(function (a, b) { return a - b; });
-        h += '<div class="ko-tree">';
-        rounds.forEach(function (rd) {
-          var rs = rows.filter(function (r) { return r.round === rd; });
-          h += '<div class="ko-col"><h4>' + esc(rs[0].round_label || ('Round ' + rd)) + '</h4>';
-          rs.forEach(function (r) {
-            var e = eff[rowKey(r)] || { p1: null, p2: null };
-            var p1n = e.p1 ? e.p1.name : null, p2n = e.p2 ? e.p2.name : null;
-            var win = winnerOf(r, e);
-            h += '<div class="ko-match"><div class="ko-p' + (win && r.winner_side === 1 ? ' win' : '') + '"><span class="ko-name">' + (p1n ? avHTML(e.p1 && e.p1.member_id, p1n, mp) : '') + esc(p1n || 'TBD') + '</span><b>' + (r.played ? r.s1 : '\u2013') + '</b></div><div class="ko-p' + (win && r.winner_side === 2 ? ' win' : '') + '"><span class="ko-name">' + (p2n ? avHTML(e.p2 && e.p2.member_id, p2n, mp) : '') + esc(p2n || 'TBD') + '</span><b>' + (r.played ? r.s2 : '\u2013') + '</b></div>';
-            if (r.played && r.s1 === r.s2 && !win) {
-              h += '<div class="ko-pens">Level \u2014 penalty shoot-out result to come.</div>';
-            }
+        function koCard(r) {
+          var e = eff[rowKey(r)] || { p1: null, p2: null };
+          var p1n = e.p1 ? e.p1.name : null, p2n = e.p2 ? e.p2.name : null;
+          var win = winnerOf(r, e);
+          var c = '<div class="ko-match"><div class="ko-p' + (win && r.winner_side === 1 ? ' win' : '') + '"><span class="ko-name">' + (p1n ? avHTML(e.p1 && e.p1.member_id, p1n, mp) : '') + esc(p1n || 'TBD') + '</span><b>' + (r.played ? r.s1 : '\u2013') + '</b></div><div class="ko-p' + (win && r.winner_side === 2 ? ' win' : '') + '"><span class="ko-name">' + (p2n ? avHTML(e.p2 && e.p2.member_id, p2n, mp) : '') + esc(p2n || 'TBD') + '</span><b>' + (r.played ? r.s2 : '\u2013') + '</b></div>';
+          if (r.played && r.s1 === r.s2 && !win) c += '<div class="ko-pens">Level \u2014 penalty shoot-out result to come.</div>';
+          return c + '</div>';
+        }
+        if (offView === 'list') {
+          rounds.forEach(function (rd) {
+            var rs = rows.filter(function (r) { return r.round === rd; });
+            h += '<h4 class="ko-list-h">' + esc(rs[0].round_label || ('Round ' + rd)) + '</h4>';
+            rs.forEach(function (r) { h += koCard(r); });
+          });
+        } else {
+          h += '<div class="ko-tree">';
+          rounds.forEach(function (rd) {
+            var rs = rows.filter(function (r) { return r.round === rd; });
+            h += '<div class="ko-col"><h4>' + esc(rs[0].round_label || ('Round ' + rd)) + '</h4>';
+            rs.forEach(function (r) { h += koCard(r); });
             h += '</div>';
           });
           h += '</div>';
-        });
-        h += '</div>';
+        }
         if (pres) h += '<p class="entry-msg" style="margin-top:10px">President: results are entered on the Matches tab \u2014 winners advance here automatically.</p>';
         return h;
       }
@@ -8301,6 +8309,17 @@
         ctx.closePath();
       }
       function loadCImg(u) { return new Promise(function (res) { var done = false; function fin(im) { if (!done) { done = true; res(im); } } var im = new Image(); im.crossOrigin = 'anonymous'; im.onload = function () { fin(im); }; im.onerror = function () { fin(null); }; im.src = u; setTimeout(function () { fin(null); }, 4000); }); }
+      function showSchedOverlay(url) {
+        var old = document.getElementById('schedOverlay');
+        if (old) { if (old._url) URL.revokeObjectURL(old._url); old.remove(); }
+        var ov = document.createElement('div');
+        ov.id = 'schedOverlay'; ov._url = url;
+        ov.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(4,8,14,.93);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:18px;gap:12px';
+        ov.innerHTML = '<img alt="Schedule image" style="max-width:94vw;max-height:74vh;border-radius:12px;box-shadow:0 12px 40px rgba(0,0,0,.5)" /><div style="color:#fff;font-size:14px;text-align:center;opacity:.85">Your schedule image \u2014 hold the image to save it, or find it in your Downloads.</div><button type="button" class="btn btn-red btn-sm">Close</button>';
+        ov.querySelector('img').src = url;
+        ov.addEventListener('click', function (e) { if (e.target === ov || e.target.tagName === 'BUTTON') { URL.revokeObjectURL(url); ov.remove(); } });
+        document.body.appendChild(ov);
+      }
       function sendSchedCanvas(cv, fname, onFail) {
         var failed = false;
         function fail() { if (!failed) { failed = true; if (onFail) onFail(); } }
@@ -8311,7 +8330,7 @@
             a.href = URL.createObjectURL(blob);
             a.download = fname;
             document.body.appendChild(a); a.click(); a.remove();
-            setTimeout(function () { URL.revokeObjectURL(a.href); }, 4000);
+            showSchedOverlay(a.href);
           }, 'image/png');
         } catch (e) { fail(); }
       }
@@ -8616,7 +8635,7 @@
           if (offMissing) {
             fb.innerHTML = '<div class="t-note glass"><b>Knockout bracket</b> \u2014 the official matches table is not switched on yet (Part 21).</div>';
           } else if (offStarted()) {
-            fb.innerHTML = '<div style="display:flex;gap:8px;margin-bottom:12px"><button type="button" class="btn btn-glass btn-sm" style="flex:1;white-space:nowrap" data-dl-schedule="list">\u2B07 Matches image</button><button type="button" class="btn btn-glass btn-sm" style="flex:1;white-space:nowrap" data-dl-schedule="tree">\u2B07 Bracket image</button></div>' + officialBracketHTML();
+            fb.innerHTML = '<div style="display:flex;gap:8px;margin-bottom:12px"><button type="button" class="btn btn-glass btn-sm" style="flex:1;white-space:nowrap" data-dl-schedule="list">\u2B07 Matches image</button><button type="button" class="btn btn-glass btn-sm" style="flex:1;white-space:nowrap" data-dl-schedule="tree">\u2B07 Bracket image</button></div>' + '<div style="display:flex;justify-content:flex-end;gap:6px;margin-bottom:10px"><button type="button" class="btn btn-sm ' + (offView === 'list' ? 'btn-red' : 'btn-glass') + '" data-off-view="list">List</button><button type="button" class="btn btn-sm ' + (offView === 'tree' ? 'btn-red' : 'btn-glass') + '" data-off-view="tree">Tree</button></div>' + officialBracketHTML();
           } else if (offLoadedFor !== TID) {
             fb.innerHTML = '<div class="t-note glass">Loading\u2026</div>';
           } else fb.innerHTML = '<div class="t-note glass"><b>Knockout bracket</b> \u2014 ' + (t.playerCap === 8 ? 'Quarter-finals &rarr; Semi-finals &rarr; Final' : 'Round of 16 &rarr; Quarter-finals &rarr; Semi-finals &rarr; Final') + '. Pairings appear here the moment the President starts the tournament.</div>';
@@ -8776,6 +8795,8 @@
           });
           return;
         }
+        var ovb = e.target.closest ? e.target.closest('[data-off-view]') : null;
+        if (ovb) { offView = ovb.getAttribute('data-off-view'); renderAll(); return; }
         var dlb = e.target.closest ? e.target.closest('[data-dl-schedule]') : null;
         if (dlb) {
           try { scheduleImage(dlb.getAttribute('data-dl-schedule')); } catch (err) { toast('Could not make the image', 'Please try again.'); }
