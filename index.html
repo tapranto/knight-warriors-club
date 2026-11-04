@@ -8121,11 +8121,22 @@
           '.ms-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px 14px}@media(max-width:560px){.ms-grid{grid-template-columns:1fr}}' +
           '.ms-row{display:flex;justify-content:space-between;gap:10px;padding:6px 10px;border:1px solid rgba(255,255,255,.08);border-radius:8px;background:rgba(255,255,255,.03);font-size:13px}.ms-row span{opacity:.75}' +
           '.ko-tree{display:flex;gap:14px;overflow-x:auto;padding-bottom:8px}.ko-col{min-width:210px;flex:1}.ko-col h4{margin:0 0 8px;font-size:13px;letter-spacing:.06em;text-transform:uppercase;opacity:.85}' +
-          '.ko-match{border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:8px 10px;margin-bottom:8px;background:rgba(255,255,255,.03)}' +
+          '.ko-match{border:1px solid rgba(255,255,255,.14);border-radius:10px;padding:8px 10px;margin-bottom:8px;background:rgba(8,12,18,.58);backdrop-filter:blur(12px) saturate(120%);-webkit-backdrop-filter:blur(12px) saturate(120%)}' +
           '.ko-p{display:flex;justify-content:space-between;gap:8px;padding:3px 0;font-size:13px}.ko-p.win{color:#f5c451;font-weight:700}' +
           '.ko-edit{display:flex;gap:6px;align-items:center;margin-top:7px}.ko-edit input{width:52px;padding:5px 7px;border-radius:7px;border:1px solid rgba(255,255,255,.18);background:rgba(0,0,0,.3);color:#fff;font-size:13px}' +
           '.ko-pens{margin-top:7px;font-size:12px}.ko-pens button{margin:4px 6px 0 0}' +
-          '.draw-grid{display:grid;gap:8px;margin-top:8px}.draw-row{display:flex;gap:8px;align-items:center}.draw-row select{flex:1;padding:7px;border-radius:8px;background:#101828;color:#fff;border:1px solid rgba(255,255,255,.18);font-size:13px}';
+          '.draw-grid{display:grid;gap:8px;margin-top:8px}.draw-row{display:flex;gap:8px;align-items:center}.draw-row select{flex:1;padding:7px;border-radius:8px;background:#101828;color:#fff;border:1px solid rgba(255,255,255,.18);font-size:13px}' +
+          '.mk-round{margin:18px 0 8px;font-size:15px;letter-spacing:.08em;text-transform:uppercase;color:#f0a6b3;font-weight:700}.mk-round:first-child{margin-top:2px}' +
+          '.mk-card{border:1px solid rgba(255,255,255,.14);border-radius:14px;padding:12px 14px;margin-bottom:12px;background:rgba(8,12,18,.58);backdrop-filter:blur(12px) saturate(120%);-webkit-backdrop-filter:blur(12px) saturate(120%)}' +
+          '.mk-head{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:#f0a6b3;font-weight:700;margin-bottom:8px}' +
+          '.mk-vs{display:flex;align-items:center;gap:9px;flex-wrap:wrap;font-size:15px;font-weight:600}.mk-vs .mk-x{opacity:.6;font-weight:400;font-size:13px}' +
+          '.mk-av{width:30px;height:30px;border-radius:50%;object-fit:cover;border:1px solid rgba(255,255,255,.25)}' +
+          '.mk-ini{width:30px;height:30px;border-radius:50%;background:rgba(227,27,51,.25);border:1px solid rgba(255,255,255,.25);display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700}' +
+          '.mk-sub{font-size:12.5px;opacity:.75;margin-top:6px}' +
+          '.mk-edit{display:flex;gap:8px;align-items:center;margin-top:10px;flex-wrap:wrap}.mk-edit input{width:58px;padding:8px;border-radius:9px;border:1px solid rgba(255,255,255,.2);background:rgba(0,0,0,.35);color:#fff;font-size:15px;text-align:center}' +
+          '.mk-score{font-size:19px;font-weight:800;letter-spacing:.04em;margin-top:8px}' +
+          '.st-row{display:grid;grid-template-columns:1fr repeat(6,34px);gap:6px;align-items:center;padding:8px 12px;border:1px solid rgba(255,255,255,.14);border-radius:12px;margin-bottom:7px;background:rgba(8,12,18,.58);backdrop-filter:blur(12px) saturate(120%);-webkit-backdrop-filter:blur(12px) saturate(120%);font-size:13px}' +
+          '.st-row.st-head{background:rgba(227,27,51,.18);font-weight:700;text-transform:uppercase;font-size:11px;letter-spacing:.05em}.st-row span:not(:first-child){text-align:center}';
         var stEl = document.createElement('style'); stEl.textContent = css; document.head.appendChild(stEl);
       })();
       function offStarted() { return !!(offRows && offRows.length); }
@@ -8207,12 +8218,7 @@
             var p1n = e.p1 ? e.p1.name : null, p2n = e.p2 ? e.p2.name : null;
             var win = winnerOf(r, e);
             h += '<div class="ko-match"><div class="ko-p' + (win && r.winner_side === 1 ? ' win' : '') + '"><span>' + esc(p1n || 'TBD') + '</span><b>' + (r.played ? r.s1 : '\u2013') + '</b></div><div class="ko-p' + (win && r.winner_side === 2 ? ' win' : '') + '"><span>' + esc(p2n || 'TBD') + '</span><b>' + (r.played ? r.s2 : '\u2013') + '</b></div>';
-            if (pres && p1n && p2n) {
-              h += '<div class="ko-edit"><input type="number" min="0" id="os1-' + r.id + '" value="' + (r.played && r.s1 !== null ? r.s1 : '') + '" placeholder="0" /><span>\u2013</span><input type="number" min="0" id="os2-' + r.id + '" value="' + (r.played && r.s2 !== null ? r.s2 : '') + '" placeholder="0" /><button type="button" class="btn btn-glass btn-sm" data-save-score="' + r.id + '">Save</button></div>';
-              if (r.played && r.s1 === r.s2 && !win) {
-                h += '<div class="ko-pens">Level scores \u2014 who won on penalties?<br><button type="button" class="btn btn-glass btn-sm" data-pens="' + r.id + ':1">' + esc(p1n) + '</button><button type="button" class="btn btn-glass btn-sm" data-pens="' + r.id + ':2">' + esc(p2n) + '</button></div>';
-              }
-            } else if (r.played && r.s1 === r.s2 && !win) {
+            if (r.played && r.s1 === r.s2 && !win) {
               h += '<div class="ko-pens">Level \u2014 penalty shoot-out result to come.</div>';
             }
             h += '</div>';
@@ -8220,7 +8226,67 @@
           h += '</div>';
         });
         h += '</div>';
-        if (pres) h += '<p class="entry-msg" style="margin-top:10px">President: enter each result above and tap Save \u2014 winners advance automatically. Empty both boxes and Save to clear a result.</p>';
+        if (pres) h += '<p class="entry-msg" style="margin-top:10px">President: results are entered on the Matches tab \u2014 winners advance here automatically.</p>';
+        return h;
+      }
+      function memberByIdMap() { var mp = {}; (entryRows || []).forEach(function (r) { if (r.member) mp[r.member_id] = r.member; }); return mp; }
+      function avHTML(mid, name, mp) {
+        var m = mid ? mp[mid] : null;
+        if (m && m.avatar_url) return '<img class="mk-av" src="' + esc(m.avatar_url) + '" alt="" />';
+        var ini = (name || '?').split(/\s+/).map(function (w) { return w.charAt(0); }).join('').slice(0, 2).toUpperCase();
+        return '<span class="mk-ini">' + esc(ini) + '</span>';
+      }
+      function officialMatchesHTML() {
+        var rows = offRows || []; var eff = deriveAll(rows); var mp = memberByIdMap(); var pres = isPres();
+        var rounds = [];
+        rows.forEach(function (r) { if (rounds.indexOf(r.round) === -1) rounds.push(r.round); });
+        rounds.sort(function (a, b) { return a - b; });
+        var h = '';
+        rounds.forEach(function (rd) {
+          var rs = rows.filter(function (r) { return r.round === rd; });
+          h += '<div class="mk-round">' + esc(rs[0].round_label || ('Round ' + rd)) + '</div>';
+          rs.forEach(function (r, ix) {
+            var e = eff[rowKey(r)] || { p1: null, p2: null };
+            var p1n = e.p1 ? e.p1.name : null, p2n = e.p2 ? e.p2.name : null;
+            var win = winnerOf(r, e);
+            h += '<div class="mk-card"><div class="mk-head">Match ' + (ix + 1) + '</div>';
+            h += '<div class="mk-vs">' + avHTML(e.p1 && e.p1.member_id, p1n, mp) + '<span>' + esc(p1n || 'TBD') + '</span><span class="mk-x">vs</span>' + avHTML(e.p2 && e.p2.member_id, p2n, mp) + '<span>' + esc(p2n || 'TBD') + '</span></div>';
+            if (r.played) h += '<div class="mk-score">' + r.s1 + ' \u2013 ' + r.s2 + (win ? ' &nbsp;\u00b7&nbsp; ' + esc(win.name) + ' won' + (r.s1 === r.s2 ? ' on penalties' : '') : '') + '</div>';
+            else h += '<div class="mk-sub">' + (p1n && p2n ? 'Not played yet' : 'Waiting for the earlier round') + '</div>';
+            if (pres && p1n && p2n) {
+              h += '<div class="mk-edit"><input type="number" min="0" id="os1-' + r.id + '" value="' + (r.played && r.s1 !== null ? r.s1 : '') + '" placeholder="0" /><span>\u2013</span><input type="number" min="0" id="os2-' + r.id + '" value="' + (r.played && r.s2 !== null ? r.s2 : '') + '" placeholder="0" /><button type="button" class="btn btn-red" data-save-score="' + r.id + '">SAVE RESULT</button></div>';
+              if (r.played && r.s1 === r.s2 && !win) {
+                h += '<div class="ko-pens">Level scores \u2014 who won on penalties?<br><button type="button" class="btn btn-glass btn-sm" data-pens="' + r.id + ':1">' + esc(p1n) + '</button><button type="button" class="btn btn-glass btn-sm" data-pens="' + r.id + ':2">' + esc(p2n) + '</button></div>';
+              }
+            }
+            h += '</div>';
+          });
+        });
+        if (pres) h += '<p class="entry-msg">President: enter the score and tap SAVE RESULT \u2014 winners advance on the Bracket tab automatically. Empty both boxes and save to clear a result.</p>';
+        return h;
+      }
+      function officialStatsHTML() {
+        var rows = offRows || []; var eff = deriveAll(rows);
+        var st = {};
+        function ensure(name) { if (!st[name]) st[name] = { name: name, p: 0, w: 0, l: 0, gf: 0, ga: 0 }; return st[name]; }
+        rows.forEach(function (r) {
+          if (!r.played) return;
+          var e = eff[rowKey(r)] || { p1: null, p2: null };
+          if (!e.p1 || !e.p2 || !e.p1.name || !e.p2.name) return;
+          var a = ensure(e.p1.name), b = ensure(e.p2.name);
+          a.p++; b.p++; a.gf += r.s1; a.ga += r.s2; b.gf += r.s2; b.ga += r.s1;
+          var win = winnerOf(r, e);
+          if (win) { if (win.name === a.name) { a.w++; b.l++; } else { b.w++; a.l++; } }
+        });
+        var list = Object.keys(st).map(function (k) { return st[k]; });
+        list.sort(function (x, y) { return (y.w - x.w) || ((y.gf - y.ga) - (x.gf - x.ga)) || (y.gf - x.gf) || x.name.localeCompare(y.name); });
+        var fin = rows.filter(function (r) { return r.round === 3; })[0];
+        var champ = fin ? winnerOf(fin, eff[rowKey(fin)] || {}) : null;
+        var h = '';
+        if (champ) h += '<div class="t-note glass" style="margin-bottom:12px">\u{1F3C6} <b>Champion: ' + esc(champ.name) + '</b></div>';
+        if (!list.length) return h + '<div class="t-note glass">No matches played yet \u2014 stats appear after the first result.</div>';
+        h += '<div class="st-row st-head"><span>Player</span><span>P</span><span>W</span><span>L</span><span>GF</span><span>GA</span><span>GD</span></div>';
+        list.forEach(function (s) { h += '<div class="st-row"><span>' + esc(s.name) + '</span><span>' + s.p + '</span><span>' + s.w + '</span><span>' + s.l + '</span><span>' + s.gf + '</span><span>' + s.ga + '</span><span>' + (s.gf - s.ga) + '</span></div>'; });
         return h;
       }
       function paintLogo(id) {
@@ -8274,6 +8340,20 @@
       function renderAll() {
         if (!TID || !LIVE[TID]) return;
         loadOfficial();
+        document.querySelectorAll('.jump-bar button').forEach(function (b) {
+          var j = b.getAttribute('data-jump');
+          var want = j === 'tFixture' ? 'BRACKET' : j === 'tResults' ? 'MATCHES' : j === 'tRecords' ? 'STATS' : null;
+          if (want && b.textContent !== want) b.textContent = want;
+        });
+        var bd = $('tBadge');
+        if (bd && offLoadedFor === TID && offStarted()) {
+          var finRow = null;
+          (offRows || []).forEach(function (r) { if (r.round === 3) finRow = r; });
+          var finEff = finRow ? deriveAll(offRows)[rowKey(finRow)] : null;
+          var champB = finRow ? winnerOf(finRow, finEff || {}) : null;
+          if (champB) { bd.textContent = 'FINISHED'; bd.className = 'status-badge done'; }
+          else { bd.textContent = 'RUNNING'; bd.className = 'status-badge'; }
+        }
         var t = LIVE[TID];
         var m = me();
         var inCount = entryRows ? entryRows.length : 0;
@@ -8372,14 +8452,9 @@
           if (b.getAttribute('data-jump') === 'tTable') b.style.display = 'none';
         });
         var rb = $('tResultsBody');
-        if (rb && offStarted()) {
-          var playedRows = offRows.filter(function (r) { return r.played; });
-          var effR = deriveAll(offRows);
-          rb.innerHTML = playedRows.length ? '<div class="entry-list">' + playedRows.map(function (r) {
-            var e = effR[rowKey(r)] || { p1: null, p2: null };
-            return '<div class="entry-row"><span class="entry-name">' + esc(r.round_label) + ': ' + esc(e.p1 ? e.p1.name : 'TBD') + ' ' + r.s1 + '\u2013' + r.s2 + ' ' + esc(e.p2 ? e.p2.name : 'TBD') + '</span></div>';
-          }).join('') + '</div>' : '<div class="t-note glass">No results yet \u2014 the first result lands here.</div>';
-        }
+        if (rb && offStarted()) rb.innerHTML = officialMatchesHTML();
+        var stb2 = $('tRecordsBody');
+        if (stb2 && offStarted()) stb2.innerHTML = officialStatsHTML();
       }
 
       function restoreTabs() {
