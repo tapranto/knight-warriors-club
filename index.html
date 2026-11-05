@@ -3309,7 +3309,11 @@
       }
       function renderLb(game) {
         lbGame = game;
-        var list = TOURNAMENTS.filter(function (t) { return t.game === game; });
+        var lbRank = { running: 0, live: 0, upcoming: 1, finished: 2 };
+        var list = TOURNAMENTS.map(function (t, i) { return { t: t, i: i }; })
+          .filter(function (x) { return x.t.game === game; })
+          .sort(function (a, b) { var r = (lbRank[a.t.status] != null ? lbRank[a.t.status] : 1) - (lbRank[b.t.status] != null ? lbRank[b.t.status] : 1); return r !== 0 ? r : b.i - a.i; })
+          .map(function (x) { return x.t; });
         lbPanel.classList.remove('has-table');
         if (!list.length) {
           lbPanel.classList.remove('has-list');
@@ -3826,6 +3830,7 @@
           else if (t.status === 'upcoming') upcoming.push(t);
           else if (t.status === 'finished') finished.push(t);
         });
+        running.reverse(); upcoming.reverse(); finished.reverse();
         var live = running.concat(upcoming);
         function entries(list, desc) {
           return list.map(function (t) {
