@@ -8256,8 +8256,9 @@
         if (offView === 'list') {
           rounds.forEach(function (rd) {
             var rs = rows.filter(function (r) { return r.round === rd; });
-            h += '<h4 class="ko-list-h">' + esc(rs[0].round_label || ('Round ' + rd)) + '</h4>';
+            h += '<h4 class="ko-list-h">' + esc(rs[0].round_label || ('Round ' + rd)) + '</h4><div class="ko-list-grid">';
             rs.forEach(function (r) { h += koCard(r); });
+            h += '</div>';
           });
         } else {
           var byKeyT = {};
@@ -8576,7 +8577,7 @@
         loadOfficial();
         document.querySelectorAll('.jump-bar button').forEach(function (b) {
           var j = b.getAttribute('data-jump');
-          var want = j === 'tFixture' ? 'BRACKET' : j === 'tResults' ? 'MATCHES' : j === 'tRecords' ? 'STATS' : null;
+          var want = j === 'tFixture' ? 'FIXTURE' : j === 'tResults' ? 'MATCHES' : j === 'tRecords' ? 'STATS' : null;
           if (want && b.textContent !== want) b.textContent = want;
         });
         var bd = $('tBadge');
@@ -8677,7 +8678,7 @@
           if (offMissing) {
             fb.innerHTML = '<div class="t-note glass"><b>Knockout bracket</b> \u2014 the official matches table is not switched on yet (Part 21).</div>';
           } else if (offStarted()) {
-            fb.innerHTML = '<div style="display:flex;gap:8px;margin-bottom:12px"><button type="button" class="btn btn-glass btn-sm" style="flex:1;white-space:nowrap" data-dl-schedule="list">\u2B07 Matches image</button><button type="button" class="btn btn-glass btn-sm" style="flex:1;white-space:nowrap" data-dl-schedule="tree">\u2B07 Bracket image</button></div>' + '<div style="display:flex;justify-content:flex-end;gap:6px;margin-bottom:10px"><button type="button" class="btn btn-sm ' + (offView === 'list' ? 'btn-red' : 'btn-glass') + '" data-off-view="list">List</button><button type="button" class="btn btn-sm ' + (offView === 'tree' ? 'btn-red' : 'btn-glass') + '" data-off-view="tree">Tree</button></div>' + officialBracketHTML();
+            fb.innerHTML = '<div style="display:flex;gap:8px;margin-bottom:12px"><button type="button" class="btn btn-glass btn-sm" style="flex:1;white-space:nowrap" data-dl-schedule="list">\u2B07 Matches image</button><button type="button" class="btn btn-glass btn-sm" style="flex:1;white-space:nowrap" data-dl-schedule="tree">\u2B07 Fixture image</button></div>' + '<div style="display:flex;justify-content:flex-end;gap:6px;margin-bottom:10px"><button type="button" class="btn btn-sm ' + (offView === 'list' ? 'btn-red' : 'btn-glass') + '" data-off-view="list">List</button><button type="button" class="btn btn-sm ' + (offView === 'tree' ? 'btn-red' : 'btn-glass') + '" data-off-view="tree">Tree</button></div>' + officialBracketHTML();
           } else if (offLoadedFor !== TID) {
             fb.innerHTML = '<div class="t-note glass">Loading\u2026</div>';
           } else fb.innerHTML = '<div class="t-note glass"><b>Knockout bracket</b> \u2014 ' + (t.playerCap === 8 ? 'Quarter-finals &rarr; Semi-finals &rarr; Final' : 'Round of 16 &rarr; Quarter-finals &rarr; Semi-finals &rarr; Final') + '. Pairings appear here the moment the President starts the tournament.</div>';
@@ -13350,15 +13351,16 @@
         var h = '';
         if (champ) h += '<div class="t-note glass" style="margin-bottom:12px">🏆 <b>Champion: ' + esc(champ) + '</b></div>';
         h += '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px"><span class="ot-toggle"><button type="button" class="btn btn-sm ' + (OT.view === 'list' ? 'btn-red' : 'btn-glass') + '" data-ot-view="list">List</button><button type="button" class="btn btn-sm ' + (OT.view === 'tree' ? 'btn-red' : 'btn-glass') + '" data-ot-view="tree">Tree</button></span>' +
-          '<button type="button" class="btn btn-glass btn-sm" data-ot-img="list">⬇ Matches image</button><button type="button" class="btn btn-glass btn-sm" data-ot-img="tree">⬇ Bracket image</button></div>';
+          '<button type="button" class="btn btn-glass btn-sm" data-ot-img="list">⬇ Matches image</button><button type="button" class="btn btn-glass btn-sm" data-ot-img="tree">⬇ Fixture image</button></div>';
         var rounds = [];
         rows.forEach(function (r) { if (rounds.indexOf(r.round) === -1) rounds.push(r.round); });
         rounds.sort(function (a, b) { return a - b; });
         if (OT.view === 'list') {
           rounds.forEach(function (rd) {
             var rs = rows.filter(function (r) { return r.round === rd; });
-            h += '<h4 class="ko-list-h">' + esc(rs[0].round_label || ('Round ' + rd)) + '</h4>';
+            h += '<h4 class="ko-list-h">' + esc(rs[0].round_label || ('Round ' + rd)) + '</h4><div class="ko-list-grid">';
             rs.forEach(function (r) { h += koCardOT(r); });
+            h += '</div>';
           });
         } else {
           var byId = {}; rows.forEach(function (r) { byId[r.id] = r; });
@@ -13803,6 +13805,7 @@
       (function injectCSS() {
         var css =
           '#view-otournament .t-sub{display:none}#view-otournament .t-sub.active{display:block}' +
+          '.ko-list-grid{display:grid;grid-template-columns:1fr;gap:10px}.ko-list-grid .ko-match{margin-bottom:0}@media (min-width:900px){.ko-list-grid{grid-template-columns:1fr 1fr}}' +
           '.ot-plist{display:flex;flex-direction:column;gap:8px}' +
           '.ot-prow{display:flex;align-items:center;gap:10px;padding:9px 12px;border:1px solid rgba(255,255,255,.14);border-radius:12px;background:rgba(8,12,18,.58);backdrop-filter:blur(12px) saturate(120%);-webkit-backdrop-filter:blur(12px) saturate(120%)}' +
           '.ot-pseed{font-weight:700;opacity:.65;min-width:30px}' +
