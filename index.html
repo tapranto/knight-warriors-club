@@ -2200,6 +2200,7 @@
                 <p class="t-meta" id="otMeta">Loading the tournament…</p>
               </div>
               <span class="status-badge soon" id="otBadge">Loading</span>
+              <img class="t-champ-cutout" id="otChampCutout" alt="" hidden />
             </div>
             <nav class="jump-bar glass" role="tablist" aria-label="Official tournament sections">
               <button type="button" role="tab" aria-selected="true" class="active" data-ot-tab="overview">Overview</button>
@@ -12461,6 +12462,10 @@
         OT.players.forEach(function (p) { if (p.name === name) f = p; });
         return f;
       }
+      function championVisual() {
+        if (!OT || !OT.t || !OT.t.champion) return null;
+        return avatarURLFor(playerByName(OT.t.champion));
+      }
       function nameChip(name, sizePx) {
         var p = playerByName(name);
         return '<span class="ko-name">' + (p ? avHTML(p, name) : '') + esc(name || 'TBD') + '</span>';
@@ -12470,7 +12475,7 @@
       function loadOT(tid, force) {
         var s = db(); if (!s) return;
         if (!force && OT && (OT.loadedFor === tid || OT.loadingFor === tid)) return;
-        if (!OT || OT.tid !== tid) OT = { tid: tid, t: null, players: [], matches: [], lineups: [], pairs: [], members: {}, squads: {}, mySquads: [], squadMembers: {}, lineupStatus: {}, tab: 'overview', view: 'list', loadedFor: null, loadingFor: null, err: null, manualPairs: [] };
+        if (!OT || OT.tid !== tid) OT = { tid: tid, t: null, players: [], matches: [], lineups: [], pairs: [], members: {}, squads: {}, mySquads: [], squadMembers: {}, lineupStatus: {}, tab: 'overview', view: 'list', loadedFor: null, loadingFor: null, err: null, manualPairs: [], armSplash: true };
         OT.loadingFor = tid;
         var j = {};
         j.t = s.from('kwc_tournaments').select('*').eq('id', tid).eq('is_official', true).single();
@@ -12628,6 +12633,7 @@
 
       /* ---------- page skeleton ---------- */
       function openOT(tid) {
+        if (OT && OT.tid === tid) OT.armSplash = true;
         if (!OT || OT.tid !== tid) { OT = null; loadOT(tid); }
         showViewOT();
         loadOT(tid);
@@ -12666,6 +12672,13 @@
         badgeEl.textContent = so.label;
         badgeEl.className = 'status-badge ' + so.cls;
         if (t.logo_url) { logoEl.src = t.logo_url; logoEl.hidden = false; } else { logoEl.hidden = true; }
+        var cutEl = $('otChampCutout'), headEl = document.querySelector('#view-otournament .t-head');
+        var cvis = (so.key === 'finished' && t.champion) ? championVisual() : null;
+        if (cutEl) {
+          if (cvis) { if (cutEl.getAttribute('src') !== cvis) cutEl.src = cvis; cutEl.hidden = false; }
+          else { cutEl.hidden = true; cutEl.removeAttribute('src'); }
+        }
+        if (headEl) headEl.classList.toggle('has-cutout', !!cvis);
         document.querySelectorAll('#view-otournament .jump-bar button').forEach(function (b) {
           var on = b.getAttribute('data-ot-tab') === OT.tab;
           b.classList.toggle('active', on); b.setAttribute('aria-selected', on ? 'true' : 'false');
@@ -12679,6 +12692,12 @@
         $('otFixtureBody').innerHTML = fixtureHTML();
         $('otMatchesBody').innerHTML = matchesHTML();
         $('otStatsBody').innerHTML = statsHTML();
+        var isFin = (so.key === 'finished');
+        if (isFin && t.champion && !window.__fromPop && typeof showChampionSplash === 'function' && (OT.armSplash || !OT.wasFinished)) {
+          OT.armSplash = false;
+          try { showChampionSplash({ name: t.name, champion: t.champion, championPhoto: championVisual() || undefined }); } catch (e) { /* celebration is best-effort */ }
+        }
+        OT.wasFinished = isFin;
       }
 
       /* ---------- Overview ---------- */
@@ -13805,7 +13824,7 @@
       (function injectCSS() {
         var css =
           '#view-otournament .t-sub{display:none}#view-otournament .t-sub.active{display:block}' +
-          '.ko-list-grid{display:grid;grid-template-columns:1fr;gap:10px}.ko-list-grid .ko-match{margin-bottom:0}@media (min-width:900px){.ko-list-grid{grid-template-columns:1fr 1fr}}' +
+          '.ko-list-grid{display:grid;grid-template-columns:1fr;gap:10px}.ko-list-grid .ko-match{margin-bottom:0}@media (min-width:900px){.ko-list-grid{grid-template-columns:1fr 1fr}}#view-otournament .t-champ-cutout{width:132px;height:164px;object-fit:cover;object-position:top;border-radius:18px;border:2px solid rgba(245,197,66,.65);box-shadow:0 14px 30px rgba(0,0,0,.55),0 0 22px rgba(245,197,66,.28)}@media (max-width:820px){#view-otournament .t-champ-cutout{width:84px;height:116px;right:14px}}' +
           '.ot-plist{display:flex;flex-direction:column;gap:8px}' +
           '.ot-prow{display:flex;align-items:center;gap:10px;padding:9px 12px;border:1px solid rgba(255,255,255,.14);border-radius:12px;background:rgba(8,12,18,.58);backdrop-filter:blur(12px) saturate(120%);-webkit-backdrop-filter:blur(12px) saturate(120%)}' +
           '.ot-pseed{font-weight:700;opacity:.65;min-width:30px}' +
@@ -13899,7 +13918,7 @@
       /* debug/testing hook (used for local proof-renders) */
       window.__OT = {
         openWith: function (t, players, matches, opts) {
-          OT = { tid: t.id, t: t, players: players || [], matches: matches || [], lineups: (opts && opts.lineups) || [], pairs: (opts && opts.pairs) || [], members: (opts && opts.members) || {}, squads: (opts && opts.squads) || {}, mySquads: (opts && opts.mySquads) || [], squadMembers: (opts && opts.squadMembers) || {}, lineupStatus: (opts && opts.lineupStatus) || {}, tab: (opts && opts.tab) || 'overview', view: 'list', loadedFor: t.id, loadingFor: null, err: null, manualPairs: [] };
+          OT = { tid: t.id, t: t, players: players || [], matches: matches || [], lineups: (opts && opts.lineups) || [], pairs: (opts && opts.pairs) || [], members: (opts && opts.members) || {}, squads: (opts && opts.squads) || {}, mySquads: (opts && opts.mySquads) || [], squadMembers: (opts && opts.squadMembers) || {}, lineupStatus: (opts && opts.lineupStatus) || {}, tab: (opts && opts.tab) || 'overview', view: 'list', loadedFor: t.id, loadingFor: null, err: null, manualPairs: [], armSplash: true };
           showViewOT(); renderOT();
         },
         setTab: setTab,
