@@ -3698,7 +3698,7 @@
           items.push({
             id: 'post-' + i, type: 'post', chip: 'Club News', tag: p.tag, tourneyId: p.tourneyId || null,
             title: p.title, body: p.body, linkView: p.linkView, linkLabel: p.linkLabel, youtube: p.youtube || '',
-            date: '', photo: CLUB_ART, photoAlt: 'Knight Warriors Club — the bloody moon emblem'
+            date: p.when || '', photo: p.image || CLUB_ART, photoAlt: p.image ? p.title : 'Knight Warriors Club — the bloody moon emblem'
           });
         });
         return items;
@@ -5606,7 +5606,8 @@
             return {
               tag: a.tag || a.date || '', title: a.title || '', body: a.body || '',
               linkView: a.linkView || a.link || '', linkLabel: a.linkLabel || a.linkText || '',
-              tourneyId: a.tourneyId || null, youtube: a.youtube || ''
+              tourneyId: a.tourneyId || null, youtube: a.youtube || '',
+              image: a.image || '', when: a.when || ''
             };
           });
         }
