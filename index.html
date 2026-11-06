@@ -3696,7 +3696,7 @@
         });
         NEWS_POSTS.forEach(function (p, i) {
           items.push({
-            id: 'post-' + i, type: 'post', chip: 'Club News', tag: p.tag, tourneyId: p.tourneyId || null,
+            id: 'post-' + (p.slug || i), type: 'post', chip: 'Club News', tag: p.tag, tourneyId: p.tourneyId || null,
             title: p.title, body: p.body, linkView: p.linkView, linkLabel: p.linkLabel, youtube: p.youtube || '',
             date: p.when || '', photo: p.image || CLUB_ART, photoAlt: p.image ? p.title : 'Knight Warriors Club — the bloody moon emblem'
           });
@@ -3745,7 +3745,8 @@
         var h = '<a class="article-back" href="#news" data-nav="news">← All news</a>';
         h += '<article class="article glass">';
         h += '<div class="article-meta"><span class="s-tag">' + esc(it.chip) + '</span>' +
-          (it.date ? '<span class="story-date">' + esc(it.date) + '</span>' : '') + '</div>';
+          (it.date ? '<span class="story-date">' + esc(it.date) + '</span>' : '') +
+          '<button type="button" class="btn btn-glass btn-sm" data-copy-story="' + esc(it.id) + '" style="margin-left:auto">\u{1F517} Copy link</button></div>';
         h += '<h2>' + esc(it.title) + '</h2>';
         if (it.photo) h += '<img class="article-hero" src="' + esc(it.photo) + '" alt="' + esc(it.photoAlt) + '" />';
         if (it.youtube) h += ytEmbedHTML(it.youtube);
@@ -3779,10 +3780,19 @@
       function openArticle(id) {
         var it = null;
         buildNewsItems().forEach(function (x) { if (x.id === id) it = x; });
-        if (!it) { showView('news', true); return; }
+        if (!it) { window.__kwcPendingNews = id; showView('news', true); return; }
         document.getElementById('articleBody').innerHTML = articleHTML(it);
         showView('article', true, 'news/' + it.id);
       }
+      document.addEventListener('click', function (e) {
+        var b = e.target.closest ? e.target.closest('[data-copy-story]') : null;
+        if (!b) return;
+        e.preventDefault();
+        var url = window.location.origin + window.location.pathname + '#news/' + b.getAttribute('data-copy-story');
+        function done() { if (window.kwcToast) window.kwcToast('Link copied', 'Anyone opening it lands directly on this story.'); }
+        if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(url).then(done, function () { window.prompt('Copy this link:', url); });
+        else window.prompt('Copy this link:', url);
+      });
 
       /* ---------- Home tournament band ---------- */
       var homeRunning = null;
@@ -5612,7 +5622,7 @@
               tag: a.tag || a.date || '', title: a.title || '', body: a.body || '',
               linkView: a.linkView || a.link || '', linkLabel: a.linkLabel || a.linkText || '',
               tourneyId: a.tourneyId || null, youtube: a.youtube || '',
-              image: a.image || '', when: a.when || ''
+              image: a.image || '', when: a.when || '', slug: a.slug || ''
             };
           });
         }
@@ -5637,6 +5647,16 @@
             var wantId = hash.slice('#tournament/'.length);
             try { wantId = decodeURIComponent(wantId); } catch (e) { /* keep raw id */ }
             if (!currentTournament || currentTournament.id !== wantId) openTournament(wantId);
+          }
+          /* Same for a news deep link (#news/<story-id>): the story may
+             only exist in the fetched announcements. */
+          if (typeof openArticle === 'function') {
+            var newsId = window.__kwcPendingNews || null;
+            if (!newsId && hash.indexOf('#news/') === 0) {
+              newsId = hash.slice('#news/'.length);
+              try { newsId = decodeURIComponent(newsId); } catch (e) { /* keep raw id */ }
+            }
+            if (newsId) { window.__kwcPendingNews = null; openArticle(newsId); }
           }
         }
         /* ================= Load the three club data files ================= */

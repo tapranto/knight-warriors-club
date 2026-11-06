@@ -5,21 +5,24 @@
       "title": "Rafi runs riot: 6–0 demolition of Farhan sends him into the Legacy semi-finals",
       "body": "Rafiul Hasan Rafi is the first player into the semi-finals of the eFootball Tournament Legacy after a ruthless 6–0 quarter-final win over Farhan Mahee. The strangest part? Farhan actually had more of the ball — 52% possession and more completed passes — but Rafi's Internazionale Milano were lethal where it mattered: 14 shots, 11 of them on target, and six goals. Farhan's goalkeeper made 6 saves on the night, and without him the margin could have been even heavier. A real statement win from Rafi, who now waits to see who joins him in the last four.",
       "image": "assets/news/legacy-qf-rafi-farhan-vs.jpg",
-      "when": "6 Nov 2026 · 11:48 AM"
+      "when": "6 Nov 2026 · 11:48 AM",
+      "slug": "rafi-6-0-farhan-legacy-qf"
     },
     {
       "date": "Club News",
       "title": "Welcome to the new home of Knight Warriors Club",
       "body": "Our official website is live — committee, members, events, rules and membership info, all in one place. Explore the sections and get to know your club.",
       "link": "about",
-      "linkText": "About the club"
+      "linkText": "About the club",
+      "slug": "welcome-to-knight-warriors-club"
     },
     {
       "date": "Recruitment",
       "title": "Recruitment open — join the ranks",
       "body": "Knight Warriors Club is recruiting new members across eFootball, PUBG, Clash of Clans and Call of Duty. Pick your tier, fill in the application and become a Warrior.",
       "link": "join",
-      "linkText": "Apply to join"
+      "linkText": "Apply to join",
+      "slug": "recruitment-open"
     }
   ]
 }
