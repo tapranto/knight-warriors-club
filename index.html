@@ -5701,6 +5701,17 @@
             renderTournament();
           }
           if (typeof renderHonours === 'function') renderHonours();
+          /* The renders above rebuild lists with fresh data-src images;
+             if this view is already open, promote them now — otherwise
+             they stay blank until the visitor leaves and returns. */
+          var actView = document.body.getAttribute('data-view');
+          var actEl = actView ? document.getElementById('view-' + actView) : null;
+          if (actEl) {
+            actEl.querySelectorAll('img[data-src]').forEach(function (img) {
+              img.setAttribute('src', img.getAttribute('data-src'));
+              img.removeAttribute('data-src');
+            });
+          }
           /* A tournament deep link (#tournament/<id>) that the embedded
              snapshot could not resolve at boot may exist in the fetched
              data — open it now that the real list is in. */
