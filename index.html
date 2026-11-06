@@ -3860,7 +3860,7 @@
         var b = e.target.closest ? e.target.closest('[data-copy-story]') : null;
         if (!b) return;
         e.preventDefault();
-        var url = window.location.origin + '/share/news/' + b.getAttribute('data-copy-story') + '.html';
+        var url = window.location.origin + '/share/news/' + b.getAttribute('data-copy-story');
         function done() { if (window.kwcToast) window.kwcToast('Link copied', 'Anyone opening it lands directly on this story.'); }
         if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(url).then(done, function () { window.prompt('Copy this link:', url); });
         else window.prompt('Copy this link:', url);
