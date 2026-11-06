@@ -3752,7 +3752,7 @@
         if (it.youtube) h += ytEmbedHTML(it.youtube);
         h += '<div class="article-body">';
         if (it.type === 'post') {
-          h += '<p>' + esc(it.body) + '</p>';
+          h += String(it.body || '').split(/\n\s*\n/).map(function (para) { return '<p>' + esc(para) + '</p>'; }).join('');
           if (it.linkView) h += '<p><a class="article-tourney-link" href="#' + it.linkView + '" data-nav="' + it.linkView + '">' + esc(it.linkLabel) + ' ' + ARROW_SVG + '</a></p>';
         } else if (it.type === 'match') {
           var m = it.match, t = it.tourney;
