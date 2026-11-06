@@ -11,6 +11,16 @@
     <link rel="manifest" href="/manifest.json" />
     <meta name="theme-color" content="#0a101c" />
     <title>Knight Warriors Club</title>
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Knight Warriors Club" />
+    <meta property="og:title" content="Knight Warriors Club" />
+    <meta property="og:description" content="Knight Warriors Club — a sports & e-sports club since 2023. eFootball, PUBG, Clash of Clans and Call of Duty. Play. Compete. Conquer." />
+    <meta property="og:url" content="https://knightwarriorsclub.com/" />
+    <meta property="og:image" content="https://knightwarriorsclub.com/assets/background-home-moon.jpg" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Knight Warriors Club" />
+    <meta name="twitter:description" content="Knight Warriors Club — a sports & e-sports club since 2023. eFootball, PUBG, Clash of Clans and Call of Duty. Play. Compete. Conquer." />
+    <meta name="twitter:image" content="https://knightwarriorsclub.com/assets/background-home-moon.jpg" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Orbitron:wght@500;700;800;900&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -3850,7 +3860,7 @@
         var b = e.target.closest ? e.target.closest('[data-copy-story]') : null;
         if (!b) return;
         e.preventDefault();
-        var url = window.location.origin + window.location.pathname + '#news/' + b.getAttribute('data-copy-story');
+        var url = window.location.origin + '/share/news/' + b.getAttribute('data-copy-story') + '.html';
         function done() { if (window.kwcToast) window.kwcToast('Link copied', 'Anyone opening it lands directly on this story.'); }
         if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(url).then(done, function () { window.prompt('Copy this link:', url); });
         else window.prompt('Copy this link:', url);
