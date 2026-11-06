@@ -915,6 +915,28 @@
       body[data-view="article"] .article-body b { color: #0d2b47; }
       body[data-view="article"] .article-body h4 { color: #b30f1e; }
       body[data-view="article"] .article-hero { aspect-ratio: auto; height: auto; object-fit: contain; border: none; border-radius: 10px; margin-top: 16px; }
+      .n-lead { display: block; text-decoration: none; }
+      .n-lead-body, .n-row-body { display: block; }
+      .n-lead-media img { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; display: block; border-radius: 6px; }
+      .n-lead-title { display: block; font-family: var(--font-display); font-weight: 800; font-size: 27px; line-height: 1.25; color: #0d2b47; margin-top: 14px; }
+      .n-lead-sum { display: block; font-size: 16.5px; line-height: 1.55; color: #33566e; margin-top: 8px; }
+      .n-meta { display: block; font-size: 13.5px; font-weight: 600; color: #5b7a94; margin-top: 10px; }
+      .n-sep { margin: 0 8px; color: #8fb0c7; }
+      .n-list { margin-top: 4px; }
+      .n-row { display: grid; grid-template-columns: 128px 1fr; gap: 14px; padding: 16px 0; border-top: 1px solid rgba(13,43,71,0.16); text-decoration: none; align-items: start; }
+      .n-row-media img { width: 100%; aspect-ratio: 16 / 10; object-fit: cover; display: block; border-radius: 4px; }
+      .n-row-title { display: block; font-family: var(--font-display); font-weight: 700; font-size: 18px; line-height: 1.35; color: #0d2b47; }
+      .n-row .n-meta { margin-top: 8px; }
+      @media (min-width: 900px) {
+        .n-lead { display: grid; grid-template-columns: 1fr 1.35fr; gap: 30px; align-items: start; }
+        .n-lead-media { order: 2; }
+        .n-lead-body { order: 1; }
+        .n-lead-title { margin-top: 2px; font-size: 34px; }
+        .n-list { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0 30px; }
+        .n-row { display: block; padding: 20px 0 22px; }
+        .n-row-media img { aspect-ratio: 16 / 9; border-radius: 6px; }
+        .n-row-title { margin-top: 12px; font-size: 19px; }
+      }
       .article-meta { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-bottom: 16px; }
       .story-share-btn { margin-left: auto; flex: none; width: 36px; height: 36px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.18); color: #fff; cursor: pointer; padding: 0; }
       .story-share-btn:active { transform: scale(0.93); }
@@ -3735,6 +3757,31 @@
           '<span class="story-card-body"><span class="story-card-title">' + esc(it.title) + '</span>' +
           (it.date ? '<span class="story-date">' + esc(it.date) + '</span>' : '') + '</span></a>';
       }
+      function newsSectionOf(it) { return it.tag || (it.tourney ? it.tourney.name : '') || ''; }
+      function newsMetaHTML(it) {
+        var sec = newsSectionOf(it);
+        if (!it.date && !sec) return '';
+        return '<span class="n-meta">' + esc(it.date || '') + (it.date && sec ? '<span class="n-sep">|</span>' : '') + esc(sec) + '</span>';
+      }
+      function newsExcerpt(it) {
+        var b = String(it.body || '').replace(/\s+/g, ' ').trim();
+        if (!b) return '';
+        if (b.length <= 170) return b;
+        var cut = b.slice(0, 170), sp = cut.lastIndexOf(' ');
+        return cut.slice(0, sp > 60 ? sp : 170) + '…';
+      }
+      function newsLeadHTML(it) {
+        var ex = newsExcerpt(it);
+        return '<a class="n-lead" href="#news/' + esc(it.id) + '" data-story="' + esc(it.id) + '" aria-label="Read the full story: ' + esc(it.title) + '">' +
+          '<span class="n-lead-media"><img data-src="' + esc(it.photo) + '" alt="' + esc(it.photoAlt) + '" /></span>' +
+          '<span class="n-lead-body"><span class="n-lead-title">' + esc(it.title) + '</span>' +
+          (ex ? '<span class="n-lead-sum">' + esc(ex) + '</span>' : '') + newsMetaHTML(it) + '</span></a>';
+      }
+      function newsRowHTML(it) {
+        return '<a class="n-row" href="#news/' + esc(it.id) + '" data-story="' + esc(it.id) + '" aria-label="Read the full story: ' + esc(it.title) + '">' +
+          '<span class="n-row-media"><img data-src="' + esc(it.photo) + '" alt="' + esc(it.photoAlt) + '" loading="lazy" /></span>' +
+          '<span class="n-row-body"><span class="n-row-title">' + esc(it.title) + '</span>' + newsMetaHTML(it) + '</span></a>';
+      }
       function renderNews() {
         var items = buildNewsItems();
         var portal = '';
@@ -3742,12 +3789,8 @@
           var f = items[0];
           portal += '<a class="ticker" href="#news/' + esc(f.id) + '" data-story="' + esc(f.id) + '" aria-label="Latest story: ' + esc(f.title) + '">' +
             '<span class="ticker-label">Breaking</span><span class="ticker-text">' + esc(f.title) + '</span></a>';
-          portal += '<a class="story-feature" href="#news/' + esc(f.id) + '" data-story="' + esc(f.id) + '" aria-label="Read the full story: ' + esc(f.title) + '">' +
-            '<img data-src="' + esc(f.photo) + '" alt="' + esc(f.photoAlt) + '" />' +
-            '<span class="story-feature-body"><span class="s-tag">' + esc(f.chip) + '</span>' + (f.youtube ? '<span class="s-video inline">&#9654; Video</span>' : '') +
-            '<span class="story-feature-title">' + esc(f.title) + '</span>' +
-            (f.date ? '<span class="story-date">' + esc(f.date) + '</span>' : '') + '</span></a>';
-          if (items.length > 1) portal += '<div class="news-grid">' + items.slice(1).map(storyCardHTML).join('') + '</div>';
+          portal += newsLeadHTML(f);
+          if (items.length > 1) portal += '<div class="n-list">' + items.slice(1).map(newsRowHTML).join('') + '</div>';
         } else {
           portal = '<div class="t-note glass">No stories yet — results, champions and club announcements will appear here.</div>';
         }
