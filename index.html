@@ -8258,6 +8258,7 @@
           var win = winnerOf(r, e);
           var c = '<div class="ko-match" data-rd="' + r.round + '" data-slot="' + r.slot + '"><div class="ko-p' + (win && r.winner_side === 1 ? ' win' : '') + '"><span class="ko-name">' + (p1n ? avHTML(e.p1 && e.p1.member_id, p1n, mp) : '') + esc(p1n || 'TBD') + '</span><b>' + (r.played ? r.s1 : '\u2013') + '</b></div><div class="ko-p' + (win && r.winner_side === 2 ? ' win' : '') + '"><span class="ko-name">' + (p2n ? avHTML(e.p2 && e.p2.member_id, p2n, mp) : '') + esc(p2n || 'TBD') + '</span><b>' + (r.played ? r.s2 : '\u2013') + '</b></div>';
           if (r.played && r.s1 === r.s2 && !win) c += '<div class="ko-pens">Level \u2014 penalty shoot-out result to come.</div>';
+          if (pres && p1n && p2n) c += '<div style="text-align:right;margin-top:4px"><button type="button" class="btn btn-glass btn-sm" data-vs-dl="' + r.id + '">⬇ VS</button></div>';
           return c + '</div>';
         }
         if (offView === 'list') {
@@ -8312,6 +8313,7 @@
             h += '<div class="mk-vs">' + avHTML(e.p1 && e.p1.member_id, p1n, mp) + '<span>' + esc(p1n || 'TBD') + '</span><span class="mk-x">vs</span>' + avHTML(e.p2 && e.p2.member_id, p2n, mp) + '<span>' + esc(p2n || 'TBD') + '</span></div>';
             if (r.played) h += '<div class="mk-score">' + r.s1 + ' \u2013 ' + r.s2 + (win ? ' &nbsp;\u00b7&nbsp; ' + esc(win.name) + ' won' + (r.s1 === r.s2 ? ' on penalties' : '') : '') + '</div>';
             else h += '<div class="mk-sub">' + (p1n && p2n ? 'Not played yet' : 'Waiting for the earlier round') + '</div>';
+            if (pres && p1n && p2n) h += '<div style="margin-top:8px"><button type="button" class="btn btn-glass btn-sm" data-vs-dl="' + r.id + '">⬇ VS card</button></div>';
             if (pres && p1n && p2n) {
               h += '<div class="mk-edit"><input type="number" min="0" id="os1-' + r.id + '" value="' + (r.played && r.s1 !== null ? r.s1 : '') + '" placeholder="0" /><span>\u2013</span><input type="number" min="0" id="os2-' + r.id + '" value="' + (r.played && r.s2 !== null ? r.s2 : '') + '" placeholder="0" /><button type="button" class="btn btn-red" data-save-score="' + r.id + '">SAVE RESULT</button></div>';
               if (r.played && r.s1 === r.s2 && !win) {
@@ -8383,6 +8385,72 @@
             showSchedOverlay(a.href);
           }, 'image/png');
         } catch (e) { fail(); }
+      }
+
+      function vsSlug(s) { return String(s || 'match').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'match'; }
+      function vsDateStr() { var M = ['JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE', 'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER']; var d = new Date(); return d.getDate() + ' ' + M[d.getMonth()] + ' ' + d.getFullYear(); }
+      function buildVsCanvas(o) {
+        var S = 2, W = 1280, H = 720;
+        var cv = document.createElement('canvas'); cv.width = W * S; cv.height = H * S;
+        var ctx = cv.getContext('2d'); ctx.scale(S, S);
+        function rr(x, y, w, h, r) { ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); }
+        function fit(text, maxW, base, weight) { var sz = base; ctx.font = weight + ' ' + sz + 'px Arial'; while (sz > 14 && ctx.measureText(text).width > maxW) { sz -= 2; ctx.font = weight + ' ' + sz + 'px Arial'; } }
+        function initials(name) { return String(name || '?').split(/\s+/).map(function (w) { return w.charAt(0); }).join('').slice(0, 2).toUpperCase(); }
+        var g = ctx.createLinearGradient(0, 0, W, H); g.addColorStop(0, '#0a1030'); g.addColorStop(.5, '#070b1a'); g.addColorStop(1, '#0a0f24');
+        ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+        function glow(x, y, color) { var rg = ctx.createRadialGradient(x, y, 40, x, y, 370); rg.addColorStop(0, color); rg.addColorStop(1, 'rgba(0,0,0,0)'); ctx.fillStyle = rg; ctx.fillRect(0, 0, W, H); }
+        glow(250, 350, o.ws === 1 ? 'rgba(255,209,102,.30)' : 'rgba(90,120,255,.13)');
+        glow(1030, 350, o.ws === 2 ? 'rgba(255,209,102,.30)' : 'rgba(90,120,255,.13)');
+        ctx.save(); ctx.translate(W / 2, H / 2); ctx.rotate(0.14); var lg = ctx.createLinearGradient(0, -H, 0, H); lg.addColorStop(0, 'rgba(255,46,99,0)'); lg.addColorStop(.5, 'rgba(255,46,99,.85)'); lg.addColorStop(1, 'rgba(255,46,99,0)'); ctx.fillStyle = lg; ctx.shadowColor = 'rgba(255,46,99,.6)'; ctx.shadowBlur = 22; ctx.fillRect(-1.5, -H, 3, H * 2); ctx.restore();
+        ctx.textAlign = 'center';
+        try { ctx.letterSpacing = '6px'; } catch (e) {}
+        ctx.fillStyle = '#ffd166'; fit('KNIGHT WARRIORS CLUB', 900, 27, '800'); ctx.fillText('KNIGHT WARRIORS CLUB', W / 2, 80);
+        try { ctx.letterSpacing = '1px'; } catch (e) {}
+        ctx.fillStyle = '#cfd8ff'; fit(o.sub, 1020, 24, '600'); ctx.fillText(o.sub, W / 2, 120);
+        function side(cx, img, name, isWin, dim) {
+          var cy = 322, r = 136;
+          ctx.save();
+          ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.clip();
+          if (img) { var iw = img.width, ih = img.height, sc = Math.max((r * 2) / iw, (r * 2) / ih); var dw = iw * sc, dh = ih * sc; ctx.drawImage(img, cx - dw / 2, cy - dh / 2, dw, dh); }
+          else { var gg = ctx.createLinearGradient(cx - r, cy - r, cx + r, cy + r); gg.addColorStop(0, '#233266'); gg.addColorStop(1, '#101736'); ctx.fillStyle = gg; ctx.fillRect(cx - r, cy - r, r * 2, r * 2); ctx.fillStyle = '#dfe7ff'; ctx.font = '800 90px Arial'; ctx.textAlign = 'center'; ctx.fillText(initials(name), cx, cy + 31); }
+          ctx.restore();
+          if (dim && img) { ctx.save(); ctx.globalAlpha = .18; ctx.fillStyle = '#000'; ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.fill(); ctx.restore(); }
+          ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2);
+          if (isWin) { ctx.strokeStyle = '#ffd166'; ctx.lineWidth = 7; ctx.shadowColor = 'rgba(255,209,102,.55)'; ctx.shadowBlur = 26; }
+          else { ctx.strokeStyle = 'rgba(255,255,255,.35)'; ctx.lineWidth = 6; ctx.shadowBlur = 0; }
+          ctx.stroke(); ctx.shadowBlur = 0;
+          ctx.fillStyle = '#ffffff'; ctx.textAlign = 'center'; fit(name, 375, 34, '800'); ctx.fillText(name, cx, 540);
+          if (isWin) { var tw = 132; rr(cx - tw / 2, 558, tw, 38, 19); ctx.fillStyle = '#ffd166'; ctx.fill(); ctx.fillStyle = '#231a00'; ctx.font = '800 19px Arial'; try { ctx.letterSpacing = '2px'; } catch (e) {} ctx.fillText('WINNER', cx, 584); try { ctx.letterSpacing = '0px'; } catch (e) {} }
+        }
+        side(300, o.img1, o.p1, o.ws === 1, !!(o.played && o.ws === 2));
+        side(980, o.img2, o.p2, o.ws === 2, !!(o.played && o.ws === 1));
+        ctx.fillStyle = '#ff2e63'; ctx.font = '900 46px Arial'; ctx.textAlign = 'center'; ctx.shadowColor = 'rgba(255,46,99,.7)'; ctx.shadowBlur = 24; ctx.fillText('VS', W / 2, 296); ctx.shadowBlur = 0;
+        if (o.played) {
+          ctx.fillStyle = '#ffffff'; ctx.font = '900 116px Arial'; ctx.fillText(o.s1 + ' – ' + o.s2, W / 2, 424);
+          ctx.fillStyle = '#9fb0d8'; ctx.font = '700 22px Arial'; try { ctx.letterSpacing = '4px'; } catch (e) {} ctx.fillText('FULL TIME', W / 2, 474); try { ctx.letterSpacing = '0px'; } catch (e) {}
+        }
+        ctx.fillStyle = '#8ea0cc'; ctx.font = '600 20px Arial'; try { ctx.letterSpacing = '3px'; } catch (e) {} ctx.fillText(o.dateStr, W / 2, 676); try { ctx.letterSpacing = '0px'; } catch (e) {}
+        return cv;
+      }
+      function vsDownload(rowId) {
+        if (!isPres()) return;
+        var r = null; (offRows || []).forEach(function (x) { if (x.id === rowId) r = x; });
+        if (!r) return;
+        var eff = deriveAll(offRows || []); var e = eff[rowKey(r)] || { p1: null, p2: null };
+        if (!e.p1 || !e.p2) return;
+        var mp = memberByIdMap();
+        var m1 = e.p1.member_id ? mp[e.p1.member_id] : null, m2 = e.p2.member_id ? mp[e.p2.member_id] : null;
+        var win = winnerOf(r, e); var ws = null;
+        if (r.played) { if (win) ws = win.name === e.p1.name ? 1 : 2; else if (r.winner_side) ws = r.winner_side; }
+        toast('Building image…', 'Your VS card downloads in a moment.');
+        Promise.all([
+          (m1 && m1.avatar_url) ? loadCImg(m1.avatar_url) : Promise.resolve(null),
+          (m2 && m2.avatar_url) ? loadCImg(m2.avatar_url) : Promise.resolve(null)
+        ]).then(function (ims) {
+          var t = currentTournament;
+          var cv = buildVsCanvas({ sub: (t ? t.name : 'Tournament') + ' · ' + (r.round_label || ''), p1: e.p1.name, p2: e.p2.name, img1: ims[0], img2: ims[1], played: !!r.played, s1: r.s1, s2: r.s2, ws: ws, dateStr: vsDateStr() });
+          sendSchedCanvas(cv, 'vs-' + vsSlug(e.p1.name) + '-vs-' + vsSlug(e.p2.name) + '.png', function () { toast('Could not make the image', 'Please try again.'); });
+        });
       }
       function scheduleImage(mode) {
         var t = currentTournament; if (!t) return;
@@ -8802,6 +8870,8 @@
           createFixtures(drawPairs.map(function (id) { return { member_id: id, name: byMid[id].member.full_name }; }));
           return;
         }
+        var vsb = e.target.closest ? e.target.closest('[data-vs-dl]') : null;
+        if (vsb) { if (isPres()) { try { vsDownload(parseInt(vsb.getAttribute('data-vs-dl'), 10)); } catch (err) { toast('Could not make the image', 'Please try again.'); } } return; }
         var scb = e.target.closest ? e.target.closest('[data-save-score]') : null;
         if (scb) {
           if (!isPres()) return;
@@ -13138,6 +13208,7 @@
             if (m.played && m.s1 === m.s2 && !win && m.stage !== 'knockout' && isMultiple() === false && m.winner_side) { /* league/group draws stand */ }
           }
         }
+        if (pres && m.p1 && m.p2) h += '<div style="margin-top:8px"><button type="button" class="btn btn-glass btn-sm" data-ot-vsdl="' + m.id + '">⬇ VS card</button></div>';
         return h + '</div>';
       }
       function manualPairsHTML() {
@@ -13367,6 +13438,7 @@
         var c = '<div class="ko-match"><div class="ko-p' + (r.winner_side === 1 ? ' win' : '') + '"><span class="ko-name">' + (r.p1 ? avHTML(p1, r.p1) : '') + esc(r.p1 || 'TBD') + '</span><b>' + (r.played ? r.s1 : '–') + '</b></div>' +
           '<div class="ko-p' + (r.winner_side === 2 ? ' win' : '') + '"><span class="ko-name">' + (r.p2 ? avHTML(p2, r.p2) : '') + esc(r.p2 || 'TBD') + '</span><b>' + (r.played ? r.s2 : '–') + '</b></div>';
         if (r.played && !r.winner_side && r.raw.s1 === r.raw.s2 && !isMultiple()) c += '<div class="ko-pens">Level — penalty shoot-out result to come.</div>';
+        if (isPres() && r.p1 && r.p2) c += '<div style="text-align:right;margin-top:4px"><button type="button" class="btn btn-glass btn-sm" data-ot-vsdl="' + r.id + '">⬇ VS</button></div>';
         return c + '</div>';
       }
       function bracketHTML() {
@@ -13520,6 +13592,70 @@
           return { round: r.round, slot: r.slot, round_label: r.round_label, s1: r.s1, s2: r.s2, played: r.played, winner_side: r.winner_side,
             _p1: r.p1 ? { name: r.p1, member_id: p1 ? (p1.squad_id || p1.member_id) : null, _sq: p1 ? !!p1.squad_id : false } : null,
             _p2: r.p2 ? { name: r.p2, member_id: p2 ? (p2.squad_id || p2.member_id) : null, _sq: p2 ? !!p2.squad_id : false } : null };
+        });
+      }
+
+      function otVsSlug(s) { return String(s || 'match').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'match'; }
+      function otVsDateStr() { var M = ['JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE', 'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER']; var d = new Date(); return d.getDate() + ' ' + M[d.getMonth()] + ' ' + d.getFullYear(); }
+      function otBuildVsCanvas(o) {
+        var S = 2, W = 1280, H = 720;
+        var cv = document.createElement('canvas'); cv.width = W * S; cv.height = H * S;
+        var ctx = cv.getContext('2d'); ctx.scale(S, S);
+        function rr(x, y, w, h, r) { ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); }
+        function fit(text, maxW, base, weight) { var sz = base; ctx.font = weight + ' ' + sz + 'px Arial'; while (sz > 14 && ctx.measureText(text).width > maxW) { sz -= 2; ctx.font = weight + ' ' + sz + 'px Arial'; } }
+        function initials(name) { return String(name || '?').split(/\s+/).map(function (w) { return w.charAt(0); }).join('').slice(0, 2).toUpperCase(); }
+        var g = ctx.createLinearGradient(0, 0, W, H); g.addColorStop(0, '#0a1030'); g.addColorStop(.5, '#070b1a'); g.addColorStop(1, '#0a0f24');
+        ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+        function glow(x, y, color) { var rg = ctx.createRadialGradient(x, y, 40, x, y, 370); rg.addColorStop(0, color); rg.addColorStop(1, 'rgba(0,0,0,0)'); ctx.fillStyle = rg; ctx.fillRect(0, 0, W, H); }
+        glow(250, 350, o.ws === 1 ? 'rgba(255,209,102,.30)' : 'rgba(90,120,255,.13)');
+        glow(1030, 350, o.ws === 2 ? 'rgba(255,209,102,.30)' : 'rgba(90,120,255,.13)');
+        ctx.save(); ctx.translate(W / 2, H / 2); ctx.rotate(0.14); var lg = ctx.createLinearGradient(0, -H, 0, H); lg.addColorStop(0, 'rgba(255,46,99,0)'); lg.addColorStop(.5, 'rgba(255,46,99,.85)'); lg.addColorStop(1, 'rgba(255,46,99,0)'); ctx.fillStyle = lg; ctx.shadowColor = 'rgba(255,46,99,.6)'; ctx.shadowBlur = 22; ctx.fillRect(-1.5, -H, 3, H * 2); ctx.restore();
+        ctx.textAlign = 'center';
+        try { ctx.letterSpacing = '6px'; } catch (e) {}
+        ctx.fillStyle = '#ffd166'; fit('KNIGHT WARRIORS CLUB', 900, 27, '800'); ctx.fillText('KNIGHT WARRIORS CLUB', W / 2, 80);
+        try { ctx.letterSpacing = '1px'; } catch (e) {}
+        ctx.fillStyle = '#cfd8ff'; fit(o.sub, 1020, 24, '600'); ctx.fillText(o.sub, W / 2, 120);
+        function side(cx, img, name, isWin, dim) {
+          var cy = 322, r = 136;
+          ctx.save();
+          ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.clip();
+          if (img) { var iw = img.width, ih = img.height, sc = Math.max((r * 2) / iw, (r * 2) / ih); var dw = iw * sc, dh = ih * sc; ctx.drawImage(img, cx - dw / 2, cy - dh / 2, dw, dh); }
+          else { var gg = ctx.createLinearGradient(cx - r, cy - r, cx + r, cy + r); gg.addColorStop(0, '#233266'); gg.addColorStop(1, '#101736'); ctx.fillStyle = gg; ctx.fillRect(cx - r, cy - r, r * 2, r * 2); ctx.fillStyle = '#dfe7ff'; ctx.font = '800 90px Arial'; ctx.textAlign = 'center'; ctx.fillText(initials(name), cx, cy + 31); }
+          ctx.restore();
+          if (dim && img) { ctx.save(); ctx.globalAlpha = .18; ctx.fillStyle = '#000'; ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.fill(); ctx.restore(); }
+          ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2);
+          if (isWin) { ctx.strokeStyle = '#ffd166'; ctx.lineWidth = 7; ctx.shadowColor = 'rgba(255,209,102,.55)'; ctx.shadowBlur = 26; }
+          else { ctx.strokeStyle = 'rgba(255,255,255,.35)'; ctx.lineWidth = 6; ctx.shadowBlur = 0; }
+          ctx.stroke(); ctx.shadowBlur = 0;
+          ctx.fillStyle = '#ffffff'; ctx.textAlign = 'center'; fit(name, 375, 34, '800'); ctx.fillText(name, cx, 540);
+          if (isWin) { var tw = 132; rr(cx - tw / 2, 558, tw, 38, 19); ctx.fillStyle = '#ffd166'; ctx.fill(); ctx.fillStyle = '#231a00'; ctx.font = '800 19px Arial'; try { ctx.letterSpacing = '2px'; } catch (e) {} ctx.fillText('WINNER', cx, 584); try { ctx.letterSpacing = '0px'; } catch (e) {} }
+        }
+        side(300, o.img1, o.p1, o.ws === 1, !!(o.played && o.ws === 2));
+        side(980, o.img2, o.p2, o.ws === 2, !!(o.played && o.ws === 1));
+        ctx.fillStyle = '#ff2e63'; ctx.font = '900 46px Arial'; ctx.textAlign = 'center'; ctx.shadowColor = 'rgba(255,46,99,.7)'; ctx.shadowBlur = 24; ctx.fillText('VS', W / 2, 296); ctx.shadowBlur = 0;
+        if (o.played) {
+          ctx.fillStyle = '#ffffff'; ctx.font = '900 116px Arial'; ctx.fillText(o.s1 + ' – ' + o.s2, W / 2, 424);
+          ctx.fillStyle = '#9fb0d8'; ctx.font = '700 22px Arial'; try { ctx.letterSpacing = '4px'; } catch (e) {} ctx.fillText('FULL TIME', W / 2, 474); try { ctx.letterSpacing = '0px'; } catch (e) {}
+        }
+        ctx.fillStyle = '#8ea0cc'; ctx.font = '600 20px Arial'; try { ctx.letterSpacing = '3px'; } catch (e) {} ctx.fillText(o.dateStr, W / 2, 676); try { ctx.letterSpacing = '0px'; } catch (e) {}
+        return cv;
+      }
+      function otVsCard(mid) {
+        if (!isPres() || !OT) return;
+        var m = null; OT.matches.forEach(function (x) { if (x.id === mid) m = x; });
+        if (!m || !m.p1 || !m.p2) return;
+        var s1 = m.s1, s2 = m.s2, ws = null;
+        var w = matchWinner(m);
+        if (m.played && w) ws = w === m.p1 ? 1 : 2;
+        if (isMultiple() && m.played) { var oc = setOutcome(m.id); if (oc.total) { s1 = oc.w1; s2 = oc.w2; } }
+        var u1 = avatarURLFor(playerByName(m.p1)), u2 = avatarURLFor(playerByName(m.p2));
+        toast('Building image…', 'Your VS card downloads in a moment.');
+        Promise.all([
+          u1 ? loadOTImg(u1) : Promise.resolve(null),
+          u2 ? loadOTImg(u2) : Promise.resolve(null)
+        ]).then(function (ims) {
+          var cv = otBuildVsCanvas({ sub: OT.t.name + ' · ' + (m.round_label || '') + (m.group_label ? ' · Group ' + m.group_label : ''), p1: m.p1, p2: m.p2, img1: ims[0], img2: ims[1], played: !!m.played, s1: s1, s2: s2, ws: ws, dateStr: otVsDateStr() });
+          otSendCanvas(cv, 'vs-' + otVsSlug(m.p1) + '-vs-' + otVsSlug(m.p2) + '.png', function () { toast('Could not make the image', 'Please try again.'); });
         });
       }
       function otScheduleImage(mode) {
@@ -13852,7 +13988,7 @@
         if (link) { e.preventDefault(); var id = link.getAttribute('data-ot-link'); window.location.hash = '#otournament/' + id; return; }
         var tabBtn = e.target.closest ? e.target.closest('#view-otournament .jump-bar button') : null;
         if (tabBtn) { setTab(tabBtn.getAttribute('data-ot-tab')); return; }
-        var el = e.target.closest ? e.target.closest('[data-ot-join],[data-ot-joinsquad],[data-ot-withdraw],[data-ot-remove],[data-ot-delt],[data-ot-sched],[data-ot-addpair],[data-ot-unpair],[data-ot-schedgo],[data-ot-genko],[data-ot-reset],[data-ot-save],[data-ot-pens],[data-ot-lineup],[data-ot-reveal],[data-ot-pair],[data-ot-view],[data-ot-img],[data-ot-create-open],[data-ot-create-go],[data-ot-create-cancel],[data-ot-f]') : null;
+        var el = e.target.closest ? e.target.closest('[data-ot-join],[data-ot-joinsquad],[data-ot-withdraw],[data-ot-remove],[data-ot-delt],[data-ot-sched],[data-ot-addpair],[data-ot-unpair],[data-ot-schedgo],[data-ot-genko],[data-ot-reset],[data-ot-save],[data-ot-pens],[data-ot-vsdl],[data-ot-lineup],[data-ot-reveal],[data-ot-pair],[data-ot-view],[data-ot-img],[data-ot-create-open],[data-ot-create-go],[data-ot-create-cancel],[data-ot-f]') : null;
         if (!el) return;
         if (el.hasAttribute('data-ot-f')) {
           var kv = el.getAttribute('data-ot-f').split(':');
@@ -13887,6 +14023,7 @@
         if (el.hasAttribute('data-ot-pair')) { var pr2 = el.getAttribute('data-ot-pair').split(':'); if (pr2[0]) savePairOT(pr2[0], pr2[1]); return; }
         if (el.hasAttribute('data-ot-view')) { OT.view = el.getAttribute('data-ot-view'); renderOT(); return; }
         if (el.hasAttribute('data-ot-img')) { otScheduleImage(el.getAttribute('data-ot-img')); return; }
+        if (el.hasAttribute('data-ot-vsdl')) { otVsCard(parseInt(el.getAttribute('data-ot-vsdl'), 10)); return; }
         if (el.hasAttribute('data-ot-create-open')) { otEv.createOpen = true; paintOTEvents($('otEvents')); return; }
         if (el.hasAttribute('data-ot-create-cancel')) { otEv.createOpen = false; paintOTEvents($('otEvents')); return; }
         if (el.hasAttribute('data-ot-create-go')) { createOfficial(); return; }
