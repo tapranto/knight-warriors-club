@@ -909,6 +909,9 @@
       .story-share-btn { margin-left: auto; flex: none; width: 36px; height: 36px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.18); color: #fff; cursor: pointer; padding: 0; }
       .story-share-btn:active { transform: scale(0.93); }
       .article h2 { font-size: clamp(26px, 4.2vw, 38px); font-weight: 800; text-transform: uppercase; line-height: 1.2; }
+      .article-time { font-size: 14.5px; font-weight: 600; color: #ffb3ba; letter-spacing: 0.05em; margin-top: 10px; }
+      .article-byline { display: flex; align-items: center; gap: 10px; margin: 14px 0 2px; padding: 10px 0; border-top: 1px solid rgba(255,255,255,0.14); border-bottom: 1px solid rgba(255,255,255,0.14); }
+      .article-brand { font-size: 16.5px; font-weight: 700; color: #fff; }
       .article-hero { width: 100%; aspect-ratio: 16 / 8; object-fit: cover; object-position: center 30%; border-radius: 12px; margin: 24px 0 6px; border: 1px solid var(--glass-border); }
       .article-body p { color: #e2e2ea; font-size: 20px; }
       .article-body p + p { margin-top: 14px; }
@@ -3751,10 +3754,10 @@
       function articleHTML(it) {
         var h = '<a class="article-back" href="#news" data-nav="news">← All news</a>';
         h += '<article class="article glass">';
-        h += '<div class="article-meta"><span class="s-tag">' + esc(it.chip) + '</span>' +
-          (it.date ? '<span class="story-date">' + esc(it.date) + '</span>' : '') +
-          '<button type="button" class="story-share-btn" data-copy-story="' + esc(it.id) + '" aria-label="Share — copy story link" title="Share — copy story link"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="6" cy="12" r="2.6"/><circle cx="17.5" cy="5.5" r="2.6"/><circle cx="17.5" cy="18.5" r="2.6"/><path d="M8.3 10.8 15.2 6.7M8.3 13.2l6.9 4.1"/></svg></button></div>';
         h += '<h2>' + esc(it.title) + '</h2>';
+        if (it.date) h += '<div class="article-time">' + esc(it.date) + '</div>';
+        h += '<div class="article-byline"><span class="article-brand">Knight Warriors Club</span>' +
+          '<button type="button" class="story-share-btn" data-copy-story="' + esc(it.id) + '" aria-label="Share — copy story link" title="Share — copy story link"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="6" cy="12" r="2.6"/><circle cx="17.5" cy="5.5" r="2.6"/><circle cx="17.5" cy="18.5" r="2.6"/><path d="M8.3 10.8 15.2 6.7M8.3 13.2l6.9 4.1"/></svg></button>' + '</div>';
         if (it.photo) h += '<img class="article-hero" src="' + esc(it.photo) + '" alt="' + esc(it.photoAlt) + '" />';
         if (it.youtube) h += ytEmbedHTML(it.youtube);
         h += '<div class="article-body">';
