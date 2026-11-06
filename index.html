@@ -46,6 +46,8 @@
         overflow-x: hidden;
       }
       body[data-view="events"] { background-color: #aad9f7; }
+      body[data-view="news"] { background-color: #aad9f7; }
+      body[data-view="article"] { background-color: #aad9f7; }
       body[data-view="rules"] { background-color: #ffffff; }
       /* Fixed full-viewport backdrop, one per view: each section loads its own
          full-screen background (cover, centred, shown exactly as supplied);
@@ -188,8 +190,8 @@
         background: rgba(9, 9, 15, 0.97);
         backdrop-filter: none; -webkit-backdrop-filter: none;
       }
-      body[data-view="news"] .bg-layer { background-image: url("assets/banner-winged-knight.jpg"); }
-      body[data-view="article"] .bg-layer { background-image: url("assets/banner-winged-knight.jpg"); }
+      body[data-view="news"] .bg-layer { background-image: none; background-color: #aad9f7; }
+      body[data-view="article"] .bg-layer { background-image: none; background-color: #aad9f7; }
       body[data-view="tournament"] .bg-layer { background-image: url("assets/background-tournament-arena.webp"); }
 
       /* Free-standing headings sit directly on the picture: a soft shadow keeps
@@ -211,6 +213,9 @@
       body[data-view="events"] .sec-head h2, body[data-view="rules"] .sec-head h2 { text-shadow: none; }
       body[data-view="events"] .sec-head p, body[data-view="rules"] .sec-head p { text-shadow: none; }
       body[data-view="events"] .kicker, body[data-view="rules"] .kicker { color: #c1121f; }
+      body[data-view="news"] .sec-head h2 { color: #10344e; text-shadow: none; }
+      body[data-view="news"] .sec-head p { color: #33566e; text-shadow: none; }
+      body[data-view="news"] .kicker { color: #b30f1e; }
       /* Events */
       body[data-view="events"] .event-card .tag {
         color: #b30f1e; background: rgba(225,29,46,0.1); border-color: rgba(225,29,46,0.35);
