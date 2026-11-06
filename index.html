@@ -3701,7 +3701,12 @@
             date: p.when || '', photo: p.image || CLUB_ART, photoAlt: p.image ? p.title : 'Knight Warriors Club — the bloody moon emblem'
           });
         });
-        return items;
+        /* Latest first: newest story leads the News page, the Breaking
+           ticker and the Home list. Undated items sink to the bottom. */
+        function newsTs(d) { if (!d) return 0; var t = Date.parse(String(d).replace('·', ' ')); return isNaN(t) ? 0 : t; }
+        var stamped = items.map(function (it, i) { return { it: it, i: i, ts: newsTs(it.date) }; });
+        stamped.sort(function (x, y) { return (y.ts - x.ts) || (x.i - y.i); });
+        return stamped.map(function (x) { return x.it; });
       }
       var ARROW_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
       function storyCardHTML(it) {
