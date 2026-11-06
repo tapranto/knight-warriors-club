@@ -8505,6 +8505,9 @@
         ctx.fillStyle = '#ffd166'; fit('KNIGHT WARRIORS CLUB', 900, 27, '800'); ctx.fillText('KNIGHT WARRIORS CLUB', W / 2, 80);
         try { ctx.letterSpacing = '1px'; } catch (e) {}
         ctx.fillStyle = '#cfd8ff'; fit(o.sub, 1020, 24, '600'); ctx.fillText(o.sub, W / 2, 120);
+        function drawCover(img, x, y, w, h) { var iw = img.width, ih = img.height, sc = Math.max(w / iw, h / ih); var dw = iw * sc, dh = ih * sc; ctx.drawImage(img, x + (w - dw) / 2, y + (h - dh) / 2, dw, dh); }
+        if (o.clubImg) { ctx.save(); ctx.beginPath(); ctx.arc(107, 101, 63, 0, Math.PI * 2); ctx.clip(); drawCover(o.clubImg, 44, 38, 126, 126); ctx.restore(); ctx.beginPath(); ctx.arc(107, 101, 63, 0, Math.PI * 2); ctx.strokeStyle = 'rgba(255,255,255,.28)'; ctx.lineWidth = 3; ctx.stroke(); }
+        if (o.tLogoImg) { ctx.save(); rr(1110, 38, 126, 126, 19); ctx.clip(); drawCover(o.tLogoImg, 1110, 38, 126, 126); ctx.restore(); rr(1110, 38, 126, 126, 19); ctx.strokeStyle = 'rgba(255,255,255,.28)'; ctx.lineWidth = 3; ctx.stroke(); }
         function side(cx, img, name, isWin, dim) {
           var cy = 322, r = 136;
           ctx.save();
@@ -8543,10 +8546,12 @@
         toast('Building image…', 'Your VS card downloads in a moment.');
         Promise.all([
           (m1 && m1.avatar_url) ? loadCImg(m1.avatar_url) : Promise.resolve(null),
-          (m2 && m2.avatar_url) ? loadCImg(m2.avatar_url) : Promise.resolve(null)
+          (m2 && m2.avatar_url) ? loadCImg(m2.avatar_url) : Promise.resolve(null),
+          loadCImg('assets/logo.jpg'),
+          (currentTournament && currentTournament.logo) ? loadCImg(currentTournament.logo) : Promise.resolve(null)
         ]).then(function (ims) {
           var t = currentTournament;
-          var cv = buildVsCanvas({ sub: (t ? t.name : 'Tournament') + ' · ' + (r.round_label || ''), p1: e.p1.name, p2: e.p2.name, img1: ims[0], img2: ims[1], played: !!r.played, s1: r.s1, s2: r.s2, ws: ws, dateStr: vsDateStr() });
+          var cv = buildVsCanvas({ sub: (t ? t.name : 'Tournament') + ' · ' + (r.round_label || ''), p1: e.p1.name, p2: e.p2.name, img1: ims[0], img2: ims[1], played: !!r.played, s1: r.s1, s2: r.s2, ws: ws, dateStr: vsDateStr(), clubImg: ims[2], tLogoImg: ims[3] });
           sendSchedCanvas(cv, 'vs-' + vsSlug(e.p1.name) + '-vs-' + vsSlug(e.p2.name) + '.png', function () { toast('Could not make the image', 'Please try again.'); });
         });
       }
@@ -13713,6 +13718,9 @@
         ctx.fillStyle = '#ffd166'; fit('KNIGHT WARRIORS CLUB', 900, 27, '800'); ctx.fillText('KNIGHT WARRIORS CLUB', W / 2, 80);
         try { ctx.letterSpacing = '1px'; } catch (e) {}
         ctx.fillStyle = '#cfd8ff'; fit(o.sub, 1020, 24, '600'); ctx.fillText(o.sub, W / 2, 120);
+        function drawCover(img, x, y, w, h) { var iw = img.width, ih = img.height, sc = Math.max(w / iw, h / ih); var dw = iw * sc, dh = ih * sc; ctx.drawImage(img, x + (w - dw) / 2, y + (h - dh) / 2, dw, dh); }
+        if (o.clubImg) { ctx.save(); ctx.beginPath(); ctx.arc(107, 101, 63, 0, Math.PI * 2); ctx.clip(); drawCover(o.clubImg, 44, 38, 126, 126); ctx.restore(); ctx.beginPath(); ctx.arc(107, 101, 63, 0, Math.PI * 2); ctx.strokeStyle = 'rgba(255,255,255,.28)'; ctx.lineWidth = 3; ctx.stroke(); }
+        if (o.tLogoImg) { ctx.save(); rr(1110, 38, 126, 126, 19); ctx.clip(); drawCover(o.tLogoImg, 1110, 38, 126, 126); ctx.restore(); rr(1110, 38, 126, 126, 19); ctx.strokeStyle = 'rgba(255,255,255,.28)'; ctx.lineWidth = 3; ctx.stroke(); }
         function side(cx, img, name, isWin, dim) {
           var cy = 322, r = 136;
           ctx.save();
@@ -13750,9 +13758,11 @@
         toast('Building image…', 'Your VS card downloads in a moment.');
         Promise.all([
           u1 ? loadOTImg(u1) : Promise.resolve(null),
-          u2 ? loadOTImg(u2) : Promise.resolve(null)
+          u2 ? loadOTImg(u2) : Promise.resolve(null),
+          loadOTImg('assets/logo.jpg'),
+          OT.t.logo_url ? loadOTImg(OT.t.logo_url) : Promise.resolve(null)
         ]).then(function (ims) {
-          var cv = otBuildVsCanvas({ sub: OT.t.name + ' · ' + (m.round_label || '') + (m.group_label ? ' · Group ' + m.group_label : ''), p1: m.p1, p2: m.p2, img1: ims[0], img2: ims[1], played: !!m.played, s1: s1, s2: s2, ws: ws, dateStr: otVsDateStr() });
+          var cv = otBuildVsCanvas({ sub: OT.t.name + ' · ' + (m.round_label || '') + (m.group_label ? ' · Group ' + m.group_label : ''), p1: m.p1, p2: m.p2, img1: ims[0], img2: ims[1], played: !!m.played, s1: s1, s2: s2, ws: ws, dateStr: otVsDateStr(), clubImg: ims[2], tLogoImg: ims[3] });
           otSendCanvas(cv, 'vs-' + otVsSlug(m.p1) + '-vs-' + otVsSlug(m.p2) + '.png', function () { toast('Could not make the image', 'Please try again.'); });
         });
       }
@@ -14167,6 +14177,7 @@
         formHTML: function (patch) { if (patch) { Object.keys(patch).forEach(function (k) { otForm[k] = patch[k]; }); } return creatorFormHTML(); }
       };
     })();
+
   </script>
 </body>
 </html>
