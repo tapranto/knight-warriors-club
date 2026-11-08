@@ -4284,7 +4284,14 @@
         TOURNAMENTS.forEach(function (t) { if (t.id === id) currentTournament = t; });
         renderTournament();
         selectTournamentTab('tOverview');
-        showView('tournament', true, currentTournament ? 'tournament/' + currentTournament.id : 'tournament');
+        /* Cold-load guard: if the id is not in the data yet (at boot the
+           embedded snapshot holds only the Demo Cup; the real list arrives
+           with data/tournaments.json), keep the deep-link hash intact.
+           Downgrading it to bare 'tournament' destroyed the id that the
+           data-load recovery (rerenderClubData) and the live-entries
+           layer read from the hash — a reload then stuck the page on the
+           Coming Soon skeleton forever. */
+        showView('tournament', true, currentTournament ? 'tournament/' + currentTournament.id : (id ? 'tournament/' + id : 'tournament'));
         if (currentTournament && currentTournament.status === 'finished' && currentTournament.champion && !window.__fromPop) {
           showChampionSplash(currentTournament);
         }
