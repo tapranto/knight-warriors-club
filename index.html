@@ -13026,7 +13026,8 @@
 
       function shareTournament() {
         var t = OT.t; if (!t) return;
-        var url = window.location.origin + '/share/tournament/' + t.id;
+        var slug = String(t.name || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+        var url = window.location.origin + '/share/tournament/' + (slug || t.id);
         if (navigator.share) { navigator.share({ title: t.name + ' \u2014 Knight Warriors Club', text: t.name + ' at Knight Warriors Club \u2014 registration, fixtures and results:', url: url }).catch(function () {}); return; }
         function done() { toast('Link copied', 'Anyone with this link can view the tournament.'); }
         if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(url).then(done).catch(function () { window.prompt('Copy this link:', url); }); }
