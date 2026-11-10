@@ -2256,7 +2256,7 @@
                 <h2 id="otName">Tournament</h2>
                 <p class="t-meta" id="otMeta">Loading the tournament…</p>
               </div>
-              <span id="otBadgeWrap"><span class="status-badge soon">Loading</span></span>
+              <span class="status-badge soon" id="otBadge">Loading</span>
               <img class="t-champ-cutout" id="otChampCutout" alt="" hidden />
             </div>
             <nav class="jump-bar glass" role="tablist" aria-label="Official tournament sections">
@@ -12858,18 +12858,6 @@
       }
       function setTab(tab) { if (OT) { OT.tab = tab; renderOT(); } }
 
-      function otBadgeHTML(t, st, so) {
-        if (so.key !== 'upcoming') return '<span class="status-badge ' + so.cls + '">' + esc(so.label) + '</span>';
-        var m = me();
-        if (!m) return '<span class="status-badge ' + so.cls + '">' + esc(so.label) + '</span>';
-        if (st.ptype === 'squad') return '<button type="button" class="btn btn-red" data-ot-gopart>Enter your squad</button>';
-        var mine = null;
-        OT.players.forEach(function (p) { if (p.member_id === m.id && !p.squad_id) mine = p; });
-        if (mine) return '<span class="status-badge">You are in \u2713</span>';
-        if (OT.players.length >= st.cap) return '<span class="status-badge ' + so.cls + '">Field Full</span>';
-        return '<button type="button" class="btn btn-red" data-ot-join>Join tournament</button>';
-      }
-
       function renderOT() {
         var nameEl = $('otName'), metaEl = $('otMeta'), badgeEl = $('otBadge'), logoEl = $('otLogo');
         if (!nameEl) return;
@@ -12882,9 +12870,8 @@
         var t = OT.t, st = otSettings(t), so = statusOf(t);
         nameEl.textContent = t.name;
         metaEl.textContent = (t.game || 'Tournament') + ' · ' + fmtLabel(t, st) + ' · ' + (st.ptype === 'squad' ? 'Squads' : 'Players') + (st.ptype === 'squad' && st.smtype === 'multiple' ? ' · ' + st.setSize + 'v' + st.setSize + ' sets' : '');
-        var bw = $('otBadgeWrap');
-        if (bw) bw.innerHTML = otBadgeHTML(t, st, so);
-        else { badgeEl.textContent = so.label; badgeEl.className = 'status-badge ' + so.cls; }
+        badgeEl.textContent = so.label;
+        badgeEl.className = 'status-badge ' + so.cls;
         if (t.logo_url) { logoEl.src = t.logo_url; logoEl.hidden = false; } else { logoEl.hidden = true; }
         var cutEl = $('otChampCutout'), headEl = document.querySelector('#view-otournament .t-head');
         var cvis = (so.key === 'finished' && t.champion) ? championVisual() : null;
@@ -14154,7 +14141,7 @@
         if (link) { e.preventDefault(); var id = link.getAttribute('data-ot-link'); window.location.hash = '#otournament/' + id; return; }
         var tabBtn = e.target.closest ? e.target.closest('#view-otournament .jump-bar button') : null;
         if (tabBtn) { setTab(tabBtn.getAttribute('data-ot-tab')); return; }
-        var el = e.target.closest ? e.target.closest('[data-ot-join],[data-ot-joinsquad],[data-ot-withdraw],[data-ot-remove],[data-ot-delt],[data-ot-sched],[data-ot-addpair],[data-ot-unpair],[data-ot-schedgo],[data-ot-genko],[data-ot-reset],[data-ot-save],[data-ot-pens],[data-ot-vsdl],[data-ot-lineup],[data-ot-reveal],[data-ot-pair],[data-ot-view],[data-ot-img],[data-ot-create-open],[data-ot-create-go],[data-ot-create-cancel],[data-ot-f],[data-ot-share],[data-ot-gopart]') : null;
+        var el = e.target.closest ? e.target.closest('[data-ot-join],[data-ot-joinsquad],[data-ot-withdraw],[data-ot-remove],[data-ot-delt],[data-ot-sched],[data-ot-addpair],[data-ot-unpair],[data-ot-schedgo],[data-ot-genko],[data-ot-reset],[data-ot-save],[data-ot-pens],[data-ot-vsdl],[data-ot-lineup],[data-ot-reveal],[data-ot-pair],[data-ot-view],[data-ot-img],[data-ot-create-open],[data-ot-create-go],[data-ot-create-cancel],[data-ot-f],[data-ot-share]') : null;
         if (!el) return;
         if (el.hasAttribute('data-ot-f')) {
           var kv = el.getAttribute('data-ot-f').split(':');
@@ -14163,7 +14150,6 @@
           return;
         }
         if (el.hasAttribute('data-ot-share')) { shareTournament(); return; }
-        if (el.hasAttribute('data-ot-gopart')) { setTab('participants'); return; }
         if (el.hasAttribute('data-ot-join')) { joinPlayer(); return; }
         if (el.hasAttribute('data-ot-joinsquad')) { joinSquad(el.getAttribute('data-ot-joinsquad')); return; }
         if (el.hasAttribute('data-ot-withdraw')) { withdraw(el.getAttribute('data-ot-withdraw')); return; }
