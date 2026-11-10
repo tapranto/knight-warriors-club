@@ -12933,13 +12933,15 @@
         if (champ) h += '<div class="mk-champ" style="margin-bottom:14px">🏆 Champion — <b>' + esc(champ) + '</b></div>';
         var intro;
         if (so.key === 'upcoming') {
-          intro = '<b>' + esc(t.name) + '</b> is coming up in ' + esc(t.game || 'the arena') + '. Registration is open — <b>' + OT.players.length + ' of ' + st.cap + '</b> ' + (st.ptype === 'squad' ? 'squad places' : 'places') + ' filled. ' + (st.ptype === 'squad' ? 'Squad captains enter their squads from the Participants tab.' : 'Members join from the Participants tab.');
+          intro = '<b>' + esc(t.name) + '</b> is coming up in ' + esc(t.game || 'the arena') + '. Registration is open — <b>' + OT.players.length + ' of ' + st.cap + '</b> ' + (st.ptype === 'squad' ? 'squad places' : 'places') + ' filled. ' + (st.ptype === 'squad' ? 'Squad captains \u2014 enter your squads below.' : 'Join below to take your place.');
         } else if (so.key === 'live') {
           intro = '<b>' + esc(t.name) + '</b> is <b>LIVE</b> in ' + esc(t.game || 'the arena') + ' — fixtures and results are on the Fixture and Matches tabs, and the table updates as results come in.';
         } else {
           intro = '<b>' + esc(t.name) + '</b> has finished' + (champ ? ' — congratulations to our champion, <b>' + esc(champ) + '</b>.' : '.') + ' Every fixture and result stays here to look back on.';
         }
         h += '<div class="t-note glass" style="margin-bottom:14px">' + intro + '</div>';
+        if (so.key === 'upcoming') h += regPanelHTML(t, st, so);
+        h += '<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px"><button type="button" class="btn btn-glass btn-sm" data-ot-share>Share tournament</button></div>';
         h += '<div class="pf-panel glass"><h3 class="pf-title">Details</h3>';
         h += '<div class="mk-info"><span class="mk-info-k">Game</span><span class="mk-info-v">' + esc(t.game || '—') + '</span></div>';
         h += '<div class="mk-info"><span class="mk-info-k">Format</span><span class="mk-info-v">' + esc(fmtLabel(t, st)) + '</span></div>';
@@ -13020,6 +13022,15 @@
           }
         }
         return h + '</div>';
+      }
+
+      function shareTournament() {
+        var t = OT.t; if (!t) return;
+        var url = window.location.origin + '/share/otournament?id=' + t.id;
+        if (navigator.share) { navigator.share({ title: t.name + ' \u2014 Knight Warriors Club', text: t.name + ' at Knight Warriors Club \u2014 registration, fixtures and results:', url: url }).catch(function () {}); return; }
+        function done() { toast('Link copied', 'Anyone with this link can view the tournament.'); }
+        if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(url).then(done).catch(function () { window.prompt('Copy this link:', url); }); }
+        else { window.prompt('Copy this link:', url); }
       }
 
       /* ---------- registration actions ---------- */
@@ -14130,7 +14141,7 @@
         if (link) { e.preventDefault(); var id = link.getAttribute('data-ot-link'); window.location.hash = '#otournament/' + id; return; }
         var tabBtn = e.target.closest ? e.target.closest('#view-otournament .jump-bar button') : null;
         if (tabBtn) { setTab(tabBtn.getAttribute('data-ot-tab')); return; }
-        var el = e.target.closest ? e.target.closest('[data-ot-join],[data-ot-joinsquad],[data-ot-withdraw],[data-ot-remove],[data-ot-delt],[data-ot-sched],[data-ot-addpair],[data-ot-unpair],[data-ot-schedgo],[data-ot-genko],[data-ot-reset],[data-ot-save],[data-ot-pens],[data-ot-vsdl],[data-ot-lineup],[data-ot-reveal],[data-ot-pair],[data-ot-view],[data-ot-img],[data-ot-create-open],[data-ot-create-go],[data-ot-create-cancel],[data-ot-f]') : null;
+        var el = e.target.closest ? e.target.closest('[data-ot-join],[data-ot-joinsquad],[data-ot-withdraw],[data-ot-remove],[data-ot-delt],[data-ot-sched],[data-ot-addpair],[data-ot-unpair],[data-ot-schedgo],[data-ot-genko],[data-ot-reset],[data-ot-save],[data-ot-pens],[data-ot-vsdl],[data-ot-lineup],[data-ot-reveal],[data-ot-pair],[data-ot-view],[data-ot-img],[data-ot-create-open],[data-ot-create-go],[data-ot-create-cancel],[data-ot-f],[data-ot-share]') : null;
         if (!el) return;
         if (el.hasAttribute('data-ot-f')) {
           var kv = el.getAttribute('data-ot-f').split(':');
@@ -14138,6 +14149,7 @@
           otEv.loadedAt = Date.now(); paintOTEvents($('otEvents'));
           return;
         }
+        if (el.hasAttribute('data-ot-share')) { shareTournament(); return; }
         if (el.hasAttribute('data-ot-join')) { joinPlayer(); return; }
         if (el.hasAttribute('data-ot-joinsquad')) { joinSquad(el.getAttribute('data-ot-joinsquad')); return; }
         if (el.hasAttribute('data-ot-withdraw')) { withdraw(el.getAttribute('data-ot-withdraw')); return; }

@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Official Tournament — Knight Warriors Club</title>
+    <meta name="description" content="An official Knight Warriors Club tournament — registration, fixtures, results and the road to the title." />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Knight Warriors Club" />
+    <meta property="og:title" content="Official Tournament — Knight Warriors Club" />
+    <meta property="og:description" content="An official Knight Warriors Club tournament — registration, fixtures, results and the road to the title." />
+    <meta property="og:image" content="https://knightwarriorsclub.com/assets/logo.jpg" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Official Tournament — Knight Warriors Club" />
+    <meta name="twitter:description" content="An official Knight Warriors Club tournament — registration, fixtures, results and the road to the title." />
+    <meta name="twitter:image" content="https://knightwarriorsclub.com/assets/logo.jpg" />
+    <script>
+      (function () {
+        var id = new URLSearchParams(window.location.search).get('id') || '';
+        var ok = /^[0-9a-fA-F-]{36}$/.test(id);
+        window.location.replace(ok ? '/#otournament/' + id : '/#events');
+      })();
+    </script>
+  </head>
+  <body>
+    <p>Opening the <a href="/#events">official tournament</a> — Knight Warriors Club…</p>
+  </body>
+</html>
