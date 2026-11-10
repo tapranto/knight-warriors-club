@@ -347,7 +347,7 @@
         padding: 0; position: relative;
         border-bottom: 1px solid rgba(255,255,255,0.08);
       }
-      .hero { padding: 58px 0 46px; text-align: center; position: relative; z-index: 1; }
+      .hero { padding: 58px 0 30px; text-align: center; position: relative; z-index: 1; }
       .hero-logo {
         width: 150px; height: 150px; margin: 0 auto 24px; border-radius: 50%; object-fit: cover;
         border: 3px solid var(--glass-border-red);
@@ -405,8 +405,8 @@
       /* ---------- Home: image bands ---------- */
       /* Home bands carry no artwork of their own — the view's moon background
          is the only background; the glass panels sit directly on it. */
-      .band { padding: 0; margin-top: 64px; position: relative; border-top: 1px solid rgba(255,255,255,0.08); border-bottom: 1px solid rgba(255,255,255,0.08); }
-      .band-in { position: relative; z-index: 1; padding: 76px 0; }
+      .band { padding: 0; margin-top: 26px; position: relative; border-top: 1px solid rgba(255,255,255,0.08); border-bottom: 1px solid rgba(255,255,255,0.08); }
+      .band-in { position: relative; z-index: 1; padding: 38px 0; }
       .tourney-panel { padding: 42px 44px; text-align: center; max-width: 860px; margin: 0 auto; }
       .tourney-panel .kicker { justify-content: center; }
       .tourney-panel .kicker::after { content: ""; width: 34px; height: 2px; background: var(--red); }
@@ -860,6 +860,8 @@
       .home-news-row:focus-visible { outline: 2px solid var(--red-bright); outline-offset: 3px; }
       .home-news-row:hover p { text-decoration: underline; text-decoration-color: rgba(225,29,46,0.7); text-underline-offset: 4px; }
       .home-news-row p { font-size: 18px; font-weight: 600; color: #f0f0f5; }
+      .home-news-media { flex: none; width: 88px; align-self: center; }
+      .home-news-media img { width: 100%; aspect-ratio: 16 / 10; object-fit: cover; display: block; border-radius: 8px; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.06); }
       .see-more { display: inline-flex; align-items: center; gap: 8px; margin-top: 24px; font-weight: 700; text-decoration: none; color: #fff; }
       .see-more:hover { color: var(--red-bright); }
       .see-more svg { width: 17px; height: 17px; stroke: currentColor; }
@@ -1130,7 +1132,9 @@
         .records-grid { grid-template-columns: 1fr; }
         table.standings { font-size: 14px; min-width: 480px; }
         table.standings th, table.standings td { padding: 9px 5px; }
-        .home-news-row { flex-direction: column; align-items: flex-start; gap: 8px; }
+        .home-news-row { display: grid; grid-template-columns: 64px 1fr; gap: 6px 12px; align-items: center; }
+        .home-news-media { width: 64px; grid-row: 1 / span 2; }
+        .home-news-row .s-tag { justify-self: start; }
       }
 
       /* ---------- Reveal ---------- */
@@ -3807,7 +3811,7 @@
         }
         document.getElementById('newsPortal').innerHTML = portal;
         document.getElementById('homeNews').innerHTML = items.slice(0, 3).map(function (it) {
-          return '<a class="home-news-row" href="#news/' + esc(it.id) + '" data-story="' + esc(it.id) + '" aria-label="Read the full story: ' + esc(it.title) + '"><span class="s-tag">' + esc(it.chip) + '</span><p>' + esc(it.title) + '</p></a>';
+          return '<a class="home-news-row" href="#news/' + esc(it.id) + '" data-story="' + esc(it.id) + '" aria-label="Read the full story: ' + esc(it.title) + '"><span class="home-news-media"><img src="' + esc(it.photo) + '" alt="' + esc(it.photoAlt || '') + '" loading="lazy" /></span><span class="s-tag">' + esc(it.chip) + '</span><p>' + esc(it.title) + '</p></a>';
         }).join('');
       }
 
