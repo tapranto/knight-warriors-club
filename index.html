@@ -12841,10 +12841,24 @@
         startOTTick();
       }
       function showViewOT() {
-        if (typeof showView === 'function') showView('otournament', true, OT ? 'otournament/' + OT.tid : 'otournament');
+        if (typeof showView === 'function') showView('otournament', true, OT ? 'otournament/' + (otPrettySlug || OT.tid) : 'otournament');
         else { document.querySelectorAll('.view').forEach(function (v) { v.classList.remove('active'); }); var v = $('view-otournament'); if (v) v.classList.add('active'); }
       }
-      window.__routeOTournament = function (id) { if (id) openOT(id); };
+      function otSlug(name) { return String(name || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, ''); }
+      var otPrettySlug = null, otSlugTries = 0;
+      window.__routeOTournament = function (id) {
+        if (!id) return;
+        if (/^[0-9a-fA-F-]{36}$/.test(id)) { otPrettySlug = null; openOT(id); return; }
+        var s = db();
+        if (!s) { if (otSlugTries++ < 5) setTimeout(function () { window.__routeOTournament(id); }, 500); return; }
+        otSlugTries = 0;
+        s.from('kwc_tournaments').select('id, name').eq('is_official', true).then(function (r) {
+          var hit = null;
+          (r.data || []).forEach(function (t) { if (otSlug(t.name) === id) hit = t; });
+          if (hit) { otPrettySlug = id; openOT(hit.id); }
+          else window.location.hash = '#events';
+        });
+      };
       function startOTTick() {
         if (otTimer) return;
         otTimer = setInterval(function () {
@@ -13026,7 +13040,7 @@
 
       function shareTournament() {
         var t = OT.t; if (!t) return;
-        var slug = String(t.name || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+        var slug = otSlug(t.name);
         var url = window.location.origin + '/share/tournament/' + (slug || t.id);
         if (navigator.share) { navigator.share({ title: t.name + ' \u2014 Knight Warriors Club', text: t.name + ' at Knight Warriors Club \u2014 registration, fixtures and results:', url: url }).catch(function () {}); return; }
         function done() { toast('Link copied', 'Anyone with this link can view the tournament.'); }
