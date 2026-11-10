@@ -13949,7 +13949,14 @@
 
       /* ---------- Events: current official, history, creator ---------- */
       var otEv = { loadedAt: 0, active: null, finished: [], err: false, createOpen: false, lastMember: undefined };
-      var otForm = { ptype: 'player', smtype: 'single', format: 'knockout' };
+      var otForm = { ptype: 'player', smtype: 'single', format: 'knockout', name: '', game: 'eFootball', groups: 2, cap: 8, setSize: 3 };
+      function otHarvestForm() {
+        var n = $('otName2'); if (n) otForm.name = n.value;
+        var g = $('otGame'); if (g) otForm.game = g.value;
+        var gr = $('otGroups'); if (gr) { var gv = parseInt(gr.value, 10); if (!isNaN(gv)) otForm.groups = gv; }
+        var c = $('otCap'); if (c) { var cv = parseInt(c.value, 10); if (!isNaN(cv)) otForm.cap = cv; }
+        var ss = $('otSetSize'); if (ss) { var sv = parseInt(ss.value, 10); if (!isNaN(sv)) otForm.setSize = sv; }
+      }
       function renderOTEvents() {
         var host = $('otEvents'); if (!host) return;
         var s = db(); if (!s) { host.innerHTML = ''; return; }
@@ -13996,21 +14003,22 @@
         host.innerHTML = h;
       }
       function creatorFormHTML() {
+        otHarvestForm();
         var f = otForm;
         var h = '<div class="ot-form">';
         h += '<div class="mk-set-row"><span>Participants</span><span class="ot-toggle"><button type="button" class="btn btn-sm ' + (f.ptype === 'player' ? 'btn-red' : 'btn-glass') + '" data-ot-f="ptype:player">Players</button><button type="button" class="btn btn-sm ' + (f.ptype === 'squad' ? 'btn-red' : 'btn-glass') + '" data-ot-f="ptype:squad">Squads</button></span></div>';
         if (f.ptype === 'squad') {
           h += '<div class="mk-set-row"><span>Squad match type</span><span class="ot-toggle"><button type="button" class="btn btn-sm ' + (f.smtype === 'single' ? 'btn-red' : 'btn-glass') + '" data-ot-f="smtype:single">Squad only</button><button type="button" class="btn btn-sm ' + (f.smtype === 'multiple' ? 'btn-red' : 'btn-glass') + '" data-ot-f="smtype:multiple">Multiple players</button></span></div>';
-          if (f.smtype === 'multiple') h += '<div class="mk-set-row"><span>Players per squad, per match</span><input type="number" id="otSetSize" class="mk-score-inp" min="1" max="11" value="3" /></div>';
+          if (f.smtype === 'multiple') h += '<div class="mk-set-row"><span>Players per squad, per match</span><input type="number" id="otSetSize" class="mk-score-inp" min="1" max="11" value="' + f.setSize + '" /></div>';
         }
-        h += '<div class="mk-set-row"><span>Tournament name</span><input type="text" id="otName2" class="mk-select" placeholder="e.g. eFootball Championship 2026" style="min-width:220px" /></div>';
-        h += '<div class="mk-set-row"><span>Game</span><select id="otGame" class="mk-select">' + GAMES.map(function (g) { return '<option value="' + esc(g) + '"' + (g === 'eFootball' ? ' selected' : '') + '>' + esc(g) + '</option>'; }).join('') + '</select></div>';
+        h += '<div class="mk-set-row"><span>Tournament name</span><input type="text" id="otName2" class="mk-select" placeholder="e.g. eFootball Championship 2026" value="' + esc(f.name) + '" style="min-width:220px" /></div>';
+        h += '<div class="mk-set-row"><span>Game</span><select id="otGame" class="mk-select">' + GAMES.map(function (g) { return '<option value="' + esc(g) + '"' + (g === f.game ? ' selected' : '') + '>' + esc(g) + '</option>'; }).join('') + '</select></div>';
         h += '<div class="mk-set-row"><span>Format</span><span class="ot-toggle">' +
           [['league', 'League'], ['knockout', 'Knockout'], ['group', 'Group'], ['groups', 'Group + Knockout']].map(function (o) { return '<button type="button" class="btn btn-sm ' + (f.format === o[0] ? 'btn-red' : 'btn-glass') + '" data-ot-f="format:' + o[0] + '">' + o[1] + '</button>'; }).join('') + '</span></div>';
         if (f.format === 'group' || f.format === 'groups') {
-          h += '<div class="mk-set-row"><span>Number of groups</span><select id="otGroups" class="mk-select">' + [2, 3, 4, 5, 6, 8].map(function (n) { return '<option value="' + n + '"' + (n === 2 ? ' selected' : '') + '>' + n + '</option>'; }).join('') + '</select></div>';
+          h += '<div class="mk-set-row"><span>Number of groups</span><select id="otGroups" class="mk-select">' + [2, 3, 4, 5, 6, 8].map(function (n) { return '<option value="' + n + '"' + (n === f.groups ? ' selected' : '') + '>' + n + '</option>'; }).join('') + '</select></div>';
         }
-        h += '<div class="mk-set-row"><span>Cap (' + (f.ptype === 'squad' ? 'squads' : 'players') + ')</span><input type="number" id="otCap" class="mk-score-inp" min="2" max="128" value="8" /></div>';
+        h += '<div class="mk-set-row"><span>Cap (' + (f.ptype === 'squad' ? 'squads' : 'players') + ')</span><input type="number" id="otCap" class="mk-score-inp" min="2" max="128" value="' + f.cap + '" /></div>';
         h += '<div class="mk-set-row"><span>Tournament logo (optional)</span><input type="file" id="otLogoFile" accept="image/*" /></div>';
         h += '<p class="pf-note">Creating makes this the club\'s current official tournament: registration opens, it appears on Home, and when it finishes it moves to Tournament History by itself. Match settings are the club\'s fixed eFootball standards and appear on its Overview.</p>';
         h += '<div style="display:flex;gap:10px;flex-wrap:wrap"><button type="button" class="btn btn-red" data-ot-create-go>Create Tournament</button><button type="button" class="btn btn-glass" data-ot-create-cancel>Cancel</button></div>';
