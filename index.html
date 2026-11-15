@@ -1094,6 +1094,8 @@
       table.standings td.pl, table.standings th.pl { text-align: left; white-space: normal; font-weight: 600; color: #fff; }
       table.standings td.pts { font-family: var(--font-display); font-weight: 800; color: #fff; }
       table.standings tr.top td { background: rgba(225,29,46,0.05); }
+      table.standings tr.qzone td { background: rgba(34,197,94,0.10); }
+      table.standings tr.qlast td { border-bottom: 2px solid rgba(34,197,94,0.75); }
       .rank-badge { display: inline-grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; font-family: var(--font-display); font-size: 13px; font-weight: 800; background: rgba(255,255,255,0.08); color: #fff; }
       .rank-1 { background: linear-gradient(180deg, #ffd970, #d9a41c); color: #231a02; }
       .rank-2 { background: linear-gradient(180deg, #e8eaf0, #a9adbb); color: #1c1e26; }
@@ -12617,6 +12619,7 @@
           smtype: o.smtype === 'multiple' ? 'multiple' : 'single',
           setSize: (typeof o.setSize === 'number' && o.setSize >= 1 && o.setSize <= 11) ? o.setSize : 3,
           cap: (typeof o.cap === 'number' && o.cap >= 2) ? o.cap : 8,
+          qualifiers: (typeof o.qualifiers === 'number' && o.qualifiers >= 1 && o.qualifiers <= 8) ? o.qualifiers : 2,
           groupOnly: !!o.groupOnly
         };
       }
@@ -12918,7 +12921,7 @@
         } else if (st.groupOnly) {
           h += '<p>Players are drawn into groups and play everyone in their group once. Each group has its own table — ' + table.charAt(0).toLowerCase() + table.slice(1) + '</p><p>When all group matches are played, the best group winner (most points, then goal difference, then goals) is the champion.</p>';
         } else {
-          h += '<p><b>Group stage:</b> players are drawn into groups and play everyone in their group once. Each group has its own table — ' + table.charAt(0).toLowerCase() + table.slice(1) + '</p><p><b>Knockout stage:</b> the top 2 of each group advance. Single matches — win and you advance; a level score is decided by a penalty shoot-out. The winner of the Final is the champion.</p>';
+          h += '<p><b>Group stage:</b> players are drawn into groups and play everyone in their group once. Each group has its own table — ' + table.charAt(0).toLowerCase() + table.slice(1) + '</p><p><b>Knockout stage:</b> the top ' + st.qualifiers + ' of each group advance. Single matches — win and you advance; a level score is decided by a penalty shoot-out. The winner of the Final is the champion.</p>';
         }
         if (st.ptype === 'squad' && st.smtype === 'single') {
           h += '<p><b>Squads:</b> each squad plays as a single player — one match per fixture, and the squad result is what counts in the table and the bracket.</p>';
@@ -13191,18 +13194,34 @@
           return insertMatchesOT(tid, grows, []);
         });
       }
-      function koAdvancers(groupsSeen, top) {
+      function koAdvancers(groupsSeen, top, Q) {
         var G = groupsSeen.length;
-        if (G === 1) return [top[groupsSeen[0]][0], top[groupsSeen[0]][1]];
-        if (G === 2) return [top.A[0], top.B[1], top.B[0], top.A[1]];
-        if (G === 4) return [top.A[0], top.B[1], top.C[0], top.D[1], top.B[0], top.A[1], top.D[0], top.C[1]];
-        var out = [];
-        groupsSeen.forEach(function (g, i) { out.push(top[g][0], top[groupsSeen[(i + 1) % G]][1]); });
-        return out;
+        Q = Q || 2;
+        if (Q <= 2) {
+          if (G === 1) return [top[groupsSeen[0]][0], top[groupsSeen[0]][1]];
+          if (G === 2) return [top.A[0], top.B[1], top.B[0], top.A[1]];
+          if (G === 4) return [top.A[0], top.B[1], top.C[0], top.D[1], top.B[0], top.A[1], top.D[0], top.C[1]];
+          var out = [];
+          groupsSeen.forEach(function (g, i) { out.push(top[g][0], top[groupsSeen[(i + 1) % G]][1]); });
+          return out;
+        }
+        if (G === 4 && Q === 4) {
+          // 16 seeds: every group winner meets a 4th-placed team, every
+          // 2nd meets a 3rd, and group-mates are spread one per quarter.
+          var T4 = [[0, 0], [2, 3], [1, 1], [3, 2], [2, 0], [0, 3], [3, 1], [1, 2], [1, 0], [3, 3], [0, 1], [2, 2], [3, 0], [1, 3], [2, 1], [0, 2]];
+          return T4.map(function (pr) { var g = groupsSeen[pr[0]]; return (top[g] && top[g][pr[1]]) || null; });
+        }
+        // general path: rank-major seed list in standard bracket order
+        var seeds = [];
+        for (var r = 0; r < Q; r++) groupsSeen.forEach(function (g) { if (top[g] && top[g][r]) seeds.push(top[g][r]); });
+        var B = bracketSizeFor(Math.max(2, seeds.length)), order = seedOrder(B), seededOut = [];
+        order.forEach(function (sd) { seededOut.push(sd <= seeds.length ? seeds[sd - 1] : null); });
+        return seededOut;
       }
       function generateKoOT() {
         var s = db(); if (!s) return;
         var t = OT.t;
+        var Q = otSettings(t).qualifiers;
         var groupsSeen = groupLabelsOT();
         if (!groupsSeen.length || groupsSeen.length > 16) { toast('Cannot generate', 'No valid groups found.'); return; }
         var top = {};
@@ -13210,9 +13229,9 @@
           var gNames = OT.players.filter(function (p) { return p.group_label === g; }).map(function (p) { return p.name; });
           var gMatches = OT.matches.filter(function (mt) { return mt.stage === 'group' && mt.group_label === g; });
           var rows = standingsOT(gNames, gMatches);
-          top[g] = [rows[0].name, rows[1].name];
+          top[g] = rows.slice(0, Q).map(function (r) { return r.name; });
         });
-        var seeded = koAdvancers(groupsSeen, top);
+        var seeded = koAdvancers(groupsSeen, top, Q);
         var treeSize = bracketSizeFor(Math.max(2, seeded.length));
         while (seeded.length < treeSize) seeded.push(null);
         var maxSort = 0; OT.matches.forEach(function (mt) { if ((mt.sort || 0) > maxSort) maxSort = mt.sort || 0; });
@@ -13312,7 +13331,7 @@
           var gm = OT.matches.filter(function (m) { return m.stage === 'group'; });
           var hasKo = OT.matches.some(function (m) { return m.stage === 'knockout'; });
           if (!hasKo && gm.length && gm.every(function (m) { return m.played; })) {
-            h += '<div class="pf-panel glass" style="margin-top:16px"><h3 class="pf-title">Knockout Stage</h3><p class="pf-note" style="margin-top:0">Every group match is played — the top 2 of each group are ready.</p><button type="button" class="btn btn-red" data-ot-genko>Generate Knockout Stage</button></div>';
+            h += '<div class="pf-panel glass" style="margin-top:16px"><h3 class="pf-title">Knockout Stage</h3><p class="pf-note" style="margin-top:0">Every group match is played — the top ' + st.qualifiers + ' of each group are ready.</p><button type="button" class="btn btn-red" data-ot-genko>Generate Knockout Stage</button></div>';
           }
         }
         if (pres) h += '<div style="margin-top:16px"><button type="button" class="btn btn-glass btn-sm" data-ot-reset style="color:#ff8089">Reset schedule</button></div>';
@@ -13553,11 +13572,15 @@
       }
 
       /* ---------- Fixture tab ---------- */
-      function standingsTableHTML(rows) {
+      function standingsTableHTML(rows, qualN) {
         var h = '<div class="table-wrap"><table class="standings"><thead><tr><th>#</th><th class="pl">Player</th><th>P</th><th>W</th><th>D</th><th>L</th><th>GF</th><th>GA</th><th>GD</th><th>Pts</th></tr></thead><tbody>';
         rows.forEach(function (r, i) {
           var gd = r.gf - r.ga;
-          h += '<tr' + (i === 0 ? ' class="top"' : '') + '><td><span class="rank-badge rank-' + (i + 1) + '">' + (i + 1) + '</span></td><td class="pl">' + nameChip(r.name) + '</td><td>' + r.p + '</td><td>' + r.w + '</td><td>' + r.d + '</td><td>' + r.l + '</td><td>' + r.gf + '</td><td>' + r.ga + '</td><td>' + (gd > 0 ? '+' : '') + gd + '</td><td class="pts">' + r.pts + '</td></tr>';
+          var cls = [];
+          if (i === 0) cls.push('top');
+          if (qualN && i < qualN) cls.push('qzone');
+          if (qualN && i === qualN - 1 && rows.length > qualN) cls.push('qlast');
+          h += '<tr' + (cls.length ? ' class="' + cls.join(' ') + '"' : '') + '><td><span class="rank-badge rank-' + (i + 1) + '">' + (i + 1) + '</span></td><td class="pl">' + nameChip(r.name) + '</td><td>' + r.p + '</td><td>' + r.w + '</td><td>' + r.d + '</td><td>' + r.l + '</td><td>' + r.gf + '</td><td>' + r.ga + '</td><td>' + (gd > 0 ? '+' : '') + gd + '</td><td class="pts">' + r.pts + '</td></tr>';
         });
         return h + '</tbody></table></div>';
       }
@@ -13634,7 +13657,7 @@
           if (gm.length) {
             labels.forEach(function (g) {
               var gNames = OT.players.filter(function (p) { return p.group_label === g; }).map(function (p) { return p.name; });
-              h += '<h3 class="mk-round-h" style="font-size:18px;margin-top:20px">Group ' + esc(g) + ' — Standings</h3>' + standingsTableHTML(standingsOT(gNames, gm.filter(function (m) { return m.group_label === g; })));
+              h += '<h3 class="mk-round-h" style="font-size:18px;margin-top:20px">Group ' + esc(g) + ' — Standings</h3>' + standingsTableHTML(standingsOT(gNames, gm.filter(function (m) { return m.group_label === g; })), st.groupOnly ? 0 : st.qualifiers);
             });
           } else h += '<div class="t-note glass">Group tables appear when the schedule is created.</div>';
           var ko = OT.matches.filter(function (m) { return m.stage === 'knockout'; });
@@ -13963,7 +13986,7 @@
 
       /* ---------- Events: current official, history, creator ---------- */
       var otEv = { loadedAt: 0, active: null, finished: [], err: false, createOpen: false, lastMember: undefined };
-      var otForm = { ptype: 'player', smtype: 'single', format: 'knockout', name: '', game: 'eFootball', groups: 2, cap: 8, setSize: 3 };
+      var otForm = { ptype: 'player', smtype: 'single', format: 'knockout', name: '', game: 'eFootball', groups: 2, cap: 8, setSize: 3, qualifiers: 2 };
       function otHarvestForm() {
         var n = $('otName2'); if (n) otForm.name = n.value;
         var g = $('otGame'); if (g) otForm.game = g.value;
@@ -14032,6 +14055,9 @@
         if (f.format === 'group' || f.format === 'groups') {
           h += '<div class="mk-set-row"><span>Number of groups</span><select id="otGroups" class="mk-select">' + [2, 3, 4, 5, 6, 8].map(function (n) { return '<option value="' + n + '"' + (n === f.groups ? ' selected' : '') + '>' + n + '</option>'; }).join('') + '</select></div>';
         }
+        if (f.format === 'groups') {
+          h += '<div class="mk-set-row"><span>Qualify per group</span><select id="otQual" class="mk-select">' + [1, 2, 3, 4].map(function (n) { return '<option value="' + n + '"' + (n === (f.qualifiers || 2) ? ' selected' : '') + '>Top ' + n + '</option>'; }).join('') + '</select></div>';
+        }
         h += '<div class="mk-set-row"><span>Cap (' + (f.ptype === 'squad' ? 'squads' : 'players') + ')</span><input type="number" id="otCap" class="mk-score-inp" min="2" max="128" value="' + f.cap + '" /></div>';
         h += '<div class="mk-set-row"><span>Tournament logo (optional)</span><input type="file" id="otLogoFile" accept="image/*" /></div>';
         h += '<p class="pf-note">Creating makes this the club\'s current official tournament: registration opens, it appears on Home, and when it finishes it moves to Tournament History by itself. Match settings are the club\'s fixed eFootball standards and appear on its Overview.</p>';
@@ -14045,9 +14071,11 @@
         var cap = parseInt($('otCap') ? $('otCap').value : '8', 10) || 8;
         var groups = parseInt($('otGroups') ? $('otGroups').value : '2', 10) || 2;
         var setSize = parseInt($('otSetSize') ? $('otSetSize').value : '3', 10) || 3;
+        var qualifiers = parseInt($('otQual') ? $('otQual').value : '2', 10) || 2;
         if (!name) { toast('Name needed', 'Give the tournament a name.'); return; }
         if (cap < 2) { toast('Cap too small', 'The cap must be at least 2.'); return; }
         if ((otForm.format === 'group' || otForm.format === 'groups') && cap < 2 * groups) { toast('Cap too small', 'Groups need at least 2 per group — cap must be ' + (2 * groups) + ' or more.'); return; }
+        if (otForm.format === 'groups' && qualifiers >= Math.floor(cap / groups)) { toast('Too many qualifiers', 'With ' + Math.floor(cap / groups) + ' per group, the top ' + qualifiers + ' would send everyone through. Lower the qualifiers or raise the cap.'); return; }
         var fileEl = $('otLogoFile');
         var file = fileEl && fileEl.files && fileEl.files[0] ? fileEl.files[0] : null;
         var logoUrl = null;
@@ -14057,7 +14085,7 @@
         }) : Promise.resolve();
         upload.then(function () {
           var fmtVal = otForm.format === 'group' ? 'groups' : otForm.format;
-          var settings = { legs: { final: 1, third: 0, sf: 1, qf: 1, r16: 1, r32: 1, r64: 1, r128: 1, r256: 1 }, groups: groups, picks: {}, official: { ptype: otForm.ptype, smtype: otForm.smtype, setSize: setSize, cap: cap, groupOnly: otForm.format === 'group' } };
+          var settings = { legs: { final: 1, third: 0, sf: 1, qf: 1, r16: 1, r32: 1, r64: 1, r128: 1, r256: 1 }, groups: groups, picks: {}, official: { ptype: otForm.ptype, smtype: otForm.smtype, setSize: setSize, cap: cap, qualifiers: qualifiers, groupOnly: otForm.format === 'group' } };
           return s.from('kwc_tournaments').insert({ name: name, game: game, format: fmtVal, status: 'upcoming', created_by: m.id, is_official: true, logo_url: logoUrl, settings: settings }).select().single();
         }).then(function (res) {
           if (res.error) throw res.error;
@@ -14226,6 +14254,7 @@
         formHTML: function (patch) { if (patch) { Object.keys(patch).forEach(function (k) { otForm[k] = patch[k]; }); } return creatorFormHTML(); }
       };
     })();
+
 
   </script>
 </body>
