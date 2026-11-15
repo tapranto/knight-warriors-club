@@ -20,6 +20,7 @@
       "status": "finished"
     },
     {
+      "champion": "Shad Sajid",
       "endDate": "",
       "entries": "live",
       "format": "knockout",
@@ -29,7 +30,7 @@
       "name": "eFootball Tournament Legacy",
       "participants": [],
       "startDate": "",
-      "status": "upcoming",
+      "status": "finished",
       "playerCap": 8,
       "logo": "assets/tournament-legacy-logo.jpg",
       "matchSettings": [

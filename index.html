@@ -3920,12 +3920,12 @@
           }).join('');
         }
         var h = '';
-        h += '<div class="ev-banner glass"><span class="ev-label">Running</span>' +
-          (live.length
-            ? entries(live, function (t) { return t.status === 'upcoming'
-                ? esc(t.game || '') + ' — registration is open. Registered players join on its page.'
-                : esc(t.game || '') + ' — live now. Fixtures, results, the table and records are on its page.'; })
-            : '<h3>Coming Soon</h3><p>The next tournament is being prepared — watch this space.</p>') + '</div>';
+        if (live.length) {
+          h += '<div class="ev-banner glass"><span class="ev-label">Running</span>' +
+            entries(live, function (t) { return t.status === 'upcoming'
+              ? esc(t.game || '') + ' — registration is open. Registered players join on its page.'
+              : esc(t.game || '') + ' — live now. Fixtures, results, the table and records are on its page.'; }) + '</div>';
+        }
         h += '<div class="ev-banner glass"><span class="ev-label">Tournament History</span>' +
           (finished.length
             ? '<div class="ev-hist-list">' + finished.map(function (t) {
