@@ -13655,7 +13655,11 @@
           var labels = groupLabelsOT();
           var gm = OT.matches.filter(function (m) { return m.stage === 'group'; });
           if (gm.length) {
-            h += '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:16px"><button type="button" class="btn btn-glass btn-sm" data-ot-gimg>⬇ Group fixtures image</button></div>';
+            var grs = [];
+            gm.forEach(function (m) { if (grs.indexOf(m.round) === -1) grs.push(m.round); });
+            grs.sort(function (a, b) { return a - b; });
+            h += '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:16px"><button type="button" class="btn btn-glass btn-sm" data-ot-gimg="all">⬇ All group fixtures</button>' +
+              grs.map(function (r) { return '<button type="button" class="btn btn-glass btn-sm" data-ot-gimg="' + r + '">⬇ Round ' + r + '</button>'; }).join('') + '</div>';
             labels.forEach(function (g) {
               var gNames = OT.players.filter(function (p) { return p.group_label === g; }).map(function (p) { return p.name; });
               h += '<h3 class="mk-round-h" style="font-size:18px;margin-top:20px">Group ' + esc(g) + ' — Standings</h3>' + standingsTableHTML(standingsOT(gNames, gm.filter(function (m) { return m.group_label === g; })), st.groupOnly ? 0 : st.qualifiers);
@@ -13861,8 +13865,8 @@
           });
         }).catch(function () { toast('Could not make the image', 'Please try again.'); });
       }
-      function otGroupImageRows() {
-        var gm = OT.matches.filter(function (m) { return m.stage === 'group'; }).slice().sort(function (a, b) {
+      function otGroupImageRows(roundFilter) {
+        var gm = OT.matches.filter(function (m) { return m.stage === 'group' && (!roundFilter || m.round === roundFilter); }).slice().sort(function (a, b) {
           return String(a.group_label || '').localeCompare(String(b.group_label || '')) || (a.round - b.round) || ((a.sort || 0) - (b.sort || 0));
         });
         var rows = [], seq = 0, curKey = null, slot = 0;
@@ -13880,9 +13884,10 @@
         });
         return rows;
       }
-      function otGroupFixturesImage() {
+      function otGroupFixturesImage(roundArg) {
         var t = OT.t; if (!t) return;
-        var rows = otGroupImageRows();
+        var roundFilter = (roundArg && roundArg !== 'all') ? parseInt(roundArg, 10) : 0;
+        var rows = otGroupImageRows(roundFilter);
         if (!rows.length) { toast('No fixtures yet', 'Create the schedule first.'); return; }
         toast('Building image…', 'Your PNG downloads in a moment.');
         var eff = {};
@@ -13905,7 +13910,7 @@
         Promise.all(jobs).then(function (res) {
           var av = {}, logoImg = null, tLogoImg = null;
           res.forEach(function (o) { if (!o) return; if (o.k === '__logo') logoImg = o.im; else if (o.k === '__tlogo') tLogoImg = o.im; else if (o.im) av[o.k] = o.im; });
-          var fname = String(t.name || 'tournament').toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-group-fixtures.png';
+          var fname = String(t.name || 'tournament').toLowerCase().replace(/[^a-z0-9]+/g, '-') + (roundFilter ? '-group-round-' + roundFilter : '-group-fixtures') + '.png';
           var cv1 = renderOTSchedCanvas('list', tShim, rows, eff, null, logoImg, av, tLogoImg);
           if (!cv1) { toast('Could not make the image', 'Please try again.'); return; }
           otSendCanvas(cv1, fname, function () {
@@ -14264,7 +14269,7 @@
         if (el.hasAttribute('data-ot-pair')) { var pr2 = el.getAttribute('data-ot-pair').split(':'); if (pr2[0]) savePairOT(pr2[0], pr2[1]); return; }
         if (el.hasAttribute('data-ot-view')) { OT.view = el.getAttribute('data-ot-view'); renderOT(); return; }
         if (el.hasAttribute('data-ot-img')) { otScheduleImage(el.getAttribute('data-ot-img')); return; }
-        if (el.hasAttribute('data-ot-gimg')) { otGroupFixturesImage(); return; }
+        if (el.hasAttribute('data-ot-gimg')) { otGroupFixturesImage(el.getAttribute('data-ot-gimg')); return; }
         if (el.hasAttribute('data-ot-vsdl')) { otVsCard(parseInt(el.getAttribute('data-ot-vsdl'), 10)); return; }
         if (el.hasAttribute('data-ot-create-open')) { otEv.createOpen = true; paintOTEvents($('otEvents')); return; }
         if (el.hasAttribute('data-ot-create-cancel')) { otEv.createOpen = false; paintOTEvents($('otEvents')); return; }
