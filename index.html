@@ -13655,6 +13655,7 @@
           var labels = groupLabelsOT();
           var gm = OT.matches.filter(function (m) { return m.stage === 'group'; });
           if (gm.length) {
+            h += '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:16px"><button type="button" class="btn btn-glass btn-sm" data-ot-gimg>⬇ Group fixtures image</button></div>';
             labels.forEach(function (g) {
               var gNames = OT.players.filter(function (p) { return p.group_label === g; }).map(function (p) { return p.name; });
               h += '<h3 class="mk-round-h" style="font-size:18px;margin-top:20px">Group ' + esc(g) + ' — Standings</h3>' + standingsTableHTML(standingsOT(gNames, gm.filter(function (m) { return m.group_label === g; })), st.groupOnly ? 0 : st.qualifiers);
@@ -13860,6 +13861,60 @@
           });
         }).catch(function () { toast('Could not make the image', 'Please try again.'); });
       }
+      function otGroupImageRows() {
+        var gm = OT.matches.filter(function (m) { return m.stage === 'group'; }).slice().sort(function (a, b) {
+          return String(a.group_label || '').localeCompare(String(b.group_label || '')) || (a.round - b.round) || ((a.sort || 0) - (b.sort || 0));
+        });
+        var rows = [], seq = 0, curKey = null, slot = 0;
+        gm.forEach(function (m) {
+          var key = (m.group_label || '') + ':' + m.round;
+          if (key !== curKey) { curKey = key; seq++; slot = 0; }
+          slot++;
+          var p1 = playerByName(m.p1), p2 = playerByName(m.p2);
+          var d1 = m.s1, d2 = m.s2;
+          if (isMultiple() && m.played) { var oc = setOutcome(m.id); if (oc.total) { d1 = oc.w1; d2 = oc.w2; } }
+          var w = matchWinner(m);
+          rows.push({ round: seq, slot: slot, round_label: 'Group ' + (m.group_label || '') + ' · Round ' + m.round, s1: d1, s2: d2, played: m.played, winner_side: w ? (w === m.p1 ? 1 : 2) : null,
+            _p1: m.p1 ? { name: m.p1, member_id: p1 ? (p1.squad_id || p1.member_id) : null, _sq: p1 ? !!p1.squad_id : false } : null,
+            _p2: m.p2 ? { name: m.p2, member_id: p2 ? (p2.squad_id || p2.member_id) : null, _sq: p2 ? !!p2.squad_id : false } : null });
+        });
+        return rows;
+      }
+      function otGroupFixturesImage() {
+        var t = OT.t; if (!t) return;
+        var rows = otGroupImageRows();
+        if (!rows.length) { toast('No fixtures yet', 'Create the schedule first.'); return; }
+        toast('Building image…', 'Your PNG downloads in a moment.');
+        var eff = {};
+        rows.forEach(function (r) { eff[r.round + ':' + r.slot] = { p1: r._p1, p2: r._p2 }; });
+        var tShim = { name: t.name, game: t.game, logo: t.logo_url };
+        var jobs = [loadOTImg('assets/logo.jpg').then(function (im) { return { k: '__logo', im: im }; })];
+        if (t.logo_url) jobs.push(loadOTImg(t.logo_url).then(function (im) { return { k: '__tlogo', im: im }; }));
+        var seen = {};
+        rows.forEach(function (r) {
+          [r._p1, r._p2].forEach(function (p) {
+            if (p && p.member_id && !seen[p.member_id]) {
+              seen[p.member_id] = 1;
+              var url = null;
+              if (p._sq) { var sq = OT.squads[p.member_id]; url = sq ? sq.avatar_url : null; }
+              else { var mm = OT.members[p.member_id]; url = mm ? mm.avatar_url : null; }
+              if (url) jobs.push(loadOTImg(url).then(function (im) { return { k: 'm' + p.member_id, im: im }; }));
+            }
+          });
+        });
+        Promise.all(jobs).then(function (res) {
+          var av = {}, logoImg = null, tLogoImg = null;
+          res.forEach(function (o) { if (!o) return; if (o.k === '__logo') logoImg = o.im; else if (o.k === '__tlogo') tLogoImg = o.im; else if (o.im) av[o.k] = o.im; });
+          var fname = String(t.name || 'tournament').toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-group-fixtures.png';
+          var cv1 = renderOTSchedCanvas('list', tShim, rows, eff, null, logoImg, av, tLogoImg);
+          if (!cv1) { toast('Could not make the image', 'Please try again.'); return; }
+          otSendCanvas(cv1, fname, function () {
+            var cv2 = renderOTSchedCanvas('list', tShim, rows, eff, null, logoImg, {}, tLogoImg);
+            if (!cv2) { toast('Could not make the image', 'Please try again.'); return; }
+            otSendCanvas(cv2, fname, function () { toast('Could not make the image', 'Please try again.'); });
+          });
+        }).catch(function () { toast('Could not make the image', 'Please try again.'); });
+      }
       function renderOTSchedCanvas(mode, t, rows, eff, champ, logoImg, av, tLogoImg) {
         function rowKey(r) { return r.round + ':' + r.slot; }
         var byRound = {};
@@ -13993,6 +14048,7 @@
         var gr = $('otGroups'); if (gr) { var gv = parseInt(gr.value, 10); if (!isNaN(gv)) otForm.groups = gv; }
         var c = $('otCap'); if (c) { var cv = parseInt(c.value, 10); if (!isNaN(cv)) otForm.cap = cv; }
         var ss = $('otSetSize'); if (ss) { var sv = parseInt(ss.value, 10); if (!isNaN(sv)) otForm.setSize = sv; }
+        var q = $('otQual'); if (q) { var qv = parseInt(q.value, 10); if (!isNaN(qv)) otForm.qualifiers = qv; }
       }
       function renderOTEvents() {
         var host = $('otEvents'); if (!host) return;
@@ -14172,7 +14228,7 @@
         if (link) { e.preventDefault(); var id = link.getAttribute('data-ot-link'); window.location.hash = '#otournament/' + id; return; }
         var tabBtn = e.target.closest ? e.target.closest('#view-otournament .jump-bar button') : null;
         if (tabBtn) { setTab(tabBtn.getAttribute('data-ot-tab')); return; }
-        var el = e.target.closest ? e.target.closest('[data-ot-join],[data-ot-joinsquad],[data-ot-withdraw],[data-ot-remove],[data-ot-delt],[data-ot-sched],[data-ot-addpair],[data-ot-unpair],[data-ot-schedgo],[data-ot-genko],[data-ot-reset],[data-ot-save],[data-ot-pens],[data-ot-vsdl],[data-ot-lineup],[data-ot-reveal],[data-ot-pair],[data-ot-view],[data-ot-img],[data-ot-create-open],[data-ot-create-go],[data-ot-create-cancel],[data-ot-f],[data-ot-share]') : null;
+        var el = e.target.closest ? e.target.closest('[data-ot-join],[data-ot-joinsquad],[data-ot-withdraw],[data-ot-remove],[data-ot-delt],[data-ot-sched],[data-ot-addpair],[data-ot-unpair],[data-ot-schedgo],[data-ot-genko],[data-ot-reset],[data-ot-save],[data-ot-pens],[data-ot-vsdl],[data-ot-lineup],[data-ot-reveal],[data-ot-pair],[data-ot-view],[data-ot-img],[data-ot-gimg],[data-ot-create-open],[data-ot-create-go],[data-ot-create-cancel],[data-ot-f],[data-ot-share]') : null;
         if (!el) return;
         if (el.hasAttribute('data-ot-f')) {
           var kv = el.getAttribute('data-ot-f').split(':');
@@ -14208,6 +14264,7 @@
         if (el.hasAttribute('data-ot-pair')) { var pr2 = el.getAttribute('data-ot-pair').split(':'); if (pr2[0]) savePairOT(pr2[0], pr2[1]); return; }
         if (el.hasAttribute('data-ot-view')) { OT.view = el.getAttribute('data-ot-view'); renderOT(); return; }
         if (el.hasAttribute('data-ot-img')) { otScheduleImage(el.getAttribute('data-ot-img')); return; }
+        if (el.hasAttribute('data-ot-gimg')) { otGroupFixturesImage(); return; }
         if (el.hasAttribute('data-ot-vsdl')) { otVsCard(parseInt(el.getAttribute('data-ot-vsdl'), 10)); return; }
         if (el.hasAttribute('data-ot-create-open')) { otEv.createOpen = true; paintOTEvents($('otEvents')); return; }
         if (el.hasAttribute('data-ot-create-cancel')) { otEv.createOpen = false; paintOTEvents($('otEvents')); return; }
